@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BoekenRouteImport } from './routes/boeken'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DienstenRouteImport } from './routes/diensten'
+import { Route as GalerijRouteImport } from './routes/galerij'
+import { Route as OverOnsRouteImport } from './routes/over-ons'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminBoekingenRouteImport } from './routes/admin/boekingen'
+import { Route as AdminDienstenRouteImport } from './routes/admin/diensten'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BoekenRoute = BoekenRouteImport.update({
+  id: '/boeken',
+  path: '/boeken',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DienstenRoute = DienstenRouteImport.update({
+  id: '/diensten',
+  path: '/diensten',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalerijRoute = GalerijRouteImport.update({
+  id: '/galerij',
+  path: '/galerij',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OverOnsRoute = OverOnsRouteImport.update({
+  id: '/over-ons',
+  path: '/over-ons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminBoekingenRoute = AdminBoekingenRouteImport.update({
+  id: '/admin/boekingen',
+  path: '/admin/boekingen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDienstenRoute = AdminDienstenRouteImport.update({
+  id: '/admin/diensten',
+  path: '/admin/diensten',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/boeken': typeof BoekenRoute
+  '/contact': typeof ContactRoute
+  '/diensten': typeof DienstenRoute
+  '/galerij': typeof GalerijRoute
+  '/over-ons': typeof OverOnsRoute
+  '/admin/boekingen': typeof AdminBoekingenRoute
+  '/admin/diensten': typeof AdminDienstenRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/boeken': typeof BoekenRoute
+  '/contact': typeof ContactRoute
+  '/diensten': typeof DienstenRoute
+  '/galerij': typeof GalerijRoute
+  '/over-ons': typeof OverOnsRoute
+  '/admin/boekingen': typeof AdminBoekingenRoute
+  '/admin/diensten': typeof AdminDienstenRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/boeken': typeof BoekenRoute
+  '/contact': typeof ContactRoute
+  '/diensten': typeof DienstenRoute
+  '/galerij': typeof GalerijRoute
+  '/over-ons': typeof OverOnsRoute
+  '/admin/boekingen': typeof AdminBoekingenRoute
+  '/admin/diensten': typeof AdminDienstenRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/boeken'
+    | '/contact'
+    | '/diensten'
+    | '/galerij'
+    | '/over-ons'
+    | '/admin/boekingen'
+    | '/admin/diensten'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/boeken'
+    | '/contact'
+    | '/diensten'
+    | '/galerij'
+    | '/over-ons'
+    | '/admin/boekingen'
+    | '/admin/diensten'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/boeken'
+    | '/contact'
+    | '/diensten'
+    | '/galerij'
+    | '/over-ons'
+    | '/admin/boekingen'
+    | '/admin/diensten'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BoekenRoute: typeof BoekenRoute
+  ContactRoute: typeof ContactRoute
+  DienstenRoute: typeof DienstenRoute
+  GalerijRoute: typeof GalerijRoute
+  OverOnsRoute: typeof OverOnsRoute
+  AdminBoekingenRoute: typeof AdminBoekingenRoute
+  AdminDienstenRoute: typeof AdminDienstenRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/boeken': {
+      id: '/boeken'
+      path: '/boeken'
+      fullPath: '/boeken'
+      preLoaderRoute: typeof BoekenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diensten': {
+      id: '/diensten'
+      path: '/diensten'
+      fullPath: '/diensten'
+      preLoaderRoute: typeof DienstenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/galerij': {
+      id: '/galerij'
+      path: '/galerij'
+      fullPath: '/galerij'
+      preLoaderRoute: typeof GalerijRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/over-ons': {
+      id: '/over-ons'
+      path: '/over-ons'
+      fullPath: '/over-ons'
+      preLoaderRoute: typeof OverOnsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/boekingen': {
+      id: '/admin/boekingen'
+      path: '/admin/boekingen'
+      fullPath: '/admin/boekingen'
+      preLoaderRoute: typeof AdminBoekingenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/diensten': {
+      id: '/admin/diensten'
+      path: '/admin/diensten'
+      fullPath: '/admin/diensten'
+      preLoaderRoute: typeof AdminDienstenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BoekenRoute: BoekenRoute,
+  ContactRoute: ContactRoute,
+  DienstenRoute: DienstenRoute,
+  GalerijRoute: GalerijRoute,
+  OverOnsRoute: OverOnsRoute,
+  AdminBoekingenRoute: AdminBoekingenRoute,
+  AdminDienstenRoute: AdminDienstenRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
