@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as BoekenRouteImport } from './routes/boeken'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DienstenRouteImport } from './routes/diensten'
@@ -18,10 +19,18 @@ import { Route as OverOnsRouteImport } from './routes/over-ons'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminBoekingenRouteImport } from './routes/admin/boekingen'
 import { Route as AdminDienstenRouteImport } from './routes/admin/diensten'
+import { Route as AdminInstellingenRouteImport } from './routes/admin/instellingen'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as BoekingAnnulerenBookingIdRouteImport } from './routes/boeking/annuleren/$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BoekenRoute = BoekenRouteImport.update({
@@ -50,23 +59,40 @@ const OverOnsRoute = OverOnsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminBoekingenRoute = AdminBoekingenRouteImport.update({
-  id: '/admin/boekingen',
-  path: '/admin/boekingen',
-  getParentRoute: () => rootRouteImport,
+  id: '/boekingen',
+  path: '/boekingen',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminDienstenRoute = AdminDienstenRouteImport.update({
-  id: '/admin/diensten',
-  path: '/admin/diensten',
-  getParentRoute: () => rootRouteImport,
+  id: '/diensten',
+  path: '/diensten',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminInstellingenRoute = AdminInstellingenRouteImport.update({
+  id: '/instellingen',
+  path: '/instellingen',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const BoekingAnnulerenBookingIdRoute =
+  BoekingAnnulerenBookingIdRouteImport.update({
+    id: '/boeking/annuleren/$bookingId',
+    path: '/boeking/annuleren/$bookingId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/boeken': typeof BoekenRoute
   '/contact': typeof ContactRoute
   '/diensten': typeof DienstenRoute
@@ -74,7 +100,10 @@ export interface FileRoutesByFullPath {
   '/over-ons': typeof OverOnsRoute
   '/admin/boekingen': typeof AdminBoekingenRoute
   '/admin/diensten': typeof AdminDienstenRoute
+  '/admin/instellingen': typeof AdminInstellingenRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/': typeof AdminIndexRoute
+  '/boeking/annuleren/$bookingId': typeof BoekingAnnulerenBookingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,11 +114,15 @@ export interface FileRoutesByTo {
   '/over-ons': typeof OverOnsRoute
   '/admin/boekingen': typeof AdminBoekingenRoute
   '/admin/diensten': typeof AdminDienstenRoute
+  '/admin/instellingen': typeof AdminInstellingenRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin': typeof AdminIndexRoute
+  '/boeking/annuleren/$bookingId': typeof BoekingAnnulerenBookingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/boeken': typeof BoekenRoute
   '/contact': typeof ContactRoute
   '/diensten': typeof DienstenRoute
@@ -97,12 +130,16 @@ export interface FileRoutesById {
   '/over-ons': typeof OverOnsRoute
   '/admin/boekingen': typeof AdminBoekingenRoute
   '/admin/diensten': typeof AdminDienstenRoute
+  '/admin/instellingen': typeof AdminInstellingenRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/': typeof AdminIndexRoute
+  '/boeking/annuleren/$bookingId': typeof BoekingAnnulerenBookingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/boeken'
     | '/contact'
     | '/diensten'
@@ -110,7 +147,10 @@ export interface FileRouteTypes {
     | '/over-ons'
     | '/admin/boekingen'
     | '/admin/diensten'
+    | '/admin/instellingen'
+    | '/admin/login'
     | '/admin/'
+    | '/boeking/annuleren/$bookingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -121,10 +161,14 @@ export interface FileRouteTypes {
     | '/over-ons'
     | '/admin/boekingen'
     | '/admin/diensten'
+    | '/admin/instellingen'
+    | '/admin/login'
     | '/admin'
+    | '/boeking/annuleren/$bookingId'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/boeken'
     | '/contact'
     | '/diensten'
@@ -132,19 +176,21 @@ export interface FileRouteTypes {
     | '/over-ons'
     | '/admin/boekingen'
     | '/admin/diensten'
+    | '/admin/instellingen'
+    | '/admin/login'
     | '/admin/'
+    | '/boeking/annuleren/$bookingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   BoekenRoute: typeof BoekenRoute
   ContactRoute: typeof ContactRoute
   DienstenRoute: typeof DienstenRoute
   GalerijRoute: typeof GalerijRoute
   OverOnsRoute: typeof OverOnsRoute
-  AdminBoekingenRoute: typeof AdminBoekingenRoute
-  AdminDienstenRoute: typeof AdminDienstenRoute
-  AdminIndexRoute: typeof AdminIndexRoute
+  BoekingAnnulerenBookingIdRoute: typeof BoekingAnnulerenBookingIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -154,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/boeken': {
@@ -193,38 +246,78 @@ declare module '@tanstack/react-router' {
     }
     '/admin/': {
       id: '/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/admin/boekingen': {
       id: '/admin/boekingen'
-      path: '/admin/boekingen'
+      path: '/boekingen'
       fullPath: '/admin/boekingen'
       preLoaderRoute: typeof AdminBoekingenRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/admin/diensten': {
       id: '/admin/diensten'
-      path: '/admin/diensten'
+      path: '/diensten'
       fullPath: '/admin/diensten'
       preLoaderRoute: typeof AdminDienstenRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/instellingen': {
+      id: '/admin/instellingen'
+      path: '/instellingen'
+      fullPath: '/admin/instellingen'
+      preLoaderRoute: typeof AdminInstellingenRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/boeking/annuleren/$bookingId': {
+      id: '/boeking/annuleren/$bookingId'
+      path: '/boeking/annuleren/$bookingId'
+      fullPath: '/boeking/annuleren/$bookingId'
+      preLoaderRoute: typeof BoekingAnnulerenBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminBoekingenRoute: typeof AdminBoekingenRoute
+  AdminDienstenRoute: typeof AdminDienstenRoute
+  AdminInstellingenRoute: typeof AdminInstellingenRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminBoekingenRoute: AdminBoekingenRoute,
+  AdminDienstenRoute: AdminDienstenRoute,
+  AdminInstellingenRoute: AdminInstellingenRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   BoekenRoute: BoekenRoute,
   ContactRoute: ContactRoute,
   DienstenRoute: DienstenRoute,
   GalerijRoute: GalerijRoute,
   OverOnsRoute: OverOnsRoute,
-  AdminBoekingenRoute: AdminBoekingenRoute,
-  AdminDienstenRoute: AdminDienstenRoute,
-  AdminIndexRoute: AdminIndexRoute,
+  BoekingAnnulerenBookingIdRoute: BoekingAnnulerenBookingIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

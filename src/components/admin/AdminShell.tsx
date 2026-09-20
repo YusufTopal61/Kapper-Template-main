@@ -1,6 +1,15 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { CalendarDays, LayoutGrid, Lock, LogOut, Scissors } from "lucide-react";
+import type { ReactNode } from "react";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  CalendarDays,
+  LayoutGrid,
+  Loader2,
+  LogOut,
+  Scissors,
+  Settings,
+  TriangleAlert,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,36 +25,35 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-/** Placeholder client-side gate. Not real auth — swap for a real login flow later. */
-const ADMIN_PASSWORD = "kapper2026";
-const AUTH_KEY = "admin_authenticated";
+import { signOut } from "@/api/auth";
+import { fetchAdminSettings } from "@/api/settings";
 
 const adminNav = [
   { label: "Overzicht", to: "/admin", icon: LayoutGrid },
   { label: "Boekingen", to: "/admin/boekingen", icon: CalendarDays },
   { label: "Diensten", to: "/admin/diensten", icon: Scissors },
+  { label: "Instellingen", to: "/admin/instellingen", icon: Settings },
 ] as const;
 
-export function AdminShell({ children }: { children: ReactNode }) {
-  const [authed, setAuthed] = useState<boolean | null>(null);
+export function AdminShell({ children, email }: { children: ReactNode; email: string | null }) {
+  const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  useEffect(() => {
-    setAuthed(window.localStorage.getItem(AUTH_KEY) === "true");
-  }, []);
+  const instellingen = useQuery({
+    queryKey: ["settings", "admin"],
+    queryFn: () => fetchAdminSettings(),
+  });
 
-  if (authed === null) {
-    return <div className="min-h-screen bg-background" />;
-  }
-
-  if (!authed) {
-    return <AdminLogin onSuccess={() => setAuthed(true)} />;
-  }
+  const uitloggen = useMutation({
+    mutationFn: () => signOut(),
+    onSuccess: async () => {
+      await router.invalidate();
+      await router.navigate({ to: "/admin/login" });
+    },
+  });
 
   const activeLabel = adminNav.find((n) => n.to === pathname)?.label ?? "Beheer";
+  const emailOntbreekt = instellingen.data && !instellingen.data.emailIngesteld;
 
   return (
     <SidebarProvider>
@@ -57,10 +65,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
           >
             Barber
           </Link>
-          <p className="mt-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-            Beheeromgeving
+          <p className="mt-1 truncate text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+            {email ?? "Beheeromgeving"}
           </p>
         </SidebarHeader>
+
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
@@ -79,89 +88,49 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+
         <SidebarFooter className="gap-2 px-3 pb-4">
           <Button
             variant="outline"
             size="sm"
+            disabled={uitloggen.isPending}
             className="w-full justify-start gap-2 rounded-lg group-data-[collapsible=icon]:justify-center"
-            onClick={() => {
-              window.localStorage.removeItem(AUTH_KEY);
-              setAuthed(false);
-            }}
+            onClick={() => uitloggen.mutate()}
           >
-            <LogOut className="size-4" />
+            {uitloggen.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <LogOut className="size-4" />
+            )}
             <span className="group-data-[collapsible=icon]:hidden">Uitloggen</span>
           </Button>
         </SidebarFooter>
       </Sidebar>
+
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
           <SidebarTrigger />
           <span className="text-sm font-medium text-foreground">{activeLabel}</span>
         </header>
+
+        {emailOntbreekt ? (
+          <div className="flex flex-wrap items-center gap-3 border-b border-border bg-foreground px-4 py-3 text-background sm:px-6">
+            <TriangleAlert className="size-4 shrink-0" />
+            <p className="text-sm">
+              Vul je e-mailadres in bij Instellingen — anders ontvang je geen melding van nieuwe
+              boekingen.
+            </p>
+            <Link
+              to="/admin/instellingen"
+              className="ml-auto rounded-full bg-background px-4 py-1.5 text-xs font-semibold text-foreground transition-opacity hover:opacity-85"
+            >
+              Nu instellen
+            </Link>
+          </div>
+        ) : null}
+
         <main className="flex-1 bg-muted/30 p-4 sm:p-8">{children}</main>
       </SidebarInset>
     </SidebarProvider>
-  );
-}
-
-function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (password === ADMIN_PASSWORD) {
-            window.localStorage.setItem(AUTH_KEY, "true");
-            onSuccess();
-          } else {
-            setError(true);
-          }
-        }}
-        className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-lift"
-      >
-        <div className="flex size-11 items-center justify-center rounded-full bg-foreground text-background">
-          <Lock className="size-4" />
-        </div>
-        <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-foreground">
-          Beheeromgeving
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Alleen voor de eigenaar. Voer het wachtwoord in om door te gaan.
-        </p>
-
-        <div className="mt-6 grid gap-1.5">
-          <Label htmlFor="admin-password">Wachtwoord</Label>
-          <Input
-            id="admin-password"
-            type="password"
-            autoFocus
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setError(false);
-            }}
-            placeholder="••••••••"
-            className="rounded-lg"
-          />
-          {error ? (
-            <p className="text-xs text-destructive">Onjuist wachtwoord. Probeer opnieuw.</p>
-          ) : null}
-        </div>
-
-        <Button type="submit" className="mt-6 w-full rounded-lg">
-          Inloggen
-        </Button>
-
-        <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">
-          Demo-wachtwoord:{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-foreground">{ADMIN_PASSWORD}</code> —
-          vervang dit door echte authenticatie voordat dit live gaat.
-        </p>
-      </form>
-    </div>
   );
 }

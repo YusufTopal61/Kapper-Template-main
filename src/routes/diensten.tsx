@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/site/PageHeader";
 import { Services } from "@/components/site/Services";
 import { CtaBanner } from "@/components/site/CtaBanner";
 import { Footer } from "@/components/site/Footer";
+import { fetchActiveServices } from "@/api/services";
 
 const title = "Diensten — BARBER";
 const description =
@@ -18,21 +19,24 @@ export const Route = createFileRoute("/diensten")({
       { property: "og:description", content: description },
     ],
   }),
+  loader: async () => ({ diensten: await fetchActiveServices() }),
   component: DienstenPage,
 });
 
 function DienstenPage() {
+  const { diensten } = Route.useLoaderData();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
         <PageHeader
           badgeLabel="Diensten"
-          badgeText="Drie behandelingen, één standaard"
+          badgeText="Vakwerk, tot in de details"
           title="Wat we doen."
           description="Geen eindeloze menukaart. Alleen wat we tot in de puntjes beheersen — knippen, baard en de combinatie van de twee."
         />
-        <Services />
+        <Services diensten={diensten} />
         <CtaBanner />
       </main>
       <Footer />

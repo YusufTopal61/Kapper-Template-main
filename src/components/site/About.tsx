@@ -17,26 +17,25 @@ export function About({ extended = false }: { extended?: boolean }) {
         </Reveal>
         <Reveal delay={0.08}>
           <p className="mt-6 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-            Wat begon als een kleine zaak met twee stoelen, groeide uit tot een plek
-            waar mannen terugkomen voor meer dan een knipbeurt. Wij geloven in eerlijk
-            vakmanschap: luisteren, adviseren en dan pas de schaar.
+            Wat begon als een kleine zaak met twee stoelen, groeide uit tot een plek waar mannen
+            terugkomen voor meer dan een knipbeurt. Wij geloven in eerlijk vakmanschap: luisteren,
+            adviseren en dan pas de schaar.
           </p>
           {extended ? (
             <>
               <p className="mt-4 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-                Geen haast, geen ruis. Onze barbiers nemen de tijd om te begrijpen hoe
-                je haar valt, hoe je het thuis draagt en wat er over drie weken nog
-                steeds goed moet zitten.
+                Geen haast, geen ruis. Onze barbiers nemen de tijd om te begrijpen hoe je haar valt,
+                hoe je het thuis draagt en wat er over drie weken nog steeds goed moet zitten.
               </p>
               <p className="mt-4 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-                Het resultaat is een vaste routine: je komt binnen, je gaat zitten, en
-                je loopt scherp weer naar buiten. Simpel, precies zoals het hoort.
+                Het resultaat is een vaste routine: je komt binnen, je gaat zitten, en je loopt
+                scherp weer naar buiten. Simpel, precies zoals het hoort.
               </p>
             </>
           ) : (
             <p className="mt-4 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-              Geen haast, geen ruis. Alleen een resultaat dat er over drie weken nog
-              steeds goed uitziet.
+              Geen haast, geen ruis. Alleen een resultaat dat er over drie weken nog steeds goed
+              uitziet.
             </p>
           )}
         </Reveal>

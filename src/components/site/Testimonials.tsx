@@ -15,8 +15,7 @@ const reviews = [
     meta: "Knippen + Baard",
   },
   {
-    quote:
-      "Rustige zaak, scherpe afwerking. Je merkt meteen dat hier mensen met vakkennis staan.",
+    quote: "Rustige zaak, scherpe afwerking. Je merkt meteen dat hier mensen met vakkennis staan.",
     name: "Klantnaam",
     meta: "Knippen",
   },
@@ -45,9 +44,7 @@ export function Testimonials() {
           </p>
           <footer className="mt-6 border-t border-border pt-4">
             <p className="text-sm font-medium tracking-tight text-foreground">{review.name}</p>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">
-              {review.meta}
-            </p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">{review.meta}</p>
           </footer>
         </motion.blockquote>
       ))}

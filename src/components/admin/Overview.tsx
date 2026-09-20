@@ -1,36 +1,54 @@
 import { Link } from "@tanstack/react-router";
-import { format, isFuture, isToday, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { format, isBefore, startOfToday } from "date-fns";
 import { nl } from "date-fns/locale";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { initialBookings, type BookingStatus } from "@/lib/admin-data";
-import { services } from "@/lib/site-data";
+import { fetchAdminBookings } from "@/api/bookings";
+import { fetchAllServices } from "@/api/services";
+import { normaliseerTijd, parseDatum } from "@/lib/opening-hours";
+import type { BookingStatus } from "@/lib/supabase/types";
 
-const statusVariant: Record<BookingStatus, "default" | "secondary" | "destructive"> = {
+const statusVariant: Record<BookingStatus, "default" | "secondary" | "destructive" | "outline"> = {
   bevestigd: "default",
   voltooid: "secondary",
   geannuleerd: "destructive",
+  no_show: "outline",
+};
+
+const statusLabel: Record<BookingStatus, string> = {
+  bevestigd: "Bevestigd",
+  voltooid: "Voltooid",
+  geannuleerd: "Geannuleerd",
+  no_show: "No-show",
 };
 
 export function Overview() {
-  const bevestigd = initialBookings.filter((b) => b.status === "bevestigd").length;
-  const voltooid = initialBookings.filter((b) => b.status === "voltooid").length;
-  const geannuleerd = initialBookings.filter((b) => b.status === "geannuleerd").length;
+  const boekingen = useQuery({
+    queryKey: ["bookings"],
+    queryFn: () => fetchAdminBookings(),
+  });
 
-  const upcoming = initialBookings
-    .filter(
-      (b) =>
-        b.status === "bevestigd" && (isToday(parseISO(b.datum)) || isFuture(parseISO(b.datum))),
-    )
-    .sort((a, b) => (a.datum + a.tijd).localeCompare(b.datum + b.tijd))
+  const diensten = useQuery({
+    queryKey: ["services", "alle"],
+    queryFn: () => fetchAllServices(),
+  });
+
+  const lijst = boekingen.data ?? [];
+  const vandaag = startOfToday();
+
+  const aankomend = lijst
+    .filter((b) => b.status === "bevestigd" && !isBefore(parseDatum(b.datum), vandaag))
     .slice(0, 5);
 
   const stats = [
-    { label: "Bevestigd", value: bevestigd },
-    { label: "Voltooid", value: voltooid },
-    { label: "Geannuleerd", value: geannuleerd },
-    { label: "Diensten", value: services.length },
+    { label: "Bevestigd", waarde: lijst.filter((b) => b.status === "bevestigd").length },
+    { label: "Voltooid", waarde: lijst.filter((b) => b.status === "voltooid").length },
+    { label: "Geannuleerd", waarde: lijst.filter((b) => b.status === "geannuleerd").length },
+    { label: "Actieve diensten", waarde: (diensten.data ?? []).filter((d) => d.actief).length },
   ];
+
+  const laden = boekingen.isLoading || diensten.isLoading;
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,9 +56,7 @@ export function Overview() {
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           Overzicht
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Een snelle blik op de zaak. Alles hieronder is mock-data.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Een snelle blik op de zaak.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -49,9 +65,13 @@ export function Overview() {
             key={stat.label}
             className="rounded-2xl border border-border bg-card p-5 shadow-soft"
           >
-            <p className="font-display text-3xl font-bold tracking-tight text-foreground">
-              {stat.value}
-            </p>
+            {laden ? (
+              <div className="h-9 w-12 animate-pulse rounded bg-muted" />
+            ) : (
+              <p className="font-display text-3xl font-bold tracking-tight text-foreground">
+                {stat.waarde}
+              </p>
+            )}
             <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {stat.label}
             </p>
@@ -74,25 +94,34 @@ export function Overview() {
         </div>
 
         <div className="mt-4 flex flex-col gap-2">
-          {upcoming.length === 0 ? (
+          {laden ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
+            ))
+          ) : boekingen.isError ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              De boekingen konden niet geladen worden.
+            </p>
+          ) : aankomend.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
               Geen aankomende afspraken.
             </p>
           ) : (
-            upcoming.map((booking) => (
+            aankomend.map((boeking) => (
               <div
-                key={booking.id}
+                key={boeking.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border px-4 py-3"
               >
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{booking.klantnaam}</p>
+                  <p className="text-sm font-semibold text-foreground">{boeking.klant_naam}</p>
                   <p className="text-xs text-muted-foreground">
-                    {booking.dienst} · {format(parseISO(booking.datum), "d MMM", { locale: nl })} ·{" "}
-                    {booking.tijd}
+                    {boeking.services?.naam ?? "—"} ·{" "}
+                    {format(parseDatum(boeking.datum), "d MMM", { locale: nl })} ·{" "}
+                    {normaliseerTijd(boeking.tijd)}
                   </p>
                 </div>
-                <Badge variant={statusVariant[booking.status]} className="rounded-full capitalize">
-                  {booking.status}
+                <Badge variant={statusVariant[boeking.status]} className="rounded-full">
+                  {statusLabel[boeking.status]}
                 </Badge>
               </div>
             ))

@@ -1,13 +1,14 @@
 import { Reveal } from "./Reveal";
+import { DAGEN, DEFAULT_OPENINGSTIJDEN } from "@/lib/opening-hours";
+import type { PubliekeInstellingen } from "@/api/settings";
 
-const hours = [
-  { day: "Maandag", time: "Gesloten" },
-  { day: "Dinsdag – Vrijdag", time: "09:00 – 18:00" },
-  { day: "Zaterdag", time: "09:00 – 17:00" },
-  { day: "Zondag", time: "Gesloten" },
-];
+export function Contact({ instellingen }: { instellingen?: PubliekeInstellingen }) {
+  const openingstijden = instellingen?.openingstijden ?? DEFAULT_OPENINGSTIJDEN;
+  const adresRegels = (instellingen?.adres ?? "Straatnaam 00, 0000 AA Plaatsnaam")
+    .split(",")
+    .map((regel) => regel.trim())
+    .filter(Boolean);
 
-export function Contact() {
   return (
     <section id="contact" className="bg-background py-24 sm:py-32">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:items-center">
@@ -37,19 +38,17 @@ export function Contact() {
                   Adres
                 </p>
                 <p className="mt-3 text-base leading-relaxed text-foreground">
-                  Straatnaam 00
-                  <br />
-                  0000 AA Plaatsnaam
-                  <br />
-                  Nederland
+                  {adresRegels.map((regel, i) => (
+                    <span key={i} className="block">
+                      {regel}
+                    </span>
+                  ))}
                 </p>
                 <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   Contact
                 </p>
                 <p className="mt-3 text-base text-foreground">
-                  06 00 00 00 00
-                  <br />
-                  hallo@voorbeeld.nl
+                  {instellingen?.telefoonnummer ?? "06 00 00 00 00"}
                 </p>
               </div>
 
@@ -58,15 +57,20 @@ export function Contact() {
                   Openingstijden
                 </p>
                 <ul className="mt-3 space-y-2.5">
-                  {hours.map((h) => (
-                    <li
-                      key={h.day}
-                      className="flex items-baseline justify-between gap-4 border-b border-border pb-2.5 text-sm"
-                    >
-                      <span className="text-foreground">{h.day}</span>
-                      <span className="text-muted-foreground">{h.time}</span>
-                    </li>
-                  ))}
+                  {DAGEN.map((dag) => {
+                    const tijden = openingstijden[dag];
+                    return (
+                      <li
+                        key={dag}
+                        className="flex items-baseline justify-between gap-4 border-b border-border pb-2.5 text-sm"
+                      >
+                        <span className="capitalize text-foreground">{dag}</span>
+                        <span className="text-muted-foreground">
+                          {tijden.open ? `${tijden.van} – ${tijden.tot}` : "Gesloten"}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <div className="mt-6 flex gap-2">
                   {["IG", "FB", "TT"].map((s) => (

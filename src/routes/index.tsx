@@ -8,6 +8,8 @@ import { Booking } from "@/components/site/Booking";
 import { Testimonials } from "@/components/site/Testimonials";
 import { Contact } from "@/components/site/Contact";
 import { Footer } from "@/components/site/Footer";
+import { fetchActiveServices } from "@/api/services";
+import { fetchPublicSettings } from "@/api/settings";
 
 const title = "BARBER — Premium barbershop";
 const description =
@@ -24,21 +26,40 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  // Server-side geladen, zodat diensten en openingstijden meteen in de HTML staan.
+  loader: async () => ({
+    diensten: await fetchActiveServices(),
+    instellingen: await fetchPublicSettings(),
+  }),
   component: Index,
 });
 
 function Index() {
+  const { diensten, instellingen } = Route.useLoaderData();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
         <Hero />
-        <Services />
-        <About />
-        <Gallery />
+        <Services diensten={diensten} />
+        <section className="py-24 sm:py-32">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <About />
+          </div>
+        </section>
+        <section className="pb-24 sm:pb-32">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <Gallery limit={6} />
+          </div>
+        </section>
         <Booking />
-        <Testimonials />
-        <Contact />
+        <section className="py-24 sm:py-32">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <Testimonials />
+          </div>
+        </section>
+        <Contact instellingen={instellingen} />
       </main>
       <Footer />
     </div>
