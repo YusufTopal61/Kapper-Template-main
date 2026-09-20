@@ -495,7 +495,10 @@ function Bevestiging({
             <dt className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {label}
             </dt>
-            <dd className="text-sm font-semibold capitalize text-foreground">{waarde}</dd>
+            {/* Alleen de eerste letter: in het Nederlands zijn maandnamen kleingeschreven. */}
+            <dd className="text-sm font-semibold text-foreground first-letter:uppercase">
+              {waarde}
+            </dd>
           </div>
         ))}
       </dl>

@@ -102,7 +102,7 @@ function AnnuleerPagina() {
                     <dt className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                       {label}
                     </dt>
-                    <dd className="text-right text-sm font-semibold capitalize text-foreground">
+                    <dd className="text-right text-sm font-semibold text-foreground first-letter:uppercase">
                       {waarde}
                     </dd>
                   </div>
