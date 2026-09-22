@@ -11,16 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AlgemeneVoorwaardenRouteImport } from './routes/algemene-voorwaarden'
 import { Route as BoekenRouteImport } from './routes/boeken'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DienstenRouteImport } from './routes/diensten'
 import { Route as GalerijRouteImport } from './routes/galerij'
 import { Route as OverOnsRouteImport } from './routes/over-ons'
+import { Route as PrivacybeleidRouteImport } from './routes/privacybeleid'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminBoekingenRouteImport } from './routes/admin/boekingen'
 import { Route as AdminDienstenRouteImport } from './routes/admin/diensten'
 import { Route as AdminInstellingenRouteImport } from './routes/admin/instellingen'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as BoekenIndexRouteImport } from './routes/boeken.index'
+import { Route as BoekenBevestigdRouteImport } from './routes/boeken.bevestigd'
 import { Route as BoekingAnnulerenBookingIdRouteImport } from './routes/boeking/annuleren/$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -31,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlgemeneVoorwaardenRoute = AlgemeneVoorwaardenRouteImport.update({
+  id: '/algemene-voorwaarden',
+  path: '/algemene-voorwaarden',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BoekenRoute = BoekenRouteImport.update({
@@ -58,6 +67,11 @@ const OverOnsRoute = OverOnsRouteImport.update({
   path: '/over-ons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacybeleidRoute = PrivacybeleidRouteImport.update({
+  id: '/privacybeleid',
+  path: '/privacybeleid',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -83,6 +97,16 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const BoekenIndexRoute = BoekenIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BoekenRoute,
+} as any)
+const BoekenBevestigdRoute = BoekenBevestigdRouteImport.update({
+  id: '/bevestigd',
+  path: '/bevestigd',
+  getParentRoute: () => BoekenRoute,
+} as any)
 const BoekingAnnulerenBookingIdRoute =
   BoekingAnnulerenBookingIdRouteImport.update({
     id: '/boeking/annuleren/$bookingId',
@@ -93,46 +117,57 @@ const BoekingAnnulerenBookingIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
-  '/boeken': typeof BoekenRoute
+  '/algemene-voorwaarden': typeof AlgemeneVoorwaardenRoute
+  '/boeken': typeof BoekenRouteWithChildren
   '/contact': typeof ContactRoute
   '/diensten': typeof DienstenRoute
   '/galerij': typeof GalerijRoute
   '/over-ons': typeof OverOnsRoute
+  '/privacybeleid': typeof PrivacybeleidRoute
   '/admin/boekingen': typeof AdminBoekingenRoute
   '/admin/diensten': typeof AdminDienstenRoute
   '/admin/instellingen': typeof AdminInstellingenRoute
   '/admin/login': typeof AdminLoginRoute
+  '/boeken/bevestigd': typeof BoekenBevestigdRoute
   '/admin/': typeof AdminIndexRoute
+  '/boeken/': typeof BoekenIndexRoute
   '/boeking/annuleren/$bookingId': typeof BoekingAnnulerenBookingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/boeken': typeof BoekenRoute
+  '/algemene-voorwaarden': typeof AlgemeneVoorwaardenRoute
   '/contact': typeof ContactRoute
   '/diensten': typeof DienstenRoute
   '/galerij': typeof GalerijRoute
   '/over-ons': typeof OverOnsRoute
+  '/privacybeleid': typeof PrivacybeleidRoute
   '/admin/boekingen': typeof AdminBoekingenRoute
   '/admin/diensten': typeof AdminDienstenRoute
   '/admin/instellingen': typeof AdminInstellingenRoute
   '/admin/login': typeof AdminLoginRoute
+  '/boeken/bevestigd': typeof BoekenBevestigdRoute
   '/admin': typeof AdminIndexRoute
+  '/boeken': typeof BoekenIndexRoute
   '/boeking/annuleren/$bookingId': typeof BoekingAnnulerenBookingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
-  '/boeken': typeof BoekenRoute
+  '/algemene-voorwaarden': typeof AlgemeneVoorwaardenRoute
+  '/boeken': typeof BoekenRouteWithChildren
   '/contact': typeof ContactRoute
   '/diensten': typeof DienstenRoute
   '/galerij': typeof GalerijRoute
   '/over-ons': typeof OverOnsRoute
+  '/privacybeleid': typeof PrivacybeleidRoute
   '/admin/boekingen': typeof AdminBoekingenRoute
   '/admin/diensten': typeof AdminDienstenRoute
   '/admin/instellingen': typeof AdminInstellingenRoute
   '/admin/login': typeof AdminLoginRoute
+  '/boeken/bevestigd': typeof BoekenBevestigdRoute
   '/admin/': typeof AdminIndexRoute
+  '/boeken/': typeof BoekenIndexRoute
   '/boeking/annuleren/$bookingId': typeof BoekingAnnulerenBookingIdRoute
 }
 export interface FileRouteTypes {
@@ -140,56 +175,69 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/algemene-voorwaarden'
     | '/boeken'
     | '/contact'
     | '/diensten'
     | '/galerij'
     | '/over-ons'
+    | '/privacybeleid'
     | '/admin/boekingen'
     | '/admin/diensten'
     | '/admin/instellingen'
     | '/admin/login'
+    | '/boeken/bevestigd'
     | '/admin/'
+    | '/boeken/'
     | '/boeking/annuleren/$bookingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/boeken'
+    | '/algemene-voorwaarden'
     | '/contact'
     | '/diensten'
     | '/galerij'
     | '/over-ons'
+    | '/privacybeleid'
     | '/admin/boekingen'
     | '/admin/diensten'
     | '/admin/instellingen'
     | '/admin/login'
+    | '/boeken/bevestigd'
     | '/admin'
+    | '/boeken'
     | '/boeking/annuleren/$bookingId'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/algemene-voorwaarden'
     | '/boeken'
     | '/contact'
     | '/diensten'
     | '/galerij'
     | '/over-ons'
+    | '/privacybeleid'
     | '/admin/boekingen'
     | '/admin/diensten'
     | '/admin/instellingen'
     | '/admin/login'
+    | '/boeken/bevestigd'
     | '/admin/'
+    | '/boeken/'
     | '/boeking/annuleren/$bookingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
-  BoekenRoute: typeof BoekenRoute
+  AlgemeneVoorwaardenRoute: typeof AlgemeneVoorwaardenRoute
+  BoekenRoute: typeof BoekenRouteWithChildren
   ContactRoute: typeof ContactRoute
   DienstenRoute: typeof DienstenRoute
   GalerijRoute: typeof GalerijRoute
   OverOnsRoute: typeof OverOnsRoute
+  PrivacybeleidRoute: typeof PrivacybeleidRoute
   BoekingAnnulerenBookingIdRoute: typeof BoekingAnnulerenBookingIdRoute
 }
 
@@ -207,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/algemene-voorwaarden': {
+      id: '/algemene-voorwaarden'
+      path: '/algemene-voorwaarden'
+      fullPath: '/algemene-voorwaarden'
+      preLoaderRoute: typeof AlgemeneVoorwaardenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/boeken': {
@@ -244,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OverOnsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacybeleid': {
+      id: '/privacybeleid'
+      path: '/privacybeleid'
+      fullPath: '/privacybeleid'
+      preLoaderRoute: typeof PrivacybeleidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -279,6 +341,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/boeken/': {
+      id: '/boeken/'
+      path: '/'
+      fullPath: '/boeken/'
+      preLoaderRoute: typeof BoekenIndexRouteImport
+      parentRoute: typeof BoekenRoute
+    }
+    '/boeken/bevestigd': {
+      id: '/boeken/bevestigd'
+      path: '/bevestigd'
+      fullPath: '/boeken/bevestigd'
+      preLoaderRoute: typeof BoekenBevestigdRouteImport
+      parentRoute: typeof BoekenRoute
+    }
     '/boeking/annuleren/$bookingId': {
       id: '/boeking/annuleren/$bookingId'
       path: '/boeking/annuleren/$bookingId'
@@ -309,14 +385,29 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface BoekenRouteChildren {
+  BoekenBevestigdRoute: typeof BoekenBevestigdRoute
+  BoekenIndexRoute: typeof BoekenIndexRoute
+}
+
+const BoekenRouteChildren: BoekenRouteChildren = {
+  BoekenBevestigdRoute: BoekenBevestigdRoute,
+  BoekenIndexRoute: BoekenIndexRoute,
+}
+
+const BoekenRouteWithChildren =
+  BoekenRoute._addFileChildren(BoekenRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
-  BoekenRoute: BoekenRoute,
+  AlgemeneVoorwaardenRoute: AlgemeneVoorwaardenRoute,
+  BoekenRoute: BoekenRouteWithChildren,
   ContactRoute: ContactRoute,
   DienstenRoute: DienstenRoute,
   GalerijRoute: GalerijRoute,
   OverOnsRoute: OverOnsRoute,
+  PrivacybeleidRoute: PrivacybeleidRoute,
   BoekingAnnulerenBookingIdRoute: BoekingAnnulerenBookingIdRoute,
 }
 export const routeTree = rootRouteImport

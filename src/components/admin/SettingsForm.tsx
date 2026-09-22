@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, TriangleAlert } from "lucide-react";
+import { Check, Loader2, Mail, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { fetchAdminSettings, saveAdminSettings } from "@/api/settings";
+import { fetchAdminSettings, fetchEmailStatus, saveAdminSettings } from "@/api/settings";
 import { settingsInputSchema } from "@/lib/validation";
 import { DAGEN, DEFAULT_OPENINGSTIJDEN } from "@/lib/opening-hours";
 import type { Openingstijden } from "@/lib/supabase/types";
@@ -27,6 +27,11 @@ export function SettingsForm() {
   const instellingen = useQuery({
     queryKey: ["settings", "admin"],
     queryFn: () => fetchAdminSettings(),
+  });
+
+  const emailStatus = useQuery({
+    queryKey: ["settings", "email-status"],
+    queryFn: () => fetchEmailStatus(),
   });
 
   // Serverdata één keer in het formulier zetten; daarna is het formulier leidend.
@@ -106,6 +111,44 @@ export function SettingsForm() {
             <span className="font-semibold">Vul je e-mailadres in.</span> Zonder notificatie-adres
             ontvang je geen melding wanneer er een nieuwe afspraak binnenkomt.
           </p>
+        </div>
+      ) : null}
+
+      {emailStatus.data?.sandboxModus ? (
+        <div className="flex items-start gap-3 border border-destructive/40 bg-destructive/10 px-4 py-3">
+          <Mail className="mt-0.5 size-4 shrink-0 text-destructive" />
+          <div className="text-sm text-foreground">
+            <p>
+              <span className="font-semibold">E-mail staat in testmodus.</span>{" "}
+              {emailStatus.data.geconfigureerd ? (
+                <>
+                  Klanten krijgen <span className="font-semibold">geen</span> bevestigings- of
+                  annuleringsmail — Resend levert vanaf{" "}
+                  <code className="rounded bg-muted px-1">{emailStatus.data.vanAdres}</code> alleen
+                  af bij het adres van je eigen Resend-account. Alleen jij als beheerder ontvangt
+                  wel mail.
+                </>
+              ) : (
+                <>
+                  Er is nog geen RESEND_API_KEY ingesteld — mails worden nu nergens naartoe
+                  gestuurd.
+                </>
+              )}
+            </p>
+            <p className="mt-2">
+              Verifieer een domein op{" "}
+              <a
+                href="https://resend.com/domains"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold underline underline-offset-2"
+              >
+                resend.com/domains
+              </a>{" "}
+              en zet <code className="rounded bg-muted px-1">RESEND_FROM</code> op een adres van dat
+              domein om klanten écht te bereiken.
+            </p>
+          </div>
         </div>
       ) : null}
 

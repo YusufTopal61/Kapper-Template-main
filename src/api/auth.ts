@@ -53,7 +53,7 @@ export const signIn = createServerFn({ method: "POST" })
   .handler(
     async ({ data }): Promise<{ ok: true; email: string } | { ok: false; error: string }> => {
       const ip = getRequestIP({ xForwardedFor: true }) ?? "onbekend";
-      const limiet = rateLimit(`login:${ip}`, { max: 10, vensterMs: 15 * 60 * 1000 });
+      const limiet = rateLimit(`login:${ip}`, { max: 5, vensterMs: 15 * 60 * 1000 });
 
       if (!limiet.toegestaan) {
         return {

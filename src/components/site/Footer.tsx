@@ -34,9 +34,16 @@ export function Footer() {
             ))}
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} [Brand name]. Alle rechten voorbehouden.</p>
-          <p>Straatnaam 00 · 0000 AA Plaatsnaam</p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link to="/privacybeleid" className="transition-colors hover:text-foreground">
+              Privacybeleid
+            </Link>
+            <Link to="/algemene-voorwaarden" className="transition-colors hover:text-foreground">
+              Algemene voorwaarden
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

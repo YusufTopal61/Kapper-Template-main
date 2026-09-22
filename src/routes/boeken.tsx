@@ -1,31 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/site/Navbar";
-import { Booking } from "@/components/site/Booking";
-import { Footer } from "@/components/site/Footer";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-const title = "Boeken — BARBER";
-const description = "Kies je behandeling, pak een tijdslot en klaar. Bevestiging volgt direct.";
-
+// Pure pass-through layout: /boeken en /boeken/bevestigd hebben elk hun eigen
+// volledige pagina (geen gedeelde chrome), maar TanStack Router vereist een
+// Outlet op dit segment zodat /boeken/bevestigd niet als kind onzichtbaar blijft.
 export const Route = createFileRoute("/boeken")({
-  head: () => ({
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-    ],
-  }),
-  component: BoekenPage,
+  component: () => <Outlet />,
 });
-
-function BoekenPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-24 sm:pt-28">
-        <Booking />
-      </main>
-      <Footer />
-    </div>
-  );
-}

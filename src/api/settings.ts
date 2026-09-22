@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { settingsInputSchema } from "@/lib/validation";
 import { DEFAULT_OPENINGSTIJDEN } from "@/lib/opening-hours";
+import { controleerEmailStatus } from "@/lib/email/status.server";
 import type { Openingstijden } from "@/lib/supabase/types";
 import { leesInstellingen, requireAdmin } from "./common.server";
 
@@ -64,6 +65,16 @@ export const fetchAdminSettings = createServerFn({ method: "GET" }).handler(asyn
     // Stuurt de UI aan die vraagt om een notificatie-adres in te vullen.
     emailIngesteld: Boolean(data?.admin_email),
   };
+});
+
+/**
+ * Vertelt de beheerder of klantmails daadwerkelijk aankomen, of dat Resend
+ * ze stilletjes weigert omdat er nog geen domein geverifieerd is. Zie
+ * lib/email/status.server.ts voor waarom dit gecontroleerd wordt.
+ */
+export const fetchEmailStatus = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  return controleerEmailStatus();
 });
 
 export const saveAdminSettings = createServerFn({ method: "POST" })

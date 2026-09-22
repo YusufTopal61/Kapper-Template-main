@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { addDays, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Check, Loader2, TriangleAlert } from "lucide-react";
@@ -23,6 +24,7 @@ const euro = (prijs: number) =>
   new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(prijs);
 
 export function Booking() {
+  const router = useRouter();
   const [stap, setStap] = useState(0);
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [datum, setDatum] = useState<string | null>(null);
@@ -68,7 +70,22 @@ export function Booking() {
   const boeking = useMutation({
     mutationFn: createBooking,
     onSuccess: (resultaat) => {
-      if (!resultaat.ok) setFormulierFout(resultaat.error);
+      if (!resultaat.ok) {
+        setFormulierFout(resultaat.error);
+        return;
+      }
+      // Eigen bedankpagina i.p.v. inline wisselen — herbruikbaar als
+      // analytics-conversiedoel en werkt correct met de terug-knop.
+      router.navigate({
+        to: "/boeken/bevestigd",
+        search: {
+          dienst: resultaat.boeking.dienstNaam,
+          datum: resultaat.boeking.datum,
+          tijd: resultaat.boeking.tijd,
+          email: resultaat.boeking.klant_email,
+          mail: resultaat.emailVerzonden,
+        },
+      });
     },
     onError: () => setFormulierFout("Er ging iets mis bij het versturen. Probeer het zo nog eens."),
   });
@@ -112,8 +129,6 @@ export function Booking() {
     boeking.mutate({ data: resultaat.data });
   }
 
-  const gelukt = boeking.data?.ok === true ? boeking.data : null;
-
   return (
     <section id="boeken" className="bg-ink py-24 text-ink-foreground sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
@@ -131,134 +146,122 @@ export function Booking() {
 
           <Reveal delay={0.1}>
             <div className="rounded-3xl bg-background p-6 text-foreground shadow-lift sm:p-8">
-              {gelukt ? (
-                <Bevestiging
-                  dienstNaam={gelukt.boeking.dienstNaam}
-                  datum={gelukt.boeking.datum}
-                  tijd={gelukt.boeking.tijd}
-                  email={gelukt.boeking.klant_email}
-                  emailVerzonden={gelukt.emailVerzonden}
-                />
-              ) : (
-                <>
-                  <ol className="flex items-center gap-3">
-                    {STAPPEN.map((label, i) => (
-                      <li key={label} className="flex flex-1 items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              "flex size-7 items-center justify-center rounded-full text-xs font-bold transition-colors",
-                              i < stap
-                                ? "bg-accent text-accent-foreground"
-                                : i === stap
-                                  ? "bg-foreground text-background"
-                                  : "bg-muted text-muted-foreground",
-                            )}
-                          >
-                            {i < stap ? <Check className="size-3.5" /> : i + 1}
-                          </span>
-                          <span
-                            className={cn(
-                              "hidden text-xs font-semibold uppercase tracking-widest sm:block",
-                              i === stap ? "text-foreground" : "text-muted-foreground",
-                            )}
-                          >
-                            {label}
-                          </span>
-                        </div>
-                        {i < STAPPEN.length - 1 ? <span className="h-px flex-1 bg-border" /> : null}
-                      </li>
-                    ))}
-                  </ol>
-
-                  <div className="mt-8 min-h-[236px]">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={stap}
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -16 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              <ol className="flex items-center gap-3">
+                {STAPPEN.map((label, i) => (
+                  <li key={label} className="flex flex-1 items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "flex size-7 items-center justify-center rounded-full text-xs font-bold transition-colors",
+                          i < stap
+                            ? "bg-accent text-accent-foreground"
+                            : i === stap
+                              ? "bg-foreground text-background"
+                              : "bg-muted text-muted-foreground",
+                        )}
                       >
-                        {stap === 0 ? (
-                          <DienstStap
-                            laden={diensten.isLoading}
-                            fout={diensten.isError}
-                            diensten={diensten.data ?? []}
-                            gekozen={serviceId}
-                            onKies={(id) => {
-                              setServiceId(id);
-                              setTijd(null);
-                            }}
-                          />
-                        ) : null}
+                        {i < stap ? <Check className="size-3.5" /> : i + 1}
+                      </span>
+                      <span
+                        className={cn(
+                          "hidden text-xs font-semibold uppercase tracking-widest sm:block",
+                          i === stap ? "text-foreground" : "text-muted-foreground",
+                        )}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                    {i < STAPPEN.length - 1 ? <span className="h-px flex-1 bg-border" /> : null}
+                  </li>
+                ))}
+              </ol>
 
-                        {stap === 1 ? (
-                          <DatumStap
-                            dagen={beschikbareDagen}
-                            datum={datum}
-                            tijd={tijd}
-                            onKiesDatum={(d) => {
-                              setDatum(d);
-                              setTijd(null);
-                            }}
-                            onKiesTijd={setTijd}
-                            sloten={sloten.data?.sloten ?? []}
-                            slotenLaden={sloten.isFetching}
-                            gesloten={sloten.data?.gesloten ?? false}
-                          />
-                        ) : null}
+              <div className="mt-8 min-h-[236px]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={stap}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    {stap === 0 ? (
+                      <DienstStap
+                        laden={diensten.isLoading}
+                        fout={diensten.isError}
+                        diensten={diensten.data ?? []}
+                        gekozen={serviceId}
+                        onKies={(id) => {
+                          setServiceId(id);
+                          setTijd(null);
+                        }}
+                      />
+                    ) : null}
 
-                        {stap === 2 ? (
-                          <GegevensStap
-                            velden={velden}
-                            fouten={veldFouten}
-                            onWijzig={(veld, waarde) => {
-                              setVelden((v) => ({ ...v, [veld]: waarde }));
-                              setVeldFouten((f) => ({ ...f, [veld]: undefined }));
-                            }}
-                            samenvatting={{
-                              dienst: gekozenDienst?.naam ?? "Dienst",
-                              datum,
-                              tijd,
-                            }}
-                          />
-                        ) : null}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
+                    {stap === 1 ? (
+                      <DatumStap
+                        dagen={beschikbareDagen}
+                        datum={datum}
+                        tijd={tijd}
+                        onKiesDatum={(d) => {
+                          setDatum(d);
+                          setTijd(null);
+                        }}
+                        onKiesTijd={setTijd}
+                        sloten={sloten.data?.sloten ?? []}
+                        slotenLaden={sloten.isFetching}
+                        gesloten={sloten.data?.gesloten ?? false}
+                      />
+                    ) : null}
 
-                  {formulierFout ? (
-                    <p className="mt-4 flex items-start gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-                      {formulierFout}
-                    </p>
-                  ) : null}
+                    {stap === 2 ? (
+                      <GegevensStap
+                        velden={velden}
+                        fouten={veldFouten}
+                        onWijzig={(veld, waarde) => {
+                          setVelden((v) => ({ ...v, [veld]: waarde }));
+                          setVeldFouten((f) => ({ ...f, [veld]: undefined }));
+                        }}
+                        samenvatting={{
+                          dienst: gekozenDienst?.naam ?? "Dienst",
+                          datum,
+                          tijd,
+                        }}
+                      />
+                    ) : null}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-                  <div className="mt-8 flex items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setStap((s) => Math.max(0, s - 1))}
-                      disabled={stap === 0 || boeking.isPending}
-                      className="rounded-full px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-                    >
-                      Terug
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (stap === STAPPEN.length - 1) valideerEnVerstuur();
-                        else setStap((s) => s + 1);
-                      }}
-                      disabled={!magVerder || boeking.isPending}
-                      className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-semibold text-accent-foreground shadow-accent transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-40 disabled:shadow-none disabled:hover:translate-y-0"
-                    >
-                      {boeking.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                      {stap === STAPPEN.length - 1 ? "Bevestigen" : "Volgende"}
-                    </button>
-                  </div>
-                </>
-              )}
+              {formulierFout ? (
+                <p className="mt-4 flex items-start gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+                  {formulierFout}
+                </p>
+              ) : null}
+
+              <div className="mt-8 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStap((s) => Math.max(0, s - 1))}
+                  disabled={stap === 0 || boeking.isPending}
+                  className="rounded-full px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+                >
+                  Terug
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (stap === STAPPEN.length - 1) valideerEnVerstuur();
+                    else setStap((s) => s + 1);
+                  }}
+                  disabled={!magVerder || boeking.isPending}
+                  className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-semibold text-accent-foreground shadow-accent transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-40 disabled:shadow-none disabled:hover:translate-y-0"
+                >
+                  {boeking.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {stap === STAPPEN.length - 1 ? "Bevestigen" : "Volgende"}
+                </button>
+              </div>
             </div>
           </Reveal>
         </div>
@@ -452,72 +455,6 @@ function GegevensStap({
         · {samenvatting.tijd ?? "tijd"}
       </div>
     </div>
-  );
-}
-
-function Bevestiging({
-  dienstNaam,
-  datum,
-  tijd,
-  email,
-  emailVerzonden,
-}: {
-  dienstNaam: string;
-  datum: string;
-  tijd: string;
-  email: string;
-  emailVerzonden: boolean;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="py-4 text-center"
-    >
-      <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-foreground text-background">
-        <Check className="size-6" />
-      </div>
-      <h3 className="mt-6 font-display text-2xl font-bold tracking-tight">
-        Je afspraak staat genoteerd
-      </h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Tot dan — we zorgen dat de stoel klaarstaat.
-      </p>
-
-      <dl className="mx-auto mt-7 max-w-sm divide-y divide-border border-y border-border text-left">
-        {[
-          ["Dienst", dienstNaam],
-          ["Datum", format(new Date(datum), "EEEE d MMMM yyyy", { locale: nl })],
-          ["Tijd", tijd],
-        ].map(([label, waarde]) => (
-          <div key={label} className="flex items-baseline justify-between gap-4 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {label}
-            </dt>
-            {/* Alleen de eerste letter: in het Nederlands zijn maandnamen kleingeschreven. */}
-            <dd className="text-sm font-semibold text-foreground first-letter:uppercase">
-              {waarde}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      <p className="mt-6 text-sm text-muted-foreground">
-        {emailVerzonden ? (
-          <>
-            De bevestiging is onderweg naar{" "}
-            <span className="font-semibold text-foreground">{email}</span>. Daarin staat ook een
-            link om te annuleren.
-          </>
-        ) : (
-          <>
-            Je afspraak staat vast. De bevestigingsmail kon nog niet verstuurd worden — noteer het
-            moment even voor de zekerheid.
-          </>
-        )}
-      </p>
-    </motion.div>
   );
 }
 

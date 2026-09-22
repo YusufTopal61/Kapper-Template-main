@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   Loader2,
   LogOut,
+  Mail,
   Scissors,
   Settings,
   TriangleAlert,
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/api/auth";
-import { fetchAdminSettings } from "@/api/settings";
+import { fetchAdminSettings, fetchEmailStatus } from "@/api/settings";
 
 const adminNav = [
   { label: "Overzicht", to: "/admin", icon: LayoutGrid },
@@ -42,6 +43,13 @@ export function AdminShell({ children, email }: { children: ReactNode; email: st
   const instellingen = useQuery({
     queryKey: ["settings", "admin"],
     queryFn: () => fetchAdminSettings(),
+  });
+
+  const emailStatus = useQuery({
+    queryKey: ["settings", "email-status"],
+    queryFn: () => fetchEmailStatus(),
+    // Roept de Resend API aan; niet nodig om dat bij elke navigatie te herhalen.
+    staleTime: 5 * 60 * 1000,
   });
 
   const uitloggen = useMutation({
@@ -125,6 +133,23 @@ export function AdminShell({ children, email }: { children: ReactNode; email: st
               className="ml-auto rounded-full bg-background px-4 py-1.5 text-xs font-semibold text-foreground transition-opacity hover:opacity-85"
             >
               Nu instellen
+            </Link>
+          </div>
+        ) : null}
+
+        {emailStatus.data?.sandboxModus ? (
+          <div className="flex flex-wrap items-center gap-3 border-b border-border bg-destructive px-4 py-3 text-destructive-foreground sm:px-6">
+            <Mail className="size-4 shrink-0" />
+            <p className="text-sm">
+              E-mail staat in testmodus:{" "}
+              <span className="font-semibold">klanten krijgen geen bevestigingsmail.</span>{" "}
+              Verifieer een domein bij Resend om dit op te lossen.
+            </p>
+            <Link
+              to="/admin/instellingen"
+              className="ml-auto rounded-full bg-background px-4 py-1.5 text-xs font-semibold text-foreground transition-opacity hover:opacity-85"
+            >
+              Meer info
             </Link>
           </div>
         ) : null}

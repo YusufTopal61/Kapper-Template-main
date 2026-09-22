@@ -9,6 +9,14 @@ const tijdSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "Ongeldige tijd. Verwacht formaat: UU:MM.");
 
+/** RFC 5321 staat maximaal 254 tekens toe — een langere string is sowieso geen geldig adres. */
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254, "Dit e-mailadres is te lang.")
+  .email("Vul een geldig e-mailadres in.");
+
 /**
  * Nederlands telefoonnummer, tolerant voor spaties, streepjes en +31.
  * 0612345678, 06 12 34 56 78, +31 6 12345678 en 010-1234567 zijn allemaal goed.
@@ -17,6 +25,7 @@ const telefoonSchema = z
   .string()
   .trim()
   .min(1, "Vul je telefoonnummer in.")
+  .max(30, "Dit telefoonnummer is te lang.")
   .refine((waarde) => {
     const cijfers = waarde.replace(/[\s-().]/g, "");
     return /^(\+31|0031|0)[1-9]\d{8}$/.test(cijfers);
@@ -25,7 +34,7 @@ const telefoonSchema = z
 export const bookingInputSchema = z.object({
   service_id: z.string().uuid("Kies een geldige dienst."),
   klant_naam: z.string().trim().min(2, "Vul je naam in.").max(120, "Deze naam is te lang."),
-  klant_email: z.string().trim().toLowerCase().email("Vul een geldig e-mailadres in."),
+  klant_email: emailSchema,
   klant_telefoon: telefoonSchema,
   datum: datumSchema,
   tijd: tijdSchema,
@@ -35,7 +44,8 @@ export type BookingInput = z.infer<typeof bookingInputSchema>;
 
 export const cancelByTokenSchema = z.object({
   bookingId: z.string().uuid(),
-  token: z.string().min(16, "Ongeldige annuleerlink."),
+  // Het gegenereerde token is 64 hex-tekens; ruim boven die lengte is nooit geldig.
+  token: z.string().min(16, "Ongeldige annuleerlink.").max(128, "Ongeldige annuleerlink."),
 });
 
 export const serviceInputSchema = z.object({
@@ -76,11 +86,7 @@ export const openingstijdenSchema = z
 
 export const settingsInputSchema = z.object({
   bedrijfsnaam: z.string().trim().min(1, "Vul een bedrijfsnaam in.").max(120),
-  admin_email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email("Vul een geldig e-mailadres in.")
+  admin_email: emailSchema
     .or(z.literal(""))
     .transform((waarde) => waarde || null)
     .nullable(),
@@ -107,7 +113,7 @@ export const adminBookingUpdateSchema = z.object({
   id: z.string().uuid(),
   service_id: z.string().uuid().optional(),
   klant_naam: z.string().trim().min(2).max(120).optional(),
-  klant_email: z.string().trim().toLowerCase().email().optional(),
+  klant_email: emailSchema.optional(),
   klant_telefoon: telefoonSchema.optional(),
   datum: datumSchema.optional(),
   tijd: tijdSchema.optional(),
@@ -118,8 +124,13 @@ export const adminBookingUpdateSchema = z.object({
 export const bookingIdSchema = z.object({ id: z.string().uuid() });
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Vul een geldig e-mailadres in."),
-  password: z.string().min(8, "Wachtwoord moet minimaal 8 tekens zijn."),
+  email: emailSchema,
+  // Bovengrens tegen een long-password DoS: extreem lange input maakt het
+  // hash-algoritme van Supabase Auth onnodig duur om te verwerken.
+  password: z
+    .string()
+    .min(8, "Wachtwoord moet minimaal 8 tekens zijn.")
+    .max(128, "Wachtwoord mag maximaal 128 tekens zijn."),
 });
 
 export const beschikbareSlotenSchema = z.object({

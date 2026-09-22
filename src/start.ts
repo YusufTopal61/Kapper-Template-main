@@ -1,4 +1,5 @@
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 
 import { renderErrorPage } from "./lib/error-page";
 
@@ -17,6 +18,19 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+// Ruim boven de grootste geldige server-function payload (de instellingen-
+// update met alle openingstijden is de zwaarste, ruim onder 5 KB). Weigert
+// misvormde of te grote request-bodies vóórdat ze geparsed worden.
+const MAX_REQUEST_BODY_BYTES = 100 * 1024;
+
+const bodySizeMiddleware = createMiddleware().server(async ({ next }) => {
+  const contentLength = getRequestHeader("content-length");
+  if (contentLength && Number(contentLength) > MAX_REQUEST_BODY_BYTES) {
+    return new Response("Payload too large", { status: 413 });
+  }
+  return next();
+});
+
 // Start installs this automatically when src/start.ts is absent; defining the
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
@@ -25,5 +39,5 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [bodySizeMiddleware, errorMiddleware, csrfMiddleware],
 }));
