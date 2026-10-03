@@ -30,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Tijdelijke map met oude bestanden, kan weg
+_te-verwijderen/
+.next
+next-env.d.ts
+*.tsbuildinfo

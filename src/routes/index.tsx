@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/site/Navbar";
-import { Hero } from "@/components/site/Hero";
-import { Services } from "@/components/site/Services";
-import { About } from "@/components/site/About";
-import { Gallery } from "@/components/site/Gallery";
-import { Booking } from "@/components/site/Booking";
-import { Testimonials } from "@/components/site/Testimonials";
-import { Contact } from "@/components/site/Contact";
-import { Footer } from "@/components/site/Footer";
-import { fetchActiveServices } from "@/api/services";
-import { fetchPublicSettings } from "@/api/settings";
+import { Navbar } from "@/modules/site/presentation/Navbar";
+import { Hero } from "@/modules/site/presentation/Hero";
+import { ServicesSection } from "@/modules/services/presentation/ServicesSection";
+import { About } from "@/modules/site/presentation/About";
+import { Gallery } from "@/modules/site/presentation/Gallery";
+import { BookingWizard } from "@/modules/booking/presentation/BookingWizard";
+import { Testimonials } from "@/modules/site/presentation/Testimonials";
+import { ContactSection } from "@/modules/settings/presentation/ContactSection";
+import { Footer } from "@/modules/site/presentation/Footer";
+import { fetchActiveServices } from "@/modules/services/business/services.actions";
+import { fetchPublicSettings } from "@/modules/settings/business/settings.actions";
 
 const title = "BARBER — Premium barbershop";
 const description =
@@ -42,7 +42,7 @@ function Index() {
       <Navbar />
       <main>
         <Hero />
-        <Services diensten={diensten} />
+        <ServicesSection diensten={diensten} />
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <About />
@@ -53,13 +53,13 @@ function Index() {
             <Gallery limit={6} />
           </div>
         </section>
-        <Booking />
+        <BookingWizard />
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Testimonials />
           </div>
         </section>
-        <Contact instellingen={instellingen} />
+        <ContactSection instellingen={instellingen} />
       </main>
       <Footer />
     </div>
