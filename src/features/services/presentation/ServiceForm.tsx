@@ -4,102 +4,102 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { Button } from "@/app/ui/button";
-import { Input } from "@/app/ui/input";
-import { Label } from "@/app/ui/label";
-import { Textarea } from "@/app/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { serviceInputSchema, type ServiceInput } from "../domain/service.schema";
 
-type FormulierWaarden = z.input<typeof serviceInputSchema>;
+type FormValues = z.input<typeof serviceInputSchema>;
 
 type ServiceFormProps = {
   /** Beginwaarden; leeg voor een nieuwe dienst. */
-  begin?: FormulierWaarden;
-  bezig: boolean;
-  onOpslaan: (waarden: ServiceInput) => void;
-  onAnnuleer: () => void;
+  initialValues?: FormValues;
+  isPending: boolean;
+  onSave: (values: ServiceInput) => void;
+  onCancel: () => void;
 };
 
-const LEGE_DIENST: FormulierWaarden = {
-  naam: "",
-  beschrijving: "",
-  prijs: 0,
-  duur_minuten: 30,
-  actief: true,
+const EMPTY_SERVICE: FormValues = {
+  name: "",
+  description: "",
+  price: 0,
+  durationMinutes: 30,
+  isActive: true,
 };
 
 /** Formulier om een dienst aan te maken of te wijzigen. Valideert met hetzelfde schema als de server. */
 export function ServiceForm({
-  begin = LEGE_DIENST,
-  bezig,
-  onOpslaan,
-  onAnnuleer,
+  initialValues = EMPTY_SERVICE,
+  isPending,
+  onSave,
+  onCancel,
 }: ServiceFormProps) {
-  const { register, handleSubmit, formState } = useForm<FormulierWaarden, unknown, ServiceInput>({
+  const { register, handleSubmit, formState } = useForm<FormValues, unknown, ServiceInput>({
     resolver: zodResolver(serviceInputSchema),
-    defaultValues: begin,
+    defaultValues: initialValues,
   });
   const { errors } = formState;
 
   return (
     <form
-      onSubmit={handleSubmit(onOpslaan)}
+      onSubmit={handleSubmit(onSave)}
       noValidate
       className="flex flex-col gap-3 border border-foreground bg-card p-5"
     >
       <div className="grid gap-1.5">
-        <Label htmlFor="dienst-naam">Naam</Label>
+        <Label htmlFor="service-name">Naam</Label>
         <Input
-          id="dienst-naam"
+          id="service-name"
           className="rounded-none"
           placeholder="Bijv. Knippen"
-          aria-invalid={Boolean(errors.naam)}
-          {...register("naam")}
+          aria-invalid={Boolean(errors.name)}
+          {...register("name")}
         />
-        {errors.naam ? <p className="text-xs text-destructive">{errors.naam.message}</p> : null}
+        {errors.name ? <p className="text-xs text-destructive">{errors.name.message}</p> : null}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="dienst-prijs">Prijs (€)</Label>
+          <Label htmlFor="service-price">Prijs (€)</Label>
           <Input
-            id="dienst-prijs"
+            id="service-price"
             type="number"
             min="0"
             step="0.50"
             className="rounded-none"
-            aria-invalid={Boolean(errors.prijs)}
-            {...register("prijs", { valueAsNumber: true })}
+            aria-invalid={Boolean(errors.price)}
+            {...register("price", { valueAsNumber: true })}
           />
-          {errors.prijs ? <p className="text-xs text-destructive">{errors.prijs.message}</p> : null}
+          {errors.price ? <p className="text-xs text-destructive">{errors.price.message}</p> : null}
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="dienst-duur">Duur (min)</Label>
+          <Label htmlFor="service-duration">Duur (min)</Label>
           <Input
-            id="dienst-duur"
+            id="service-duration"
             type="number"
             min="5"
             step="5"
             className="rounded-none"
-            aria-invalid={Boolean(errors.duur_minuten)}
-            {...register("duur_minuten", { valueAsNumber: true })}
+            aria-invalid={Boolean(errors.durationMinutes)}
+            {...register("durationMinutes", { valueAsNumber: true })}
           />
-          {errors.duur_minuten ? (
-            <p className="text-xs text-destructive">{errors.duur_minuten.message}</p>
+          {errors.durationMinutes ? (
+            <p className="text-xs text-destructive">{errors.durationMinutes.message}</p>
           ) : null}
         </div>
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="dienst-beschrijving">Beschrijving</Label>
+        <Label htmlFor="service-description">Beschrijving</Label>
         <Textarea
-          id="dienst-beschrijving"
+          id="service-description"
           className="rounded-none"
           rows={3}
-          {...register("beschrijving")}
+          {...register("description")}
         />
-        {errors.beschrijving ? (
-          <p className="text-xs text-destructive">{errors.beschrijving.message}</p>
+        {errors.description ? (
+          <p className="text-xs text-destructive">{errors.description.message}</p>
         ) : null}
       </div>
 
@@ -109,14 +109,14 @@ export function ServiceForm({
           variant="outline"
           size="sm"
           className="rounded-none"
-          disabled={bezig}
-          onClick={onAnnuleer}
+          disabled={isPending}
+          onClick={onCancel}
         >
           <X className="size-3.5" />
           Annuleren
         </Button>
-        <Button type="submit" size="sm" className="gap-1.5 rounded-none" disabled={bezig}>
-          {bezig ? <Loader2 className="size-3.5 animate-spin" /> : null}
+        <Button type="submit" size="sm" className="gap-1.5 rounded-none" disabled={isPending}>
+          {isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
           Opslaan
         </Button>
       </div>

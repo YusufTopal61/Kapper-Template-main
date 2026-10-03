@@ -4,19 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Cookie } from "lucide-react";
-import { useCookieConsent } from "@/modules/site/presentation/use-cookie-consent";
+import { useCookieConsent } from "@/hooks/use-cookie-consent";
 
 export function CookieConsent() {
-  const { status, klaar, accepteer, weiger } = useCookieConsent();
+  const { status, ready, accept, decline } = useCookieConsent();
   const pathname = usePathname();
 
   // Geen cookiebanner in het beheerpaneel — dat is geen publieke pagina.
   const isAdmin = pathname.startsWith("/admin");
-  const zichtbaar = klaar && status === "onbekend" && !isAdmin;
+  const visible = ready && status === "unknown" && !isAdmin;
 
   return (
     <AnimatePresence>
-      {zichtbaar ? (
+      {visible ? (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -43,14 +43,14 @@ export function CookieConsent() {
             <div className="flex shrink-0 gap-2">
               <button
                 type="button"
-                onClick={weiger}
+                onClick={decline}
                 className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 Weigeren
               </button>
               <button
                 type="button"
-                onClick={accepteer}
+                onClick={accept}
                 className="rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-85"
               >
                 Accepteren

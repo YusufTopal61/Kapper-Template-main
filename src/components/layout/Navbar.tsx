@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { boekenLink, hoofdNavigatie } from "@/shared/config/navigation";
-import { siteConfig } from "@/shared/config/site";
-import { cn } from "@/shared/lib/utils";
+import { bookingLink, mainNavigation } from "@/config/navigation";
+import { siteConfig } from "@/config/site";
+import { cn } from "@/lib/utils/cn";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -21,11 +21,11 @@ export function Navbar() {
             href="/"
             className="mr-2 whitespace-nowrap font-display text-xs font-bold uppercase tracking-[0.3em] text-foreground sm:mr-4"
           >
-            {siteConfig.merknaam}
+            {siteConfig.brandName}
           </Link>
 
           <nav className="hidden items-center gap-0.5 md:flex">
-            {hoofdNavigatie.map((link) => (
+            {mainNavigation.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -42,7 +42,7 @@ export function Navbar() {
           </nav>
 
           <Link
-            href={boekenLink.href}
+            href={bookingLink.href}
             className="group ml-1 hidden items-center gap-1.5 rounded-full bg-foreground py-1.5 pl-4 pr-1.5 text-sm font-medium tracking-tight text-background transition-opacity hover:opacity-85 md:inline-flex"
           >
             Boeken
@@ -71,7 +71,7 @@ export function Navbar() {
               className="mt-2 w-60 origin-top overflow-hidden rounded-2xl border border-border bg-background shadow-lift md:hidden"
             >
               <div className="flex flex-col gap-1 p-2">
-                {hoofdNavigatie.map((link) => (
+                {mainNavigation.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
@@ -87,7 +87,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 <Link
-                  href={boekenLink.href}
+                  href={bookingLink.href}
                   onClick={() => setOpen(false)}
                   className="mt-1 rounded-xl bg-foreground px-4 py-2.5 text-center text-sm font-medium text-background"
                 >

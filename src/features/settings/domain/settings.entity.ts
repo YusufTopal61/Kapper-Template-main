@@ -1,44 +1,44 @@
-export type Dag =
-  "maandag" | "dinsdag" | "woensdag" | "donderdag" | "vrijdag" | "zaterdag" | "zondag";
+export type Weekday =
+  "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 
-export type DagOpeningstijd = {
+export type DayOpeningHours = {
   open: boolean;
-  van: string;
-  tot: string;
+  from: string;
+  to: string;
 };
 
-export type Openingstijden = Record<Dag, DagOpeningstijd>;
+export type OpeningHours = Record<Weekday, DayOpeningHours>;
 
 /** De bedrijfsgegevens van de zaak, zoals het domein ze kent. */
 export type BusinessSettings = {
-  bedrijfsnaam: string;
-  admin_email: string | null;
-  telefoonnummer: string | null;
-  adres: string | null;
-  openingstijden: Openingstijden;
+  businessName: string;
+  adminEmail: string | null;
+  phoneNumber: string | null;
+  address: string | null;
+  openingHours: OpeningHours;
 };
 
 /** Wat een bezoeker mag zien — bewust zonder admin_email. */
-export type PubliekeInstellingen = Pick<
+export type PublicSettings = Pick<
   BusinessSettings,
-  "bedrijfsnaam" | "adres" | "telefoonnummer" | "openingstijden"
+  "businessName" | "address" | "phoneNumber" | "openingHours"
 >;
 
 /** Wat het beheerformulier nodig heeft. */
-export type AdminInstellingen = BusinessSettings & {
+export type AdminSettings = BusinessSettings & {
   /** Stuurt de prompt aan die vraagt om een notificatie-adres in te vullen. */
-  emailIngesteld: boolean;
+  emailConfigured: boolean;
 };
 
 export type EmailStatus = {
   /** Staat er een RESEND_API_KEY? Zonder key worden mails alleen gelogd. */
-  geconfigureerd: boolean;
+  configured: boolean;
   /**
    * true = Resend staat nog in testmodus: mails komen alleen aan bij het eigen
    * Resend-accountadres, niet bij echte klanten. De meest voorkomende manier
    * waarop "waterdichte" e-mail alsnog stil faalt.
    */
-  sandboxModus: boolean;
-  vanAdres: string;
-  geverifieerdeDomeinen: string[];
+  sandboxMode: boolean;
+  fromAddress: string;
+  verifiedDomains: string[];
 };

@@ -1,17 +1,17 @@
 "use client";
 
 import { Loader2, Lock, TriangleAlert } from "lucide-react";
-import { Button } from "@/app/ui/button";
-import { Input } from "@/app/ui/input";
-import { Label } from "@/app/ui/label";
-import { useLoginForm } from "./useLoginForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useLoginForm } from "./use-login-form";
 
 /** Het inlogscherm van het beheerpaneel. */
-export function LoginForm({ supabaseGeconfigureerd }: { supabaseGeconfigureerd: boolean }) {
-  const { form, fout, bezig, verstuur, wisFout } = useLoginForm();
+export function LoginForm({ supabaseConfigured }: { supabaseConfigured: boolean }) {
+  const { form, error, isPending, submit, clearError } = useLoginForm();
   const { register, formState } = form;
 
-  if (!supabaseGeconfigureerd) {
+  if (!supabaseConfigured) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lift">
@@ -36,7 +36,7 @@ export function LoginForm({ supabaseGeconfigureerd }: { supabaseGeconfigureerd: 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <form
-        onSubmit={verstuur}
+        onSubmit={submit}
         noValidate
         className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-lift"
       >
@@ -60,7 +60,7 @@ export function LoginForm({ supabaseGeconfigureerd }: { supabaseGeconfigureerd: 
               placeholder="naam@voorbeeld.nl"
               className="rounded-lg"
               aria-invalid={Boolean(formState.errors.email)}
-              {...register("email", { onChange: wisFout })}
+              {...register("email", { onChange: clearError })}
             />
             {formState.errors.email ? (
               <p className="text-xs text-destructive">{formState.errors.email.message}</p>
@@ -68,15 +68,15 @@ export function LoginForm({ supabaseGeconfigureerd }: { supabaseGeconfigureerd: 
           </div>
 
           <div className="grid gap-1.5">
-            <Label htmlFor="wachtwoord">Wachtwoord</Label>
+            <Label htmlFor="password">Wachtwoord</Label>
             <Input
-              id="wachtwoord"
+              id="password"
               type="password"
               autoComplete="current-password"
               placeholder="••••••••"
               className="rounded-lg"
               aria-invalid={Boolean(formState.errors.password)}
-              {...register("password", { onChange: wisFout })}
+              {...register("password", { onChange: clearError })}
             />
             {formState.errors.password ? (
               <p className="text-xs text-destructive">{formState.errors.password.message}</p>
@@ -84,15 +84,15 @@ export function LoginForm({ supabaseGeconfigureerd }: { supabaseGeconfigureerd: 
           </div>
         </div>
 
-        {fout ? (
+        {error ? (
           <p className="mt-4 flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
             <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-            {fout}
+            {error}
           </p>
         ) : null}
 
-        <Button type="submit" disabled={bezig} className="mt-6 w-full gap-2 rounded-lg">
-          {bezig ? <Loader2 className="size-4 animate-spin" /> : null}
+        <Button type="submit" disabled={isPending} className="mt-6 w-full gap-2 rounded-lg">
+          {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
           Inloggen
         </Button>
       </form>

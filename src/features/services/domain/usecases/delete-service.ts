@@ -1,4 +1,4 @@
-import type { AdminGuard } from "@/modules/auth/domain/auth.gateway";
+import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
 import type { ServiceRepository } from "../service.repository";
 
 /** Beheer: verwijderen mag alleen als er geen boekingen aan hangen; die historie houden we. */
@@ -7,9 +7,9 @@ export async function deleteService(
   id: string,
 ) {
   await deps.assertAdmin();
-  const uitkomst = await deps.repo.remove(id);
+  const outcome = await deps.repo.remove(id);
 
-  if (!uitkomst.ok) {
+  if (!outcome.ok) {
     return {
       ok: false as const,
       error:

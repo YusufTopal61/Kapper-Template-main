@@ -1,30 +1,30 @@
 import type { Metadata } from "next";
-import { About } from "@/modules/site/presentation/About";
-import { CtaBanner } from "@/modules/site/presentation/CtaBanner";
-import { PageHeader } from "@/modules/site/presentation/PageHeader";
-import { siteConfig } from "@/shared/config/site";
-import { getSiteUrl } from "@/shared/lib/env.server";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
-import { breadcrumbJsonLd } from "@/shared/seo/structured-data";
+import { About } from "@/features/marketing/presentation/About";
+import { CtaBanner } from "@/features/marketing/presentation/CtaBanner";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { siteConfig } from "@/config/site";
+import { getSiteUrl } from "@/lib/env.server";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
-const TITEL = "Over ons";
-const BESCHRIJVING =
+const TITLE = "Over ons";
+const DESCRIPTION =
   "Wat begon als een kleine zaak met twee stoelen, groeide uit tot een plek waar mannen terugkomen voor meer dan een knipbeurt.";
 
-export const metadata: Metadata = maakMetadata({
-  titel: TITEL,
-  beschrijving: BESCHRIJVING,
-  pad: "/over-ons",
+export const metadata: Metadata = buildMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: "/over-ons",
 });
 
-export default function OverOnsPage() {
+export default function AboutPage() {
   return (
     <>
       <JsonLd
         data={breadcrumbJsonLd(getSiteUrl(), [
-          { naam: siteConfig.merknaam, pad: "/" },
-          { naam: TITEL, pad: "/over-ons" },
+          { name: siteConfig.brandName, path: "/" },
+          { name: TITLE, path: "/over-ons" },
         ])}
       />
       <main>

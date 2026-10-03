@@ -6,9 +6,9 @@ import type { BookingMailData } from "./booking.entity";
  */
 export interface BookingNotifier {
   /** Geeft terug of de bevestiging aan de klant daadwerkelijk is verzonden. */
-  bookingCreated(boeking: BookingMailData): Promise<{ klantMailVerzonden: boolean }>;
-  bookingCancelled(boeking: BookingMailData, door: "klant" | "beheerder"): Promise<void>;
-  bookingRescheduled(boeking: BookingMailData): Promise<void>;
+  bookingCreated(booking: BookingMailData): Promise<{ customerMailSent: boolean }>;
+  bookingCancelled(booking: BookingMailData, by: "customer" | "admin"): Promise<void>;
+  bookingRescheduled(booking: BookingMailData): Promise<void>;
 }
 
 /** Poort naar toevalswaarden, zodat use cases deterministisch te testen zijn. */

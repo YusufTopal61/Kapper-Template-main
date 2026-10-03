@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { boekenLink, hoofdNavigatie, juridischeLinks } from "@/shared/config/navigation";
-import { siteConfig } from "@/shared/config/site";
+import { bookingLink, mainNavigation, legalLinks } from "@/config/navigation";
+import { siteConfig } from "@/config/site";
 
 export function Footer() {
   return (
@@ -11,10 +11,10 @@ export function Footer() {
             href="/"
             className="font-display text-sm font-bold uppercase tracking-[0.35em] text-foreground"
           >
-            {siteConfig.merknaam}
+            {siteConfig.brandName}
           </Link>
           <nav className="flex flex-wrap gap-x-7 gap-y-3">
-            {[...hoofdNavigatie, boekenLink].map((item) => (
+            {[...mainNavigation, bookingLink].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -37,10 +37,10 @@ export function Footer() {
         </div>
         <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {siteConfig.merknaam}. Alle rechten voorbehouden.
+            © {new Date().getFullYear()} {siteConfig.brandName}. Alle rechten voorbehouden.
           </p>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
-            {juridischeLinks.map((link) => (
+            {legalLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

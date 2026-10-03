@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Footer } from "@/modules/site/presentation/Footer";
-import { Navbar } from "@/modules/site/presentation/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 
 /** Het kader van alle publieke pagina's. Elke pagina levert zelf haar <main>. */
 export default function SiteLayout({ children }: { children: ReactNode }) {

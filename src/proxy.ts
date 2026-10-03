@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { supabaseAnonKey, supabaseUrl } from "@/shared/lib/env";
+import { supabaseAnonKey, supabaseUrl } from "@/lib/env";
 
 const LOGIN_PAD = "/admin/login";
 
@@ -14,12 +14,12 @@ const LOGIN_PAD = "/admin/login";
  * controleert het opnieuw in de use case (assertAdmin) en in Row Level Security.
  */
 export async function proxy(request: NextRequest) {
-  const opLoginPagina = request.nextUrl.pathname === LOGIN_PAD;
+  const onLoginPage = request.nextUrl.pathname === LOGIN_PAD;
   let response = NextResponse.next({ request });
 
   // Zonder Supabase-configuratie legt de loginpagina uit wat er nog mist.
   if (!supabaseUrl || !supabaseAnonKey) {
-    return opLoginPagina ? response : NextResponse.redirect(new URL(LOGIN_PAD, request.url));
+    return onLoginPage ? response : NextResponse.redirect(new URL(LOGIN_PAD, request.url));
   }
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -32,8 +32,7 @@ export async function proxy(request: NextRequest) {
           response.cookies.set(name, value, options);
         }
         // Voorkomt dat een CDN een response mét auth-cookies cachet en aan een andere bezoeker serveert.
-        for (const [sleutel, waarde] of Object.entries(headers))
-          response.headers.set(sleutel, waarde);
+        for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
       },
     },
   });
@@ -42,7 +41,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !opLoginPagina) {
+  if (!user && !onLoginPage) {
     return NextResponse.redirect(new URL(LOGIN_PAD, request.url));
   }
 

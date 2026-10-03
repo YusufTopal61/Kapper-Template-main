@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { maakMetadata } from "./metadata";
+import { buildMetadata } from "./metadata";
 
 describe("maakMetadata", () => {
   it("zet canonical, Open Graph en Twitter op dezelfde pagina", () => {
-    const metadata = maakMetadata({
-      titel: "Diensten",
-      beschrijving: "Beschrijving",
-      pad: "/diensten",
+    const metadata = buildMetadata({
+      title: "Diensten",
+      description: "Beschrijving",
+      path: "/diensten",
     });
 
     expect(metadata.alternates?.canonical).toBe("/diensten");
@@ -18,11 +18,11 @@ describe("maakMetadata", () => {
   });
 
   it("plakt de merknaam niet dubbel achter een titel die hem al bevat", () => {
-    const metadata = maakMetadata({
-      titel: "BARBER — Premium barbershop",
-      beschrijving: "x",
-      pad: "/",
-      metMerknaam: false,
+    const metadata = buildMetadata({
+      title: "BARBER — Premium barbershop",
+      description: "x",
+      path: "/",
+      withBrandName: false,
     });
 
     expect(metadata.openGraph).toMatchObject({ title: "BARBER — Premium barbershop" });
@@ -30,11 +30,11 @@ describe("maakMetadata", () => {
 
   it("houdt pagina's die niet in Google horen uit de index", () => {
     expect(
-      maakMetadata({ titel: "x", beschrijving: "x", pad: "/x", nietIndexeren: true }).robots,
+      buildMetadata({ title: "x", description: "x", path: "/x", noIndex: true }).robots,
     ).toEqual({
       index: false,
       follow: false,
     });
-    expect(maakMetadata({ titel: "x", beschrijving: "x", pad: "/x" }).robots).toBeUndefined();
+    expect(buildMetadata({ title: "x", description: "x", path: "/x" }).robots).toBeUndefined();
   });
 });

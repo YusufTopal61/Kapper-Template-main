@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
-import { nietIndexeren } from "@/shared/config/navigation";
-import { getSiteUrl } from "@/shared/lib/env.server";
+import { noIndex } from "@/config/navigation";
+import { getSiteUrl } from "@/lib/env.server";
 
 export default function robots(): MetadataRoute.Robots {
-  const basis = getSiteUrl();
+  const base = getSiteUrl();
 
   return {
-    rules: { userAgent: "*", allow: "/", disallow: [...nietIndexeren] },
-    ...(basis ? { sitemap: `${basis}/sitemap.xml`, host: basis } : {}),
+    rules: { userAgent: "*", allow: "/", disallow: [...noIndex] },
+    ...(base ? { sitemap: `${base}/sitemap.xml`, host: base } : {}),
   };
 }

@@ -1,6 +1,6 @@
-import type { AdminGuard } from "@/modules/auth/domain/auth.gateway";
-import type { ServiceRepository } from "@/modules/services/domain/service.repository";
-import type { SettingsRepository } from "@/modules/settings/domain/settings.repository";
+import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
+import type { ServiceRepository } from "@/features/services/domain/service.repository";
+import type { SettingsRepository } from "@/features/settings/domain/settings.repository";
 import type { BookingNotifier, IdGenerator } from "./booking.ports";
 import type { BookingRepository } from "./booking.repository";
 

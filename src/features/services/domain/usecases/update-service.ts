@@ -1,4 +1,4 @@
-import type { AdminGuard } from "@/modules/auth/domain/auth.gateway";
+import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
 import type { ServiceUpdate } from "../service.schema";
 import type { ServiceRepository } from "../service.repository";
 

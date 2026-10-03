@@ -1,31 +1,31 @@
 import "server-only";
-import { metDefaults } from "@/modules/settings/domain/settings.rules";
-import type { SettingsRepository } from "@/modules/settings/domain/settings.repository";
+import { withDefaults } from "@/features/settings/domain/settings.rules";
+import type { SettingsRepository } from "@/features/settings/domain/settings.repository";
 import type { BookingNotifier } from "../domain/booking.ports";
 import type { BookingMailData } from "../domain/booking.entity";
-import { adminBoekingUrl, annuleerUrl, opnieuwBoekenUrl } from "./links";
-import { verstuurEmails } from "./mailer";
+import { adminBookingsUrl, cancelUrl, bookAgainUrl } from "./links";
+import { sendEmails } from "./mailer";
 import {
-  afspraakGewijzigdKlant,
-  annuleringAdmin,
-  annuleringBevestigdKlant,
-  boekingsbevestigingKlant,
-  nieuweBoekingAdmin,
-  type EmailBedrijf,
+  appointmentChangedCustomer,
+  cancellationAdmin,
+  cancellationConfirmedCustomer,
+  bookingConfirmationCustomer,
+  newBookingAdmin,
+  type EmailBusiness,
   type EmailBooking,
 } from "./mail-templates";
 
-function naarEmailBooking(boeking: BookingMailData): EmailBooking {
+function toEmailBooking(booking: BookingMailData): EmailBooking {
   return {
-    id: boeking.id,
-    klant_naam: boeking.klant_naam,
-    klant_email: boeking.klant_email,
-    klant_telefoon: boeking.klant_telefoon,
-    datum: boeking.datum,
-    tijd: boeking.tijd,
-    dienstNaam: boeking.dienstNaam,
-    prijs: boeking.prijs,
-    duurMinuten: boeking.duurMinuten,
+    id: booking.id,
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    customerPhone: booking.customerPhone,
+    date: booking.date,
+    time: booking.time,
+    serviceName: booking.serviceName,
+    price: booking.price,
+    durationMinutes: booking.durationMinutes,
   };
 }
 
@@ -38,53 +38,53 @@ export function createResendBookingNotifier(deps: {
   settings: Pick<SettingsRepository, "read">;
 }): BookingNotifier {
   async function context() {
-    const instellingen = metDefaults(await deps.settings.read());
-    const bedrijf: EmailBedrijf = {
-      bedrijfsnaam: instellingen.bedrijfsnaam,
-      adres: instellingen.adres,
-      telefoonnummer: instellingen.telefoonnummer,
+    const settings = withDefaults(await deps.settings.read());
+    const business: EmailBusiness = {
+      businessName: settings.businessName,
+      address: settings.address,
+      phoneNumber: settings.phoneNumber,
     };
-    return { bedrijf, adminEmail: instellingen.admin_email };
+    return { business, adminEmail: settings.adminEmail };
   }
 
   return {
-    async bookingCreated(boeking) {
+    async bookingCreated(booking) {
       try {
-        const { bedrijf, adminEmail } = await context();
-        const mail = naarEmailBooking(boeking);
+        const { business, adminEmail } = await context();
+        const mail = toEmailBooking(booking);
 
-        const resultaten = await verstuurEmails([
+        const results = await sendEmails([
           {
-            naar: boeking.klant_email,
-            inhoud: boekingsbevestigingKlant(
+            to: booking.customerEmail,
+            content: bookingConfirmationCustomer(
               mail,
-              bedrijf,
-              await annuleerUrl(boeking.id, boeking.annuleer_token),
+              business,
+              await cancelUrl(booking.id, booking.cancelToken),
             ),
           },
-          { naar: adminEmail, inhoud: nieuweBoekingAdmin(mail, bedrijf, await adminBoekingUrl()) },
+          { to: adminEmail, content: newBookingAdmin(mail, business, await adminBookingsUrl()) },
         ]);
 
-        return { klantMailVerzonden: resultaten[0]?.status === "verzonden" };
+        return { customerMailSent: results[0]?.status === "sent" };
       } catch (error) {
         console.error("[booking] bevestigingsmails versturen mislukt:", error);
-        return { klantMailVerzonden: false };
+        return { customerMailSent: false };
       }
     },
 
-    async bookingCancelled(boeking, door) {
+    async bookingCancelled(booking, by) {
       try {
-        const { bedrijf, adminEmail } = await context();
-        const mail = naarEmailBooking(boeking);
+        const { business, adminEmail } = await context();
+        const mail = toEmailBooking(booking);
 
-        await verstuurEmails([
+        await sendEmails([
           {
-            naar: boeking.klant_email,
-            inhoud: annuleringBevestigdKlant(mail, bedrijf, await opnieuwBoekenUrl()),
+            to: booking.customerEmail,
+            content: cancellationConfirmedCustomer(mail, business, await bookAgainUrl()),
           },
           {
-            naar: adminEmail,
-            inhoud: annuleringAdmin(mail, bedrijf, await adminBoekingUrl(), door === "klant"),
+            to: adminEmail,
+            content: cancellationAdmin(mail, business, await adminBookingsUrl(), by === "customer"),
           },
         ]);
       } catch (error) {
@@ -92,17 +92,17 @@ export function createResendBookingNotifier(deps: {
       }
     },
 
-    async bookingRescheduled(boeking) {
+    async bookingRescheduled(booking) {
       try {
-        const { bedrijf } = await context();
+        const { business } = await context();
 
-        await verstuurEmails([
+        await sendEmails([
           {
-            naar: boeking.klant_email,
-            inhoud: afspraakGewijzigdKlant(
-              naarEmailBooking(boeking),
-              bedrijf,
-              await annuleerUrl(boeking.id, boeking.annuleer_token),
+            to: booking.customerEmail,
+            content: appointmentChangedCustomer(
+              toEmailBooking(booking),
+              business,
+              await cancelUrl(booking.id, booking.cancelToken),
             ),
           },
         ]);

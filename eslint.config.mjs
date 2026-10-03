@@ -2,17 +2,18 @@ import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
-/**
- * Laaggrenzen (zie CLAUDE.md): imports wijzen naar binnen.
- *
- *   app/  →  presentation/  →  domain/  ←  data/
- *
- * Elk blok hieronder is een volledige set voor één laag. Ze overlappen niet,
- * want een tweede `no-restricted-imports` voor dezelfde bestanden vervangt de eerste.
- */
-const serverOnlyPad = {
+// Layer boundaries (see CLAUDE.md): imports point inward.
+//
+//   app  ->  feature presentation  ->  feature domain  <-  feature data
+//   components/ and lib/ are shared tooling and know nothing about features
+//   (the one exception is the composition root in lib/di).
+//
+// Every block below is a complete rule set for one group of files. They do
+// not overlap, because a second `no-restricted-imports` for the same files
+// replaces the first.
+const serverOnlyPath = {
   name: "server-only",
-  message: "Gebruik het pakket `server-only` alleen in data/, shared/lib/*.server.ts of app/di.",
+  message: "Use `server-only` only in data/, lib/*.server.ts or lib/di.",
 };
 
 const frameworks = [
@@ -28,8 +29,8 @@ const frameworks = [
   "date-fns",
 ];
 
-const laag = (melding, patterns, paths = []) => ({
-  "no-restricted-imports": ["error", { paths, patterns: [{ group: patterns, message: melding }] }],
+const layer = (message, patterns, paths = []) => ({
+  "no-restricted-imports": ["error", { paths, patterns: [{ group: patterns, message }] }],
 });
 
 const config = [
@@ -37,20 +38,10 @@ const config = [
     ignores: [
       ".next/**",
       "node_modules/**",
-      "_te-verwijderen/**",
-      "src/routes/**",
-      "src/router.tsx",
-      "src/routeTree.gen.ts",
-      "src/server.ts",
-      "src/start.ts",
-      "src/modules/*/container.server.ts",
-      "src/shared/lib/error-capture.ts",
-      "src/shared/lib/error-page.ts",
-      "src/shared/lib/lovable-error-reporting.ts",
-      "src/shared/lib/supabase/client.ts",
-      "src/**/_old-*",
-      "vite.config.ts",
+      "playwright-report/**",
+      "test-results/**",
       "next-env.d.ts",
+      "src/lib/supabase/database.types.ts",
     ],
   },
   ...nextVitals,
@@ -65,38 +56,45 @@ const config = [
     },
   },
 
-  // ---- domain: importeert niets behalve zod, zichzelf en het domain van andere modules
+  // ---- domain: imports nothing but zod, itself, the domain of other features and lib/validations
   {
-    files: ["src/modules/*/domain/**/*.ts"],
+    files: ["src/features/*/domain/**/*.ts"],
     ignores: ["**/*.test.ts"],
-    rules: laag(
-      "domain/ importeert niets behalve zod, eigen bestanden en het domain/ van andere modules. Geen framework, database of andere lagen.",
+    rules: layer(
+      "domain/ imports only zod, its own files, other features' domain/ and lib/validations. No framework, database or other layers.",
       [
         "**/data/**",
         "**/presentation/**",
         "@/app/**",
-        "@/modules/*/data/**",
-        "@/modules/*/presentation/**",
-        "@/shared/lib/**",
-        "@/shared/seo/**",
-        "@/shared/config/**",
+        "@/components/**",
+        "@/hooks/**",
+        "@/config/**",
+        "@/features/*/data/**",
+        "@/features/*/presentation/**",
+        "@/lib/env",
+        "@/lib/env.server",
+        "@/lib/utils/**",
+        "@/lib/seo/**",
+        "@/lib/supabase/**",
+        "@/lib/di/**",
         ...frameworks,
       ],
-      [serverOnlyPad],
+      [serverOnlyPath],
     ),
   },
 
-  // ---- data: kent alleen domain en externe diensten, nooit presentation of app
+  // ---- data: knows domain and external services, never presentation or app
   {
-    files: ["src/modules/*/data/**/*.ts"],
+    files: ["src/features/*/data/**/*.ts"],
     ignores: ["**/*.test.ts"],
-    rules: laag(
-      "data/ importeert alleen domain/. React, presentation/ en app/ zijn verboden terrein.",
+    rules: layer(
+      "data/ imports only domain/. React, presentation/, components/ and app/ are off limits.",
       [
         "**/presentation/**",
         "@/app/**",
-        "@/modules/*/presentation/**",
-        "@/modules/*/data/**",
+        "@/components/**",
+        "@/features/*/presentation/**",
+        "@/features/*/data/**",
         "react",
         "react-dom",
         "react-hook-form",
@@ -105,48 +103,57 @@ const config = [
     ),
   },
 
-  // ---- presentation (componenten en hooks): praat met actions en domain-types, nooit met data of de container
+  // ---- presentation (components and hooks): talks to actions and domain types, never to data or the container
   {
-    files: ["src/modules/*/presentation/**/*.{ts,tsx}"],
+    files: ["src/features/*/presentation/**/*.{ts,tsx}"],
     ignores: ["**/*.actions.ts", "**/admin-action.ts", "**/*.test.{ts,tsx}"],
-    rules: laag(
-      "Componenten en hooks raken data/, Supabase of de DI-container nooit aan. Gebruik een server action of laat de pagina de data meegeven.",
+    rules: layer(
+      "Components and hooks never touch data/, Supabase or the DI container. Use a server action or let the page pass the data in.",
       [
         "**/data/**",
-        "@/modules/*/data/**",
-        "@/app/di/**",
-        "@/shared/lib/supabase/**",
-        "@/shared/lib/*.server",
+        "@/features/*/data/**",
+        "@/lib/di/**",
+        "@/lib/supabase/**",
+        "@/lib/**/*.server",
         "@supabase/*",
         "resend",
       ],
-      [serverOnlyPad],
+      [serverOnlyPath],
     ),
   },
 
-  // ---- server actions: dunne laag; mogen de container gebruiken, nooit data/ rechtstreeks
+  // ---- server actions: thin layer; may use the container, never data/ directly
   {
     files: [
-      "src/modules/*/presentation/**/*.actions.ts",
-      "src/modules/*/presentation/admin-action.ts",
+      "src/features/*/presentation/**/*.actions.ts",
+      "src/features/*/presentation/admin-action.ts",
     ],
-    rules: laag(
-      "Een server action valideert, past rate limiting toe en roept een use case aan. Geen data/ of Supabase; bedrading hoort in app/di/container.ts.",
-      ["**/data/**", "@/modules/*/data/**", "@/shared/lib/supabase/**", "@supabase/*", "resend"],
+    rules: layer(
+      "A server action validates, rate limits and calls one use case. No data/ or Supabase; wiring belongs in lib/di/container.ts.",
+      ["**/data/**", "@/features/*/data/**", "@/lib/supabase/**", "@supabase/*", "resend"],
     ),
   },
 
-  // ---- shared: gereedschap, kent geen modules of app
+  // ---- shared components and hooks: know no feature internals
   {
-    files: ["src/shared/**/*.{ts,tsx}"],
-    ignores: ["**/*.test.{ts,tsx}"],
-    rules: laag(
-      "shared/ is gereedschap zonder kennis van modules of app/. Draai de afhankelijkheid om.",
-      ["@/modules/**", "@/app/**"],
+    files: ["src/components/**/*.{ts,tsx}", "src/hooks/**/*.{ts,tsx}"],
+    rules: layer(
+      "Shared components and hooks never reach into a feature's data/ or the DI container.",
+      ["@/features/*/data/**", "@/lib/di/**", "@/lib/supabase/**", "@supabase/*", "resend"],
     ),
   },
 
-  // ---- bewust een gewone <a> na een fout: schone pagina i.p.v. client-navigatie
+  // ---- lib: infrastructure without knowledge of features, components or app (except lib/di)
+  {
+    files: ["src/lib/**/*.{ts,tsx}"],
+    ignores: ["src/lib/di/**", "**/*.test.{ts,tsx}"],
+    rules: layer(
+      "lib/ is infrastructure and knows nothing about features, components or app/. Reverse the dependency.",
+      ["@/features/**", "@/components/**", "@/app/**"],
+    ),
+  },
+
+  // ---- plain <a> after an error: a clean page instead of client navigation
   {
     files: ["src/app/error.tsx"],
     rules: { "@next/next/no-html-link-for-pages": "off" },

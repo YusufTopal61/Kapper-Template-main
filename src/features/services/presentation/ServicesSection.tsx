@@ -2,15 +2,15 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { SectionHeading } from "@/app/ui/section-heading";
-import type { ServiceUIModel } from "./service.uimodel";
+import { SectionHeading } from "@/components/ui/section-heading";
+import type { ServiceUIModel } from "./service.ui-model";
 
 /** Afwisselende vlakken, zodat de kaarten ook zonder foto's ritme houden. */
-const BLOKKEN = ["block-fog", "block-accent", "block-fog", "block-mid"];
+const BLOCKS = ["block-fog", "block-accent", "block-fog", "block-mid"];
 
-export function ServicesSection({ diensten }: { diensten: ServiceUIModel[] }) {
+export function ServicesSection({ services }: { services: ServiceUIModel[] }) {
   return (
-    <section id="diensten" className="bg-background py-24 sm:py-32">
+    <section id="services" className="bg-background py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <SectionHeading
           eyebrow="Diensten"
@@ -18,15 +18,15 @@ export function ServicesSection({ diensten }: { diensten: ServiceUIModel[] }) {
           description="Geen eindeloze menukaart. Alleen wat we tot in de puntjes beheersen."
         />
 
-        {diensten.length === 0 ? (
+        {services.length === 0 ? (
           <p className="mt-14 rounded-lg border border-dashed border-border px-6 py-14 text-center text-sm text-muted-foreground">
             Er zijn op dit moment geen diensten beschikbaar.
           </p>
         ) : (
           <div className="mt-14 grid gap-5 md:grid-cols-3">
-            {diensten.map((dienst, i) => (
+            {services.map((service, i) => (
               <motion.article
-                key={dienst.id}
+                key={service.id}
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
@@ -35,28 +35,28 @@ export function ServicesSection({ diensten }: { diensten: ServiceUIModel[] }) {
                 className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-shadow duration-300 hover:shadow-lift"
               >
                 <div
-                  className={`h-32 ${BLOKKEN[i % BLOKKEN.length]} transition-transform duration-500 group-hover:scale-[1.04]`}
+                  className={`h-32 ${BLOCKS[i % BLOCKS.length]} transition-transform duration-500 group-hover:scale-[1.04]`}
                 />
                 <div className="flex flex-1 flex-col p-7">
                   <div className="flex items-baseline justify-between gap-4">
                     <h3 className="font-display text-xl font-bold tracking-tight text-card-foreground">
-                      {dienst.naam}
+                      {service.name}
                     </h3>
                     <span className="font-display text-lg font-bold text-accent">
-                      {dienst.prijsLabel}
+                      {service.priceLabel}
                     </span>
                   </div>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    {dienst.duurLabel}
+                    {service.durationLabel}
                   </p>
                   <p className="mt-4 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    {dienst.beschrijving}
+                    {service.description}
                   </p>
                   <Link
                     href="/boeken"
                     className="mt-6 inline-flex w-fit text-sm font-semibold text-foreground underline-offset-4 transition-colors hover:text-accent hover:underline"
                   >
-                    Reserveer {dienst.naam.toLowerCase()}
+                    Reserveer {service.name.toLowerCase()}
                   </Link>
                 </div>
               </motion.article>

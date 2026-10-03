@@ -1,4 +1,4 @@
-import type { AdminGuard } from "@/modules/auth/domain/auth.gateway";
+import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
 import type { SettingsRepository } from "../settings.repository";
 import type { SettingsInput } from "../settings.schema";
 

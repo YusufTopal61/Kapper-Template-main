@@ -8,8 +8,8 @@
  * lokale velden (getHours, getDate, …) tonen de Nederlandse tijd, precies zoals
  * de domeinregels ze lezen.
  */
-export function nuInAmsterdam(nu: Date = new Date()): Date {
-  const delen = new Intl.DateTimeFormat("sv-SE", {
+export function nowInAmsterdam(now: Date = new Date()): Date {
+  const parts = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Europe/Amsterdam",
     year: "numeric",
     month: "2-digit",
@@ -18,8 +18,8 @@ export function nuInAmsterdam(nu: Date = new Date()): Date {
     minute: "2-digit",
     second: "2-digit",
     hourCycle: "h23",
-  }).format(nu);
+  }).format(now);
 
   // "2026-09-08 10:15:00" → zonder tijdzone geparsed = lokale velden.
-  return new Date(delen.replace(" ", "T"));
+  return new Date(parts.replace(" ", "T"));
 }

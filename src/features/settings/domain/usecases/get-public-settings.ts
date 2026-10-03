@@ -1,5 +1,5 @@
 import type { SettingsRepository } from "../settings.repository";
-import { naarPubliekeInstellingen } from "../settings.rules";
+import { toPublicSettings } from "../settings.rules";
 
 /**
  * Instellingen voor publieke pagina's. De publieke site moet ook overeind
@@ -7,9 +7,9 @@ import { naarPubliekeInstellingen } from "../settings.rules";
  */
 export async function getPublicSettings(repo: Pick<SettingsRepository, "read">) {
   try {
-    return naarPubliekeInstellingen(await repo.read());
+    return toPublicSettings(await repo.read());
   } catch (error) {
     console.error("[settings] publieke instellingen ophalen mislukt:", error);
-    return naarPubliekeInstellingen(null);
+    return toPublicSettings(null);
   }
 }

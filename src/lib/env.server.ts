@@ -9,36 +9,39 @@ import { isSupabaseConfigured } from "./env";
  */
 
 /** Een lege string in .env.local betekent "niet ingesteld". */
-const leegIsUndefined = (waarde: unknown) => (waarde === "" ? undefined : waarde);
+const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
 
 const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string({ required_error: "ontbreekt" }).min(1, "ontbreekt"),
   /** Optioneel: zonder key worden mails gelogd in plaats van verstuurd. */
   RESEND_API_KEY: z.string().default(""),
-  RESEND_FROM: z.preprocess(leegIsUndefined, z.string().default("Barber <onboarding@resend.dev>")),
+  RESEND_FROM: z.preprocess(emptyToUndefined, z.string().default("Barber <onboarding@resend.dev>")),
   /** Publieke URL van de site: canonical, sitemap, Open Graph en links in e-mails. */
-  SITE_URL: z.preprocess(leegIsUndefined, z.string().url("moet een volledige URL zijn").optional()),
+  SITE_URL: z.preprocess(
+    emptyToUndefined,
+    z.string().url("moet een volledige URL zijn").optional(),
+  ),
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;
-let servercache: ServerEnv | undefined;
+let serverCache: ServerEnv | undefined;
 
 /** Server-only. Gooit één leesbare fout met álle ontbrekende of ongeldige variabelen. */
 export function getServerEnv(): ServerEnv {
-  if (servercache) return servercache;
+  if (serverCache) return serverCache;
 
-  const resultaat = serverSchema.safeParse(process.env);
-  if (!resultaat.success) {
-    const regels = Object.entries(resultaat.error.flatten().fieldErrors).map(
-      ([naam, fouten]) => `  - ${naam}: ${(fouten ?? []).join(", ")}`,
+  const result = serverSchema.safeParse(process.env);
+  if (!result.success) {
+    const lines = Object.entries(result.error.flatten().fieldErrors).map(
+      ([name, errors]) => `  - ${name}: ${(errors ?? []).join(", ")}`,
     );
     throw new Error(
-      `Ongeldige of ontbrekende omgevingsvariabelen (zie .env.example):\n${regels.join("\n")}`,
+      `Ongeldige of ontbrekende omgevingsvariabelen (zie .env.example):\n${lines.join("\n")}`,
     );
   }
 
-  servercache = resultaat.data;
-  return servercache;
+  serverCache = result.data;
+  return serverCache;
 }
 
 /**
@@ -46,27 +49,27 @@ export function getServerEnv(): ServerEnv {
  * variabele; in development waarschuwen we alleen, zodat de setup-melding in de
  * browser zichtbaar blijft.
  */
-export function controleerEnv(): void {
-  const problemen: string[] = [];
+export function validateEnv(): void {
+  const problems: string[] = [];
 
   try {
     const env = getServerEnv();
     if (process.env.NODE_ENV === "production" && !env.SITE_URL) {
-      problemen.push("  - SITE_URL: ontbreekt (nodig voor canonical, sitemap en links in e-mails)");
+      problems.push("  - SITE_URL: ontbreekt (nodig voor canonical, sitemap en links in e-mails)");
     }
   } catch (error) {
-    problemen.push(error instanceof Error ? error.message : String(error));
+    problems.push(error instanceof Error ? error.message : String(error));
   }
 
   if (!isSupabaseConfigured) {
-    problemen.push("  - NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY: ontbreken");
+    problems.push("  - NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY: ontbreken");
   }
 
-  if (problemen.length === 0) return;
+  if (problems.length === 0) return;
 
-  const bericht = `[env] configuratie onvolledig:\n${problemen.join("\n")}`;
-  if (process.env.NODE_ENV === "production") throw new Error(bericht);
-  console.warn(bericht);
+  const message = `[env] configuratie onvolledig:\n${problems.join("\n")}`;
+  if (process.env.NODE_ENV === "production") throw new Error(message);
+  console.warn(message);
 }
 
 export function requireServiceRoleKey() {
@@ -80,7 +83,7 @@ export function getResendConfig() {
 }
 
 const siteSchema = z.object({
-  SITE_URL: z.preprocess(leegIsUndefined, z.string().url().optional()),
+  SITE_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
 });
 
 /**
@@ -89,6 +92,6 @@ const siteSchema = z.object({
  * als een andere variabele nog ontbreekt.
  */
 export function getSiteUrl(): string {
-  const resultaat = siteSchema.safeParse(process.env);
-  return (resultaat.success ? (resultaat.data.SITE_URL ?? "") : "").replace(/\/+$/, "");
+  const result = siteSchema.safeParse(process.env);
+  return (result.success ? (result.data.SITE_URL ?? "") : "").replace(/\/+$/, "");
 }

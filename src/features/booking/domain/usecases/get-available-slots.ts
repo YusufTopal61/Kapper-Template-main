@@ -1,25 +1,25 @@
-import { metDefaults } from "@/modules/settings/domain/settings.rules";
+import { withDefaults } from "@/features/settings/domain/settings.rules";
 import type { BookingDeps } from "../booking.deps";
-import type { Tijdslot } from "../booking.entity";
-import { bepaalTijdsloten, naarBusyRanges } from "../booking.rules";
-import type { BeschikbareSlotenInput } from "../booking.schema";
+import type { TimeSlot } from "../booking.entity";
+import { getTimeSlots, toBusyRanges } from "../booking.rules";
+import type { AvailableSlotsInput } from "../booking.schema";
 
 /** Publiek: welke tijdsloten zijn er die dag nog vrij voor deze dienst? */
 export async function getAvailableSlots(
   deps: Pick<BookingDeps, "bookings" | "services" | "settings" | "now">,
-  input: BeschikbareSlotenInput,
-): Promise<{ sloten: Tijdslot[]; gesloten: boolean }> {
-  const dienst = await deps.services.findById(input.service_id);
-  if (!dienst || !dienst.actief) return { sloten: [], gesloten: true };
+  input: AvailableSlotsInput,
+): Promise<{ slots: TimeSlot[]; closed: boolean }> {
+  const service = await deps.services.findById(input.serviceId);
+  if (!service || !service.isActive) return { slots: [], closed: true };
 
-  const { openingstijden } = metDefaults(await deps.settings.read());
-  const bezet = naarBusyRanges(await deps.bookings.listBusy(input.datum));
+  const { openingHours } = withDefaults(await deps.settings.read());
+  const busy = toBusyRanges(await deps.bookings.listBusy(input.date));
 
-  return bepaalTijdsloten({
-    openingstijden,
-    datum: input.datum,
-    duurMinuten: dienst.duur_minuten,
-    bezet,
-    ...(deps.now ? { nu: deps.now() } : {}),
+  return getTimeSlots({
+    openingHours,
+    date: input.date,
+    durationMinutes: service.durationMinutes,
+    busy,
+    ...(deps.now ? { now: deps.now() } : {}),
   });
 }

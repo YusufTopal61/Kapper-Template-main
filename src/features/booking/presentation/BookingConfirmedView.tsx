@@ -1,21 +1,21 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { formatDatumLang } from "./booking.uimodel";
+import { formatDateLong } from "./booking.ui-model";
 
 /** De bedankkaart na een geslaagde boeking. Krijgt alleen niet-gevoelige velden mee. */
 export function BookingConfirmedView({
-  dienst,
-  datum,
-  tijd,
+  service,
+  date,
+  time,
   mail,
 }: {
-  dienst: string;
-  datum: string;
-  tijd: string;
+  service: string;
+  date: string;
+  time: string;
   /** Is de bevestigingsmail daadwerkelijk verzonden? */
   mail: boolean;
 }) {
-  const heeftGegevens = Boolean(dienst && datum && tijd);
+  const hasData = Boolean(service && date && time);
 
   return (
     <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-lift">
@@ -29,19 +29,19 @@ export function BookingConfirmedView({
         Tot dan — we zorgen dat de stoel klaarstaat.
       </p>
 
-      {heeftGegevens ? (
+      {hasData ? (
         <dl className="mx-auto mt-7 divide-y divide-border border-y border-border text-left">
           {[
-            ["Dienst", dienst],
-            ["Datum", formatDatumLang(datum)],
-            ["Tijd", tijd],
-          ].map(([label, waarde]) => (
+            ["Dienst", service],
+            ["Datum", formatDateLong(date)],
+            ["Tijd", time],
+          ].map(([label, value]) => (
             <div key={label} className="flex items-baseline justify-between gap-4 py-3">
               <dt className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {label}
               </dt>
               <dd className="text-sm font-semibold text-foreground first-letter:uppercase">
-                {waarde}
+                {value}
               </dd>
             </div>
           ))}

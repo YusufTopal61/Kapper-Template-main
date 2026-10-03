@@ -22,7 +22,6 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedSideEffectImports": true,
@@ -35,7 +34,8 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "noPropertyAccessFromIndexSignature": false
   },
   "include": [
     "next-env.d.ts",
@@ -48,17 +48,6 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "src/routes",
-    "src/router.tsx",
-    "src/routeTree.gen.ts",
-    "src/server.ts",
-    "src/start.ts",
-    "src/shared/lib/error-capture.ts",
-    "src/shared/lib/error-page.ts",
-    "src/shared/lib/lovable-error-reporting.ts",
-    "src/shared/lib/supabase/client.ts",
-    "src/modules/*/container.server.ts",
-    "src/**/_old-*"
+    "node_modules"
   ]
 }

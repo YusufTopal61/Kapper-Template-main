@@ -1,15 +1,22 @@
 import "server-only";
-import type { PubliekeInstellingen } from "@/modules/settings/domain/settings.entity";
-import { getSiteUrl } from "@/shared/lib/env.server";
-import type { BedrijfsGegevens } from "@/shared/seo/structured-data";
+import { getSiteUrl } from "@/lib/env.server";
+import type { BusinessData } from "@/lib/seo/structured-data";
 
-/** Vertaalt de bedrijfsgegevens uit de database naar wat de JSON-LD-builders nodig hebben. */
-export function bedrijfsGegevens(instellingen: PubliekeInstellingen): BedrijfsGegevens {
+/** Structural input, so lib/ does not depend on any feature's types. */
+type BusinessSettingsInput = {
+  businessName: string;
+  phoneNumber: string | null;
+  address: string | null;
+  openingHours: BusinessData["openingHours"];
+};
+
+/** Maps the business settings from the database to what the JSON-LD builders need. */
+export function toBusinessData(settings: BusinessSettingsInput): BusinessData {
   return {
-    naam: instellingen.bedrijfsnaam,
+    name: settings.businessName,
     url: getSiteUrl(),
-    telefoon: instellingen.telefoonnummer,
-    adres: instellingen.adres,
-    openingstijden: instellingen.openingstijden,
+    phone: settings.phoneNumber,
+    address: settings.address,
+    openingHours: settings.openingHours,
   };
 }

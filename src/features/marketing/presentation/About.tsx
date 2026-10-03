@@ -1,4 +1,4 @@
-import { Reveal } from "@/app/ui/reveal";
+import { Reveal } from "@/components/ui/reveal";
 
 const pillars = [
   { title: "Vakmanschap", body: "Klassieke techniek, hedendaagse uitvoering." },

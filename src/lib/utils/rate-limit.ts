@@ -8,54 +8,53 @@
  * (Upstash Redis, of een tabel in Supabase) — de aanroep hieronder blijft gelijk.
  */
 
-type Venster = { tijden: number[] };
+type Bucket = { timestamps: number[] };
 
-const vensters = new Map<string, Venster>();
+const buckets = new Map<string, Bucket>();
 
 /** Ruimt vensters op die niemand meer raadpleegt, zodat de Map niet groeit. */
-function opruimen(nu: number, maxLeeftijdMs: number) {
-  for (const [sleutel, venster] of vensters) {
-    const recent = venster.tijden.filter((t) => nu - t < maxLeeftijdMs);
+function cleanup(now: number, maxAgeMs: number) {
+  for (const [key, bucket] of buckets) {
+    const recent = bucket.timestamps.filter((t) => now - t < maxAgeMs);
     if (recent.length === 0) {
-      vensters.delete(sleutel);
+      buckets.delete(key);
     } else {
-      venster.tijden = recent;
+      bucket.timestamps = recent;
     }
   }
 }
 
-let laatsteOpruiming = 0;
+let lastCleanup = 0;
 
-export type RateLimitResultaat =
-  | { toegestaan: true; resterend: number }
-  | { toegestaan: false; opnieuwProberenOverSeconden: number };
+export type RateLimitResult =
+  { allowed: true; remaining: number } | { allowed: false; retryAfterSeconds: number };
 
 export function rateLimit(
-  sleutel: string,
-  opties: { max: number; vensterMs: number },
-): RateLimitResultaat {
-  const nu = Date.now();
+  key: string,
+  options: { max: number; windowMs: number },
+): RateLimitResult {
+  const now = Date.now();
 
   // Hooguit één keer per minuut grootschalig opruimen.
-  if (nu - laatsteOpruiming > 60_000) {
-    opruimen(nu, opties.vensterMs);
-    laatsteOpruiming = nu;
+  if (now - lastCleanup > 60_000) {
+    cleanup(now, options.windowMs);
+    lastCleanup = now;
   }
 
-  const venster = vensters.get(sleutel) ?? { tijden: [] };
-  const recent = venster.tijden.filter((t) => nu - t < opties.vensterMs);
+  const bucket = buckets.get(key) ?? { timestamps: [] };
+  const recent = bucket.timestamps.filter((t) => now - t < options.windowMs);
 
-  if (recent.length >= opties.max) {
-    const oudste = Math.min(...recent);
-    const wachtMs = opties.vensterMs - (nu - oudste);
-    vensters.set(sleutel, { tijden: recent });
+  if (recent.length >= options.max) {
+    const oldest = Math.min(...recent);
+    const waitMs = options.windowMs - (now - oldest);
+    buckets.set(key, { timestamps: recent });
     return {
-      toegestaan: false,
-      opnieuwProberenOverSeconden: Math.max(1, Math.ceil(wachtMs / 1000)),
+      allowed: false,
+      retryAfterSeconds: Math.max(1, Math.ceil(waitMs / 1000)),
     };
   }
 
-  recent.push(nu);
-  vensters.set(sleutel, { tijden: recent });
-  return { toegestaan: true, resterend: opties.max - recent.length };
+  recent.push(now);
+  buckets.set(key, { timestamps: recent });
+  return { allowed: true, remaining: options.max - recent.length };
 }

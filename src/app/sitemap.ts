@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { sitemapPaginas } from "@/shared/config/navigation";
-import { getSiteUrl } from "@/shared/lib/env.server";
+import { sitemapPages } from "@/config/navigation";
+import { getSiteUrl } from "@/lib/env.server";
 
 /**
  * De sitemap wordt gegenereerd uit dezelfde paginalijst als de navigatie en
@@ -8,11 +8,11 @@ import { getSiteUrl } from "@/shared/lib/env.server";
  * komen die er, dan voegen we ze hier toe vanuit de database.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const basis = getSiteUrl();
+  const base = getSiteUrl();
 
-  return sitemapPaginas.map((pagina) => ({
-    url: `${basis}${pagina.href === "/" ? "" : pagina.href}` || "/",
-    changeFrequency: pagina.frequentie,
-    priority: pagina.prioriteit,
+  return sitemapPages.map((page) => ({
+    url: `${base}${page.href === "/" ? "" : page.href}` || "/",
+    changeFrequency: page.frequency,
+    priority: page.priority,
   }));
 }

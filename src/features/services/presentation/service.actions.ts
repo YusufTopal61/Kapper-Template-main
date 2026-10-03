@@ -1,36 +1,36 @@
 "use server";
 
-import { getServiceDeps } from "@/app/di/container";
-import { ongeldigeInvoer } from "@/shared/lib/action-result";
-import { uitvoerenAlsBeheerder } from "@/modules/auth/presentation/admin-action";
+import { getServiceDeps } from "@/lib/di/container";
+import { invalidInput } from "@/lib/utils/action-result";
+import { runAsAdmin } from "@/features/auth/presentation/admin-action";
 import { serviceIdSchema, serviceInputSchema, serviceUpdateSchema } from "../domain/service.schema";
-import { createService } from "../domain/usecases/createService";
-import { deleteService } from "../domain/usecases/deleteService";
-import { updateService } from "../domain/usecases/updateService";
+import { createService } from "../domain/usecases/create-service";
+import { deleteService } from "../domain/usecases/delete-service";
+import { updateService } from "../domain/usecases/update-service";
 
 export async function createServiceAction(input: unknown) {
-  const geldig = serviceInputSchema.safeParse(input);
-  if (!geldig.success) return ongeldigeInvoer(geldig.error);
+  const valid = serviceInputSchema.safeParse(input);
+  if (!valid.success) return invalidInput(valid.error);
 
-  return uitvoerenAlsBeheerder(async () => ({
+  return runAsAdmin(async () => ({
     ok: true as const,
-    dienst: await createService(getServiceDeps(), geldig.data),
+    service: await createService(getServiceDeps(), valid.data),
   }));
 }
 
 export async function updateServiceAction(input: unknown) {
-  const geldig = serviceUpdateSchema.safeParse(input);
-  if (!geldig.success) return ongeldigeInvoer(geldig.error);
+  const valid = serviceUpdateSchema.safeParse(input);
+  if (!valid.success) return invalidInput(valid.error);
 
-  return uitvoerenAlsBeheerder(async () => ({
+  return runAsAdmin(async () => ({
     ok: true as const,
-    dienst: await updateService(getServiceDeps(), geldig.data),
+    service: await updateService(getServiceDeps(), valid.data),
   }));
 }
 
 export async function deleteServiceAction(input: unknown) {
-  const geldig = serviceIdSchema.safeParse(input);
-  if (!geldig.success) return ongeldigeInvoer(geldig.error);
+  const valid = serviceIdSchema.safeParse(input);
+  if (!valid.success) return invalidInput(valid.error);
 
-  return uitvoerenAlsBeheerder(() => deleteService(getServiceDeps(), geldig.data.id));
+  return runAsAdmin(() => deleteService(getServiceDeps(), valid.data.id));
 }

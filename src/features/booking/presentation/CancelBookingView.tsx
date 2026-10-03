@@ -2,44 +2,43 @@
 
 import Link from "next/link";
 import { CalendarX2, Check, Loader2, TriangleAlert } from "lucide-react";
-import type { BoekingViaToken } from "../domain/booking.entity";
-import { formatDatumLang } from "./booking.uimodel";
-import { useCancelBooking } from "./useCancelBooking";
+import type { BookingByToken } from "../domain/booking.entity";
+import { formatDateLong } from "./booking.ui-model";
+import { useCancelBooking } from "./use-cancel-booking";
 
-export type AnnuleerLaadResultaat =
-  { ok: true; boeking: BoekingViaToken } | { ok: false; error: string };
+export type CancelLoadResult = { ok: true; booking: BookingByToken } | { ok: false; error: string };
 
 /** De kaart op de annuleerpagina: toont de afspraak en laat de klant bevestigen. */
 export function CancelBookingView({
-  resultaat,
+  result,
   bookingId,
   token,
 }: {
-  resultaat: AnnuleerLaadResultaat;
+  result: CancelLoadResult;
   bookingId: string;
   token: string;
 }) {
-  const { geannuleerd, fout, bezig, annuleer } = useCancelBooking(bookingId, token);
+  const { cancelled, error, isPending, cancel } = useCancelBooking(bookingId, token);
 
   return (
     <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-lift">
-      {!resultaat.ok ? (
-        <Toestand
-          icoon={<TriangleAlert className="size-6" />}
-          titel="Link niet geldig"
-          tekst={resultaat.error}
+      {!result.ok ? (
+        <StatusPanel
+          icon={<TriangleAlert className="size-6" />}
+          title="Link niet geldig"
+          text={result.error}
         />
-      ) : geannuleerd ? (
-        <Toestand
-          icoon={<Check className="size-6" />}
-          titel="Afspraak geannuleerd"
-          tekst="Je afspraak is geannuleerd en het tijdslot is weer vrij. Je krijgt hiervan een bevestiging per mail."
+      ) : cancelled ? (
+        <StatusPanel
+          icon={<Check className="size-6" />}
+          title="Afspraak geannuleerd"
+          text="Je afspraak is geannuleerd en het tijdslot is weer vrij. Je krijgt hiervan een bevestiging per mail."
         />
-      ) : resultaat.boeking.status === "geannuleerd" ? (
-        <Toestand
-          icoon={<CalendarX2 className="size-6" />}
-          titel="Al geannuleerd"
-          tekst="Deze afspraak is eerder al geannuleerd. Er staat niets meer voor je ingepland."
+      ) : result.booking.status === "cancelled" ? (
+        <StatusPanel
+          icon={<CalendarX2 className="size-6" />}
+          title="Al geannuleerd"
+          text="Deze afspraak is eerder al geannuleerd. Er staat niets meer voor je ingepland."
         />
       ) : (
         <>
@@ -50,43 +49,43 @@ export function CancelBookingView({
             Afspraak annuleren
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Hoi {resultaat.boeking.klant_naam}, dit staat er voor je gepland. Weet je zeker dat je
+            Hoi {result.booking.customerName}, dit staat er voor je gepland. Weet je zeker dat je
             wilt annuleren?
           </p>
 
           <dl className="mt-6 divide-y divide-border border-y border-border">
             {[
-              ["Dienst", resultaat.boeking.dienstNaam],
-              ["Datum", formatDatumLang(resultaat.boeking.datum)],
-              ["Tijd", resultaat.boeking.tijd],
-              ...(resultaat.boeking.adres ? [["Adres", resultaat.boeking.adres]] : []),
-            ].map(([label, waarde]) => (
+              ["Dienst", result.booking.serviceName],
+              ["Datum", formatDateLong(result.booking.date)],
+              ["Tijd", result.booking.time],
+              ...(result.booking.address ? [["Adres", result.booking.address]] : []),
+            ].map(([label, value]) => (
               <div key={label} className="flex items-baseline justify-between gap-4 py-3">
                 <dt className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {label}
                 </dt>
                 <dd className="text-right text-sm font-semibold text-foreground first-letter:uppercase">
-                  {waarde}
+                  {value}
                 </dd>
               </div>
             ))}
           </dl>
 
-          {fout ? (
+          {error ? (
             <p className="mt-4 flex items-start gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-              {fout}
+              {error}
             </p>
           ) : null}
 
           <div className="mt-7 flex flex-col gap-2">
             <button
               type="button"
-              disabled={bezig}
-              onClick={annuleer}
+              disabled={isPending}
+              onClick={cancel}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-opacity hover:opacity-85 disabled:opacity-50"
             >
-              {bezig ? <Loader2 className="size-4 animate-spin" /> : null}
+              {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
               Annuleer afspraak
             </button>
             <Link
@@ -102,24 +101,24 @@ export function CancelBookingView({
   );
 }
 
-function Toestand({
-  icoon,
-  titel,
-  tekst,
+function StatusPanel({
+  icon,
+  title,
+  text,
 }: {
-  icoon: React.ReactNode;
-  titel: string;
-  tekst: string;
+  icon: React.ReactNode;
+  title: string;
+  text: string;
 }) {
   return (
     <div className="text-center">
       <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-foreground text-background">
-        {icoon}
+        {icon}
       </div>
       <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-foreground">
-        {titel}
+        {title}
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{tekst}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
       <div className="mt-7 flex flex-col gap-2">
         <Link
           href="/boeken"

@@ -1,46 +1,40 @@
 import "server-only";
-import {
-  getSupabaseAdminClient,
-  getSupabaseServerClient,
-} from "@/shared/lib/supabase/supabase.server";
-import { ACTIEVE_STATUSSEN, zonderToken } from "../domain/booking.rules";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { BookingRepository } from "../domain/booking.repository";
+import { ACTIVE_STATUSES, withoutToken } from "../domain/booking.rules";
 import {
-  BOOKING_MET_DIENST,
-  naarBookingRecord,
-  naarBusyBooking,
-  type BookingRowMetDienst,
+  BOOKING_WITH_SERVICE,
+  toBookingInsert,
+  toBookingRecord,
+  toBookingUpdate,
+  toBusyBooking,
 } from "./booking.mapper";
 
-/** Postgres: unique violation op het tijdslot-index — iemand was net sneller. */
+/** Postgres: unique violation on the time slot index — someone was faster. */
 const UNIQUE_VIOLATION = "23505";
 
 export function createSupabaseBookingRepository(): BookingRepository {
   return {
-    async listBusy(datum) {
+    async listBusy(date) {
       const { data, error } = await getSupabaseAdminClient()
         .from("bookings")
-        .select("id, tijd, services(duur_minuten)")
-        .eq("datum", datum)
-        .in("status", ACTIEVE_STATUSSEN);
+        .select("id, start_time, services(duration_minutes)")
+        .eq("booking_date", date)
+        .in("status", ACTIVE_STATUSES);
 
       if (error) throw error;
-
-      return (data ?? []).map((rij) =>
-        naarBusyBooking(
-          rij as unknown as { id: string; tijd: string; services: { duur_minuten: number } | null },
-        ),
-      );
+      return data.map(toBusyBooking);
     },
 
-    async insert(nieuw) {
-      // Bewust met de anon-client: zo loopt het aanmaken écht door de publieke
-      // RLS-policy heen, precies zoals een externe aanroep dat zou doen.
+    async insert(newBooking) {
+      // Deliberately the anon client: creating a booking then really goes through
+      // the public RLS policy, exactly as an external caller would.
       const supabase = await getSupabaseServerClient();
-      const { error } = await supabase.from("bookings").insert(nieuw);
+      const { error } = await supabase.from("bookings").insert(toBookingInsert(newBooking));
 
       if (error) {
-        if (error.code === UNIQUE_VIOLATION) return { ok: false, reden: "tijdslot-bezet" };
+        if (error.code === UNIQUE_VIOLATION) return { ok: false, reason: "slot-taken" };
         throw error;
       }
       return { ok: true };
@@ -50,63 +44,61 @@ export function createSupabaseBookingRepository(): BookingRepository {
       const supabase = await getSupabaseServerClient();
       const { data, error } = await supabase
         .from("bookings")
-        .select(BOOKING_MET_DIENST)
-        .order("datum", { ascending: true })
-        .order("tijd", { ascending: true });
+        .select(BOOKING_WITH_SERVICE)
+        .order("booking_date", { ascending: true })
+        .order("start_time", { ascending: true });
 
       if (error) throw error;
-      return ((data ?? []) as unknown as BookingRowMetDienst[])
-        .map(naarBookingRecord)
-        .map(zonderToken);
+      return data.map(toBookingRecord).map(withoutToken);
     },
 
     async findForAdmin(id) {
       const supabase = await getSupabaseServerClient();
       const { data, error } = await supabase
         .from("bookings")
-        .select(BOOKING_MET_DIENST)
+        .select(BOOKING_WITH_SERVICE)
         .eq("id", id)
         .maybeSingle();
 
       if (error) throw error;
-      return data ? naarBookingRecord(data as unknown as BookingRowMetDienst) : null;
+      return data ? toBookingRecord(data) : null;
     },
 
     async updateAsAdmin(id, patch) {
       const supabase = await getSupabaseServerClient();
       const { data, error } = await supabase
         .from("bookings")
-        .update(patch)
+        .update(toBookingUpdate(patch))
         .eq("id", id)
-        .select(BOOKING_MET_DIENST)
+        .select(BOOKING_WITH_SERVICE)
         .single();
 
       if (error) {
-        if (error.code === UNIQUE_VIOLATION) return { ok: false, reden: "tijdslot-bezet" };
+        if (error.code === UNIQUE_VIOLATION) return { ok: false, reason: "slot-taken" };
         throw error;
       }
-      return { ok: true, boeking: naarBookingRecord(data as unknown as BookingRowMetDienst) };
+      return { ok: true, booking: toBookingRecord(data) };
     },
 
     async findByToken(id, token) {
-      // Het publiek heeft geen leesrechten op bookings; het token is hier de sleutel.
+      // The public has no read access to bookings; the token is the key here.
       const { data, error } = await getSupabaseAdminClient()
         .from("bookings")
-        .select(BOOKING_MET_DIENST)
+        .select(BOOKING_WITH_SERVICE)
         .eq("id", id)
-        .eq("annuleer_token", token)
+        .eq("cancel_token", token)
         .maybeSingle();
 
       if (error) throw error;
-      return data ? naarBookingRecord(data as unknown as BookingRowMetDienst) : null;
+      return data ? toBookingRecord(data) : null;
     },
 
     async cancelByToken(id, token) {
       const { error } = await getSupabaseAdminClient()
         .from("bookings")
-        .update({ status: "geannuleerd" })
+        .update({ status: "cancelled" })
         .eq("id", id)
-        .eq("annuleer_token", token);
+        .eq("cancel_token", token);
 
       if (error) throw error;
     },

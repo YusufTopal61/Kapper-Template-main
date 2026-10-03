@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Reveal } from "@/app/ui/reveal";
+import { Reveal } from "@/components/ui/reveal";
 
 export function CtaBanner() {
   return (

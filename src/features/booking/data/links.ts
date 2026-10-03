@@ -1,6 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
-import { getSiteUrl as getConfiguredSiteUrl } from "@/shared/lib/env.server";
+import { getSiteUrl as getConfiguredSiteUrl } from "@/lib/env.server";
 
 /**
  * Basis-URL van de site, voor links in e-mails. In productie komt hij uit
@@ -9,18 +9,18 @@ import { getSiteUrl as getConfiguredSiteUrl } from "@/shared/lib/env.server";
  * belanden. Alleen in development vallen we terug op het request.
  */
 export async function getSiteUrl(): Promise<string> {
-  const ingesteld = getConfiguredSiteUrl();
-  if (ingesteld) return ingesteld;
+  const configured = getConfiguredSiteUrl();
+  if (configured) return configured;
 
-  const lijst = await headers();
-  const host = lijst.get("x-forwarded-host") ?? lijst.get("host");
+  const list = await headers();
+  const host = list.get("x-forwarded-host") ?? list.get("host");
   if (!host) return "";
-  return `${lijst.get("x-forwarded-proto") ?? "http"}://${host}`;
+  return `${list.get("x-forwarded-proto") ?? "http"}://${host}`;
 }
 
-export const annuleerUrl = async (bookingId: string, token: string) =>
+export const cancelUrl = async (bookingId: string, token: string) =>
   `${await getSiteUrl()}/boeking/annuleren/${bookingId}?token=${token}`;
 
-export const adminBoekingUrl = async () => `${await getSiteUrl()}/admin/boekingen`;
+export const adminBookingsUrl = async () => `${await getSiteUrl()}/admin/boekingen`;
 
-export const opnieuwBoekenUrl = async () => `${await getSiteUrl()}/boeken`;
+export const bookAgainUrl = async () => `${await getSiteUrl()}/boeken`;

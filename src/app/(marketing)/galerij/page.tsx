@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
-import { CtaBanner } from "@/modules/site/presentation/CtaBanner";
-import { Gallery } from "@/modules/site/presentation/Gallery";
-import { PageHeader } from "@/modules/site/presentation/PageHeader";
-import { siteConfig } from "@/shared/config/site";
-import { getSiteUrl } from "@/shared/lib/env.server";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
-import { breadcrumbJsonLd } from "@/shared/seo/structured-data";
+import { CtaBanner } from "@/features/marketing/presentation/CtaBanner";
+import { Gallery } from "@/features/marketing/presentation/Gallery";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { siteConfig } from "@/config/site";
+import { getSiteUrl } from "@/lib/env.server";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
-const TITEL = "Galerij";
-const BESCHRIJVING = "Een indruk van het werk, de sfeer en de zaak.";
+const TITLE = "Galerij";
+const DESCRIPTION = "Een indruk van het werk, de sfeer en de zaak.";
 
-export const metadata: Metadata = maakMetadata({
-  titel: TITEL,
-  beschrijving: BESCHRIJVING,
-  pad: "/galerij",
+export const metadata: Metadata = buildMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: "/galerij",
 });
 
-export default function GalerijPage() {
+export default function GalleryPage() {
   return (
     <>
       <JsonLd
         data={breadcrumbJsonLd(getSiteUrl(), [
-          { naam: siteConfig.merknaam, pad: "/" },
-          { naam: TITEL, pad: "/galerij" },
+          { name: siteConfig.brandName, path: "/" },
+          { name: TITLE, path: "/galerij" },
         ])}
       />
       <main>

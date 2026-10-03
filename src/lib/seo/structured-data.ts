@@ -7,110 +7,110 @@
 
 type JsonLdObject = Record<string, unknown>;
 
-const SCHEMA_DAGEN = {
-  maandag: "Monday",
-  dinsdag: "Tuesday",
-  woensdag: "Wednesday",
-  donderdag: "Thursday",
-  vrijdag: "Friday",
-  zaterdag: "Saturday",
-  zondag: "Sunday",
+const SCHEMA_WEEKDAYS = {
+  monday: "Monday",
+  tuesday: "Tuesday",
+  wednesday: "Wednesday",
+  thursday: "Thursday",
+  friday: "Friday",
+  saturday: "Saturday",
+  sunday: "Sunday",
 } as const;
 
-type DagNaam = keyof typeof SCHEMA_DAGEN;
-type Openingstijden = Record<DagNaam, { open: boolean; van: string; tot: string }>;
+type WeekdayName = keyof typeof SCHEMA_WEEKDAYS;
+type OpeningHours = Record<WeekdayName, { open: boolean; from: string; to: string }>;
 
-export type BedrijfsGegevens = {
-  naam: string;
+export type BusinessData = {
+  name: string;
   url: string;
-  telefoon: string | null;
-  adres: string | null;
-  openingstijden: Openingstijden;
+  phone: string | null;
+  address: string | null;
+  openingHours: OpeningHours;
 };
 
-export type DienstGegevens = { naam: string; beschrijving: string; prijs: number };
+export type ServiceData = { name: string; description: string; price: number };
 
 /** "Straat 1, 1234 AB Stad" wordt een PostalAddress; past het niet, dan blijft de hele tekst als straat staan. */
-export function parseAdres(adres: string): JsonLdObject {
-  const [straat = adres, rest = ""] = adres.split(",").map((deel) => deel.trim());
+export function parseAddress(address: string): JsonLdObject {
+  const [street = address, rest = ""] = address.split(",").map((part) => part.trim());
   const match = rest.match(/^(\d{4}\s?[A-Za-z]{2})\s+(.+)$/);
 
   return {
     "@type": "PostalAddress",
-    streetAddress: straat,
+    streetAddress: street,
     ...(match ? { postalCode: match[1], addressLocality: match[2] } : {}),
     addressCountry: "NL",
   };
 }
 
-export function openingstijdenJsonLd(openingstijden: Openingstijden): JsonLdObject[] {
-  return (Object.keys(SCHEMA_DAGEN) as DagNaam[])
-    .filter((dag) => openingstijden[dag].open)
-    .map((dag) => ({
+export function openingHoursJsonLd(openingHours: OpeningHours): JsonLdObject[] {
+  return (Object.keys(SCHEMA_WEEKDAYS) as WeekdayName[])
+    .filter((day) => openingHours[day].open)
+    .map((day) => ({
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: SCHEMA_DAGEN[dag],
-      opens: openingstijden[dag].van,
-      closes: openingstijden[dag].tot,
+      dayOfWeek: SCHEMA_WEEKDAYS[day],
+      opens: openingHours[day].from,
+      closes: openingHours[day].to,
     }));
 }
 
-export function organizationJsonLd(bedrijf: Pick<BedrijfsGegevens, "naam" | "url">, logo: string) {
+export function organizationJsonLd(business: Pick<BusinessData, "name" | "url">, logo: string) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${bedrijf.url}/#organization`,
-    name: bedrijf.naam,
-    url: bedrijf.url,
+    "@id": `${business.url}/#organization`,
+    name: business.name,
+    url: business.url,
     logo,
   };
 }
 
-export function websiteJsonLd(bedrijf: Pick<BedrijfsGegevens, "naam" | "url">, taal: string) {
+export function websiteJsonLd(business: Pick<BusinessData, "name" | "url">, language: string) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": `${bedrijf.url}/#website`,
-    name: bedrijf.naam,
-    url: bedrijf.url,
-    inLanguage: taal,
-    publisher: { "@id": `${bedrijf.url}/#organization` },
+    "@id": `${business.url}/#website`,
+    name: business.name,
+    url: business.url,
+    inLanguage: language,
+    publisher: { "@id": `${business.url}/#organization` },
   };
 }
 
 /** Het lokale bedrijfstype (BarberShop, HairSalon, …) met NAW en openingstijden. */
-export function localBusinessJsonLd(bedrijf: BedrijfsGegevens, type: string, afbeelding: string) {
+export function localBusinessJsonLd(business: BusinessData, type: string, image: string) {
   return {
     "@context": "https://schema.org",
     "@type": type,
-    "@id": `${bedrijf.url}/#localbusiness`,
-    name: bedrijf.naam,
-    url: bedrijf.url,
-    image: afbeelding,
-    ...(bedrijf.telefoon ? { telephone: bedrijf.telefoon } : {}),
-    ...(bedrijf.adres ? { address: parseAdres(bedrijf.adres) } : {}),
-    openingHoursSpecification: openingstijdenJsonLd(bedrijf.openingstijden),
+    "@id": `${business.url}/#localbusiness`,
+    name: business.name,
+    url: business.url,
+    image: image,
+    ...(business.phone ? { telephone: business.phone } : {}),
+    ...(business.address ? { address: parseAddress(business.address) } : {}),
+    openingHoursSpecification: openingHoursJsonLd(business.openingHours),
   };
 }
 
 export function serviceJsonLd(
-  dienst: DienstGegevens,
-  bedrijf: Pick<BedrijfsGegevens, "url">,
-  pad: string,
+  service: ServiceData,
+  business: Pick<BusinessData, "url">,
+  path: string,
 ) {
   return {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: dienst.naam,
-    ...(dienst.beschrijving ? { description: dienst.beschrijving } : {}),
-    provider: { "@id": `${bedrijf.url}/#localbusiness` },
+    name: service.name,
+    ...(service.description ? { description: service.description } : {}),
+    provider: { "@id": `${business.url}/#localbusiness` },
     areaServed: "NL",
-    url: `${bedrijf.url}${pad}`,
+    url: `${business.url}${path}`,
     // Prijs 0 betekent "nog niet ingesteld", niet "gratis": dan melden we geen aanbod aan Google.
-    ...(dienst.prijs > 0
+    ...(service.price > 0
       ? {
           offers: {
             "@type": "Offer",
-            price: dienst.prijs.toFixed(2),
+            price: service.price.toFixed(2),
             priceCurrency: "EUR",
             availability: "https://schema.org/InStock",
           },
@@ -119,28 +119,31 @@ export function serviceJsonLd(
   };
 }
 
-export function breadcrumbJsonLd(url: string, items: ReadonlyArray<{ naam: string; pad: string }>) {
+export function breadcrumbJsonLd(
+  url: string,
+  items: ReadonlyArray<{ name: string; path: string }>,
+) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: items.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      name: item.naam,
-      item: `${url}${item.pad}`,
+      name: item.name,
+      item: `${url}${item.path}`,
     })),
   };
 }
 
 /** Alleen gebruiken op een pagina waar de vragen en antwoorden ook echt zichtbaar staan. */
-export function faqJsonLd(vragen: ReadonlyArray<{ vraag: string; antwoord: string }>) {
+export function faqJsonLd(questions: ReadonlyArray<{ question: string; answer: string }>) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: vragen.map(({ vraag, antwoord }) => ({
+    mainEntity: questions.map(({ question, answer }) => ({
       "@type": "Question",
-      name: vraag,
-      acceptedAnswer: { "@type": "Answer", text: antwoord },
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
     })),
   };
 }
@@ -149,6 +152,6 @@ export function faqJsonLd(vragen: ReadonlyArray<{ vraag: string; antwoord: strin
  * Serialiseert voor in een <script>-tag. `<` wordt geëscaped zodat een dienst-
  * of bedrijfsnaam met `</script>` de pagina niet kan breken (XSS).
  */
-export function serialiseerJsonLd(data: JsonLdObject | JsonLdObject[]): string {
+export function serializeJsonLd(data: JsonLdObject | JsonLdObject[]): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }

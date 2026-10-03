@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { plausibleDomain } from "@/shared/lib/env";
-import { useCookieConsent } from "./use-cookie-consent";
+import { plausibleDomain } from "@/lib/env";
+import { useCookieConsent } from "../../hooks/use-cookie-consent";
 
 const SCRIPT_ID = "plausible-analytics";
 
@@ -21,7 +21,7 @@ export function Analytics() {
   const { status } = useCookieConsent();
 
   useEffect(() => {
-    if (!plausibleDomain || status !== "geaccepteerd") return;
+    if (!plausibleDomain || status !== "accepted") return;
     if (document.getElementById(SCRIPT_ID)) return;
 
     const script = document.createElement("script");

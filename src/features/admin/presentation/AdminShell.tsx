@@ -26,10 +26,10 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from "@/app/ui/sidebar";
-import { Button } from "@/app/ui/button";
-import { signOutAction } from "@/modules/auth/presentation/auth.actions";
-import { siteConfig } from "@/shared/config/site";
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { signOutAction } from "@/features/auth/presentation/auth.actions";
+import { siteConfig } from "@/config/site";
 
 const adminNav = [
   { label: "Overzicht", href: "/admin", icon: LayoutGrid },
@@ -42,17 +42,17 @@ type AdminShellProps = {
   children: ReactNode;
   email: string | null;
   /** Is er een notificatie-adres ingesteld? Zo niet, dan tonen we een melding. */
-  emailIngesteld: boolean;
+  emailConfigured: boolean;
   /** Staat de mailprovider nog in testmodus (klanten krijgen dan geen mail)? */
   emailSandbox: boolean;
 };
 
-export function AdminShell({ children, email, emailIngesteld, emailSandbox }: AdminShellProps) {
+export function AdminShell({ children, email, emailConfigured, emailSandbox }: AdminShellProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [uitloggen, startTransition] = useTransition();
+  const [signingOut, startTransition] = useTransition();
 
-  function loguit() {
+  function handleSignOut() {
     startTransition(async () => {
       await signOutAction();
       router.replace("/admin/login");
@@ -70,7 +70,7 @@ export function AdminShell({ children, email, emailIngesteld, emailSandbox }: Ad
             href="/"
             className="font-display text-sm font-bold uppercase tracking-[0.3em] text-foreground group-data-[collapsible=icon]:hidden"
           >
-            {siteConfig.merknaam}
+            {siteConfig.brandName}
           </Link>
           <p className="mt-1 truncate text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
             {email ?? "Beheeromgeving"}
@@ -104,11 +104,11 @@ export function AdminShell({ children, email, emailIngesteld, emailSandbox }: Ad
           <Button
             variant="outline"
             size="sm"
-            disabled={uitloggen}
+            disabled={signingOut}
             className="w-full justify-start gap-2 rounded-lg group-data-[collapsible=icon]:justify-center"
-            onClick={loguit}
+            onClick={handleSignOut}
           >
-            {uitloggen ? (
+            {signingOut ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <LogOut className="size-4" />
@@ -124,7 +124,7 @@ export function AdminShell({ children, email, emailIngesteld, emailSandbox }: Ad
           <span className="text-sm font-medium text-foreground">{activeLabel}</span>
         </header>
 
-        {!emailIngesteld ? (
+        {!emailConfigured ? (
           <div className="flex flex-wrap items-center gap-3 border-b border-border bg-foreground px-4 py-3 text-background sm:px-6">
             <TriangleAlert className="size-4 shrink-0" />
             <p className="text-sm">

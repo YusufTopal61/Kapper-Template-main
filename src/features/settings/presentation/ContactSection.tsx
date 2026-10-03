@@ -1,19 +1,23 @@
-import { Reveal } from "@/app/ui/reveal";
-import { DAGEN, DEFAULT_OPENINGSTIJDEN } from "@/modules/settings/domain/opening-hours.rules";
-import type { PubliekeInstellingen } from "../domain/settings.entity";
+import { Reveal } from "@/components/ui/reveal";
+import {
+  DEFAULT_OPENING_HOURS,
+  WEEKDAY_LABELS,
+  WEEKDAYS,
+} from "@/features/settings/domain/opening-hours.rules";
+import type { PublicSettings } from "../domain/settings.entity";
 
 export function ContactSection({
-  instellingen,
-  kop: Kop = "h2",
+  settings,
+  heading: Heading = "h2",
 }: {
-  instellingen?: PubliekeInstellingen;
+  settings?: PublicSettings;
   /** Op de eigen contactpagina is dit de h1; op de homepage een h2. */
-  kop?: "h1" | "h2";
+  heading?: "h1" | "h2";
 }) {
-  const openingstijden = instellingen?.openingstijden ?? DEFAULT_OPENINGSTIJDEN;
-  const adresRegels = (instellingen?.adres ?? "Straatnaam 00, 0000 AA Plaatsnaam")
+  const openingHours = settings?.openingHours ?? DEFAULT_OPENING_HOURS;
+  const addressLines = (settings?.address ?? "Straatnaam 00, 0000 AA Plaatsnaam")
     .split(",")
-    .map((regel) => regel.trim())
+    .map((line) => line.trim())
     .filter(Boolean);
 
   return (
@@ -33,9 +37,9 @@ export function ContactSection({
         <div>
           <Reveal>
             <span className="text-eyebrow text-accent">Bezoek ons</span>
-            <Kop className="mt-4 font-display text-4xl leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+            <Heading className="mt-4 font-display text-4xl leading-[1.05] tracking-tight text-foreground sm:text-5xl">
               Loop binnen.
-            </Kop>
+            </Heading>
           </Reveal>
 
           <Reveal delay={0.08}>
@@ -45,9 +49,9 @@ export function ContactSection({
                   Adres
                 </p>
                 <p className="mt-3 text-base leading-relaxed text-foreground">
-                  {adresRegels.map((regel, i) => (
+                  {addressLines.map((line, i) => (
                     <span key={i} className="block">
-                      {regel}
+                      {line}
                     </span>
                   ))}
                 </p>
@@ -55,7 +59,7 @@ export function ContactSection({
                   Contact
                 </p>
                 <p className="mt-3 text-base text-foreground">
-                  {instellingen?.telefoonnummer ?? "06 00 00 00 00"}
+                  {settings?.phoneNumber ?? "06 00 00 00 00"}
                 </p>
               </div>
 
@@ -64,16 +68,16 @@ export function ContactSection({
                   Openingstijden
                 </p>
                 <ul className="mt-3 space-y-2.5">
-                  {DAGEN.map((dag) => {
-                    const tijden = openingstijden[dag];
+                  {WEEKDAYS.map((day) => {
+                    const hours = openingHours[day];
                     return (
                       <li
-                        key={dag}
+                        key={day}
                         className="flex items-baseline justify-between gap-4 border-b border-border pb-2.5 text-sm"
                       >
-                        <span className="capitalize text-foreground">{dag}</span>
+                        <span className="capitalize text-foreground">{WEEKDAY_LABELS[day]}</span>
                         <span className="text-muted-foreground">
-                          {tijden.open ? `${tijden.van} – ${tijden.tot}` : "Gesloten"}
+                          {hours.open ? `${hours.from} – ${hours.to}` : "Gesloten"}
                         </span>
                       </li>
                     );

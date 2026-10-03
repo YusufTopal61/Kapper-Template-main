@@ -1,4 +1,4 @@
-import { Reveal } from "@/app/ui/reveal";
+import { Reveal } from "@/components/ui/reveal";
 
 type SectionHeadingProps = {
   eyebrow: string;

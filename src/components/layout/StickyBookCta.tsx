@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { useCookieConsent } from "@/modules/site/presentation/use-cookie-consent";
+import { useCookieConsent } from "@/hooks/use-cookie-consent";
 
 /**
  * Vaste onderbalk op mobiel met een directe boekingsknop. Blijft weg op
@@ -12,12 +12,12 @@ import { useCookieConsent } from "@/modules/site/presentation/use-cookie-consent
  */
 export function StickyBookCta() {
   const pathname = usePathname();
-  const { status, klaar } = useCookieConsent();
+  const { status, ready } = useCookieConsent();
 
-  const verborgenPad = pathname.startsWith("/admin") || pathname.startsWith("/boeken");
-  const wachtOpCookiekeuze = klaar && status === "onbekend";
+  const hiddenPath = pathname.startsWith("/admin") || pathname.startsWith("/boeken");
+  const awaitingCookieChoice = ready && status === "unknown";
 
-  if (verborgenPad || wachtOpCookiekeuze) return null;
+  if (hiddenPath || awaitingCookieChoice) return null;
 
   return (
     <div

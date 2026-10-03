@@ -1,7 +1,7 @@
 import type { BookingDeps } from "../booking.deps";
-import { updateBookingAsAdmin } from "./updateBookingAsAdmin";
+import { updateBookingAsAdmin } from "./update-booking-as-admin";
 
 /** Annuleren is een wijziging van de status: zo staan de annuleringsmails op één plek. */
 export function cancelBookingAsAdmin(deps: BookingDeps, id: string) {
-  return updateBookingAsAdmin(deps, { id, status: "geannuleerd" });
+  return updateBookingAsAdmin(deps, { id, status: "cancelled" });
 }

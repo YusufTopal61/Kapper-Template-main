@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { getAuthGateway, getSettingsDeps } from "@/app/di/container";
-import { AdminShell } from "@/modules/admin/presentation/AdminShell";
-import { NietIngelogdError } from "@/modules/auth/domain/auth.gateway";
-import { getSession } from "@/modules/auth/domain/usecases/getSession";
-import { getAdminSettings } from "@/modules/settings/domain/usecases/getAdminSettings";
-import { getEmailStatus } from "@/modules/settings/domain/usecases/getEmailStatus";
+import { getAuthGateway, getSettingsDeps } from "@/lib/di/container";
+import { AdminShell } from "@/features/admin/presentation/AdminShell";
+import { UnauthorizedError } from "@/features/auth/domain/auth.gateway";
+import { getSession } from "@/features/auth/domain/usecases/get-session";
+import { getAdminSettings } from "@/features/settings/domain/usecases/get-admin-settings";
+import { getEmailStatus } from "@/features/settings/domain/usecases/get-email-status";
 
 export const dynamic = "force-dynamic";
 
@@ -14,25 +14,25 @@ export const dynamic = "force-dynamic";
  * sessie, en is die gebruiker ook als beheerder geregistreerd? Dit is de
  * UX-laag; de echte afdwinging zit in de use cases (assertAdmin) en in RLS.
  */
-export default async function BeheerLayout({ children }: { children: ReactNode }) {
-  const sessie = await getSession(getAuthGateway());
-  if (!sessie.ingelogd) redirect("/admin/login");
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const session = await getSession(getAuthGateway());
+  if (!session.signedIn) redirect("/admin/login");
 
   const deps = getSettingsDeps();
-  let instellingen;
+  let settings;
   let emailStatus;
   try {
-    [instellingen, emailStatus] = await Promise.all([getAdminSettings(deps), getEmailStatus(deps)]);
+    [settings, emailStatus] = await Promise.all([getAdminSettings(deps), getEmailStatus(deps)]);
   } catch (error) {
-    if (error instanceof NietIngelogdError) redirect("/admin/login");
+    if (error instanceof UnauthorizedError) redirect("/admin/login");
     throw error;
   }
 
   return (
     <AdminShell
-      email={sessie.email}
-      emailIngesteld={instellingen.emailIngesteld}
-      emailSandbox={emailStatus.sandboxModus}
+      email={session.email}
+      emailConfigured={settings.emailConfigured}
+      emailSandbox={emailStatus.sandboxMode}
     >
       {children}
     </AdminShell>

@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/modules/site/presentation/PageHeader";
-import { siteConfig } from "@/shared/config/site";
-import { getSiteUrl } from "@/shared/lib/env.server";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
-import { breadcrumbJsonLd } from "@/shared/seo/structured-data";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { siteConfig } from "@/config/site";
+import { getSiteUrl } from "@/lib/env.server";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
-const TITEL = "Privacybeleid";
-const BESCHRIJVING = "Hoe we omgaan met de gegevens die je bij ons achterlaat.";
+const TITLE = "Privacybeleid";
+const DESCRIPTION = "Hoe we omgaan met de gegevens die je bij ons achterlaat.";
 
-export const metadata: Metadata = maakMetadata({
-  titel: TITEL,
-  beschrijving: BESCHRIJVING,
-  pad: "/privacybeleid",
+export const metadata: Metadata = buildMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: "/privacybeleid",
 });
 
-export default function PrivacybeleidPage() {
+export default function PrivacyPolicyPage() {
   return (
     <>
       <JsonLd
         data={breadcrumbJsonLd(getSiteUrl(), [
-          { naam: siteConfig.merknaam, pad: "/" },
-          { naam: TITEL, pad: "/privacybeleid" },
+          { name: siteConfig.brandName, path: "/" },
+          { name: TITLE, path: "/privacybeleid" },
         ])}
       />
       <main>

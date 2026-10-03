@@ -13,10 +13,10 @@ export const emailSchema = z
   .max(254, "Dit e-mailadres is te lang.")
   .email("Vul een geldig e-mailadres in.");
 
-export const tijdSchema = z
+export const timeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "Ongeldige tijd. Verwacht formaat: UU:MM.");
 
-export const datumSchema = z
+export const dateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Ongeldige datum. Verwacht formaat: JJJJ-MM-DD.");

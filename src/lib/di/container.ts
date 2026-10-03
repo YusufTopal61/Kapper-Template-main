@@ -1,14 +1,14 @@
 import "server-only";
-import { createSupabaseAuthGateway } from "@/modules/auth/data/auth.supabase";
-import { createAdminGuard } from "@/modules/auth/domain/usecases/createAdminGuard";
-import { createResendBookingNotifier } from "@/modules/booking/data/booking.resend";
-import { createSupabaseBookingRepository } from "@/modules/booking/data/booking.supabase";
-import type { BookingDeps } from "@/modules/booking/domain/booking.deps";
-import { createSupabaseServiceRepository } from "@/modules/services/data/service.supabase";
-import { createResendEmailStatusChecker } from "@/modules/settings/data/email-status.resend";
-import { createSupabaseSettingsRepository } from "@/modules/settings/data/settings.supabase";
-import { nuInAmsterdam } from "@/shared/lib/clock";
-import { maakId, maakToken } from "@/shared/lib/random";
+import { createSupabaseAuthGateway } from "@/features/auth/data/auth.supabase";
+import { createAdminGuard } from "@/features/auth/domain/usecases/create-admin-guard";
+import { createResendBookingNotifier } from "@/features/booking/data/booking.resend";
+import { createSupabaseBookingRepository } from "@/features/booking/data/booking.supabase";
+import type { BookingDeps } from "@/features/booking/domain/booking.deps";
+import { createSupabaseServiceRepository } from "@/features/services/data/service.supabase";
+import { createResendEmailStatusChecker } from "@/features/settings/data/email-status.resend";
+import { createSupabaseSettingsRepository } from "@/features/settings/data/settings.supabase";
+import { nowInAmsterdam } from "@/lib/utils/clock";
+import { generateId, generateToken } from "@/lib/utils/random";
 
 /**
  * Composition root: het enige bestand dat interfaces uit domain/ aan hun
@@ -50,8 +50,8 @@ export function getBookingDeps(): BookingDeps {
     services: createSupabaseServiceRepository(),
     settings,
     notifier: createResendBookingNotifier({ settings }),
-    ids: { newId: maakId, newToken: maakToken },
+    ids: { newId: generateId, newToken: generateToken },
     assertAdmin: getAdminGuard(),
-    now: nuInAmsterdam,
+    now: nowInAmsterdam,
   };
 }

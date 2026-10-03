@@ -1,62 +1,62 @@
 import type { Metadata } from "next";
-import { getServiceDeps, getSettingsDeps } from "@/app/di/container";
-import { bedrijfsGegevens } from "@/app/site-seo";
-import { BookingWizard } from "@/modules/booking/presentation/BookingWizard";
-import { listActiveServices } from "@/modules/services/domain/usecases/listActiveServices";
-import { naarServiceUIModel } from "@/modules/services/presentation/service.uimodel";
-import { ServicesSection } from "@/modules/services/presentation/ServicesSection";
-import { getPublicSettings } from "@/modules/settings/domain/usecases/getPublicSettings";
-import { ContactSection } from "@/modules/settings/presentation/ContactSection";
-import { About } from "@/modules/site/presentation/About";
-import { Gallery } from "@/modules/site/presentation/Gallery";
-import { Hero } from "@/modules/site/presentation/Hero";
-import { Testimonials } from "@/modules/site/presentation/Testimonials";
-import { siteConfig } from "@/shared/config/site";
-import { isSupabaseConfigured } from "@/shared/lib/env";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
+import { getServiceDeps, getSettingsDeps } from "@/lib/di/container";
+import { toBusinessData } from "@/lib/seo/business-data";
+import { BookingWizard } from "@/features/booking/presentation/BookingWizard";
+import { listActiveServices } from "@/features/services/domain/usecases/list-active-services";
+import { toServiceUIModel } from "@/features/services/presentation/service.ui-model";
+import { ServicesSection } from "@/features/services/presentation/ServicesSection";
+import { getPublicSettings } from "@/features/settings/domain/usecases/get-public-settings";
+import { ContactSection } from "@/features/settings/presentation/ContactSection";
+import { About } from "@/features/marketing/presentation/About";
+import { Gallery } from "@/features/marketing/presentation/Gallery";
+import { Hero } from "@/features/marketing/presentation/Hero";
+import { Testimonials } from "@/features/marketing/presentation/Testimonials";
+import { siteConfig } from "@/config/site";
+import { isSupabaseConfigured } from "@/lib/env";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
 import {
   localBusinessJsonLd,
   organizationJsonLd,
   serviceJsonLd,
   websiteJsonLd,
-} from "@/shared/seo/structured-data";
+} from "@/lib/seo/structured-data";
 
 // Leest de database; nooit statisch voorgerenderd (een mislukte query bij de build zou anders blijven hangen).
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  ...maakMetadata({
-    titel: siteConfig.titel,
-    beschrijving: siteConfig.beschrijving,
-    pad: "/",
-    metMerknaam: false,
+  ...buildMetadata({
+    title: siteConfig.title,
+    description: siteConfig.description,
+    path: "/",
+    withBrandName: false,
   }),
-  title: { absolute: siteConfig.titel },
+  title: { absolute: siteConfig.title },
 };
 
 export default async function HomePage() {
-  const [diensten, instellingen] = await Promise.all([
+  const [services, settings] = await Promise.all([
     listActiveServices(getServiceDeps().repo),
     getPublicSettings(getSettingsDeps().repo),
   ]);
-  const bedrijf = bedrijfsGegevens(instellingen);
+  const business = toBusinessData(settings);
 
   return (
     <>
       <JsonLd
         data={[
-          organizationJsonLd(bedrijf, `${bedrijf.url}/icon-512.png`),
-          websiteJsonLd(bedrijf, siteConfig.taal),
+          organizationJsonLd(business, `${business.url}/icon-512.png`),
+          websiteJsonLd(business, siteConfig.language),
           localBusinessJsonLd(
-            bedrijf,
-            siteConfig.lokaalType,
-            `${bedrijf.url}${siteConfig.ogImage}`,
+            business,
+            siteConfig.localType,
+            `${business.url}${siteConfig.ogImage}`,
           ),
-          ...diensten.map((dienst) =>
+          ...services.map((service) =>
             serviceJsonLd(
-              { naam: dienst.naam, beschrijving: dienst.beschrijving, prijs: dienst.prijs },
-              bedrijf,
+              { name: service.name, description: service.description, price: service.price },
+              business,
               "/diensten",
             ),
           ),
@@ -65,7 +65,7 @@ export default async function HomePage() {
 
       <main>
         <Hero />
-        <ServicesSection diensten={diensten.map(naarServiceUIModel)} />
+        <ServicesSection services={services.map(toServiceUIModel)} />
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <About />
@@ -77,16 +77,16 @@ export default async function HomePage() {
           </div>
         </section>
         <BookingWizard
-          diensten={diensten.map(naarServiceUIModel)}
-          openingstijden={instellingen.openingstijden}
-          geconfigureerd={isSupabaseConfigured}
+          services={services.map(toServiceUIModel)}
+          openingHours={settings.openingHours}
+          configured={isSupabaseConfigured}
         />
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-6xl px-5 sm:px-8">
             <Testimonials />
           </div>
         </section>
-        <ContactSection instellingen={instellingen} />
+        <ContactSection settings={settings} />
       </main>
     </>
   );

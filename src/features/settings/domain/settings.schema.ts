@@ -1,44 +1,44 @@
 import { z } from "zod";
-import { emailSchema, tijdSchema } from "@/shared/domain/primitives";
-import { DAGEN } from "./opening-hours.rules";
+import { emailSchema, timeSchema } from "@/lib/validations/primitives";
+import { WEEKDAYS } from "./opening-hours.rules";
 
-const dagOpeningstijdSchema = z.object({
+const dayOpeningHoursSchema = z.object({
   open: z.boolean(),
-  van: tijdSchema,
-  tot: tijdSchema,
+  from: timeSchema,
+  to: timeSchema,
 });
 
-export const openingstijdenSchema = z
+export const openingHoursSchema = z
   .object(
-    Object.fromEntries(DAGEN.map((dag) => [dag, dagOpeningstijdSchema])) as Record<
-      (typeof DAGEN)[number],
-      typeof dagOpeningstijdSchema
+    Object.fromEntries(WEEKDAYS.map((day) => [day, dayOpeningHoursSchema])) as Record<
+      (typeof WEEKDAYS)[number],
+      typeof dayOpeningHoursSchema
     >,
   )
   .refine(
-    (tijden) => Object.values(tijden).every((dag) => !dag.open || dag.van < dag.tot),
+    (hours) => Object.values(hours).every((day) => !day.open || day.from < day.to),
     "Openingstijd moet vóór sluitingstijd liggen.",
   );
 
 /** Lege invoer wordt `null`: zo kan de beheerder een veld weer leegmaken. */
-const optioneleTekst = (max: number) =>
+const optionalText = (max: number) =>
   z
     .string()
     .trim()
     .max(max)
     .or(z.literal(""))
-    .transform((waarde) => waarde || null)
+    .transform((value) => value || null)
     .nullable();
 
 export const settingsInputSchema = z.object({
-  bedrijfsnaam: z.string().trim().min(1, "Vul een bedrijfsnaam in.").max(120),
-  admin_email: emailSchema
+  businessName: z.string().trim().min(1, "Vul een bedrijfsnaam in.").max(120),
+  adminEmail: emailSchema
     .or(z.literal(""))
-    .transform((waarde) => waarde || null)
+    .transform((value) => value || null)
     .nullable(),
-  telefoonnummer: optioneleTekst(40),
-  adres: optioneleTekst(300),
-  openingstijden: openingstijdenSchema,
+  phoneNumber: optionalText(40),
+  address: optionalText(300),
+  openingHours: openingHoursSchema,
 });
 
 export type SettingsInput = z.infer<typeof settingsInputSchema>;

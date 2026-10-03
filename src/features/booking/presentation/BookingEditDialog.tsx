@@ -4,50 +4,62 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
-import { Button } from "@/app/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/app/ui/dialog";
-import { Input } from "@/app/ui/input";
-import { Label } from "@/app/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/ui/select";
-import { Textarea } from "@/app/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { adminBookingUpdateSchema, type AdminBookingUpdate } from "../domain/booking.schema";
 import type { BookingStatus } from "../domain/booking.entity";
-import { statusLabel, type BookingUIModel } from "./booking.uimodel";
+import { statusLabel, type BookingUIModel } from "./booking.ui-model";
 
-const bewerkSchema = adminBookingUpdateSchema.omit({ id: true, klant_email: true });
-type BewerkWaarden = z.input<typeof bewerkSchema>;
+const editSchema = adminBookingUpdateSchema.omit({ id: true, customerEmail: true });
+type EditValues = z.input<typeof editSchema>;
 
 type BookingEditDialogProps = {
-  boeking: BookingUIModel | null;
-  diensten: Array<{ id: string; naam: string }>;
-  bezig: boolean;
-  onSluit: () => void;
-  onOpslaan: (wijziging: AdminBookingUpdate) => void;
+  booking: BookingUIModel | null;
+  services: Array<{ id: string; name: string }>;
+  isPending: boolean;
+  onClose: () => void;
+  onSave: (change: AdminBookingUpdate) => void;
 };
 
 export function BookingEditDialog({
-  boeking,
-  diensten,
-  bezig,
-  onSluit,
-  onOpslaan,
+  booking,
+  services,
+  isPending,
+  onClose,
+  onSave,
 }: BookingEditDialogProps) {
   return (
-    <Dialog open={Boolean(boeking)} onOpenChange={(open) => !open && onSluit()}>
+    <Dialog open={Boolean(booking)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Boeking bewerken</DialogTitle>
         </DialogHeader>
 
         {/* De key zorgt dat het formulier met verse waarden begint bij elke andere boeking. */}
-        {boeking ? (
-          <BewerkFormulier
-            key={boeking.id}
-            boeking={boeking}
-            diensten={diensten}
-            bezig={bezig}
-            onSluit={onSluit}
-            onOpslaan={onOpslaan}
+        {booking ? (
+          <EditForm
+            key={booking.id}
+            booking={booking}
+            services={services}
+            isPending={isPending}
+            onClose={onClose}
+            onSave={onSave}
           />
         ) : null}
       </DialogContent>
@@ -55,75 +67,75 @@ export function BookingEditDialog({
   );
 }
 
-function BewerkFormulier({
-  boeking,
-  diensten,
-  bezig,
-  onSluit,
-  onOpslaan,
-}: Omit<BookingEditDialogProps, "boeking"> & { boeking: BookingUIModel }) {
-  const { register, control, handleSubmit, formState } = useForm<BewerkWaarden>({
-    resolver: zodResolver(bewerkSchema),
+function EditForm({
+  booking,
+  services,
+  isPending,
+  onClose,
+  onSave,
+}: Omit<BookingEditDialogProps, "booking"> & { booking: BookingUIModel }) {
+  const { register, control, handleSubmit, formState } = useForm<EditValues>({
+    resolver: zodResolver(editSchema),
     defaultValues: {
-      service_id: boeking.serviceId,
-      klant_naam: boeking.klantNaam,
-      klant_telefoon: boeking.klantTelefoon,
-      datum: boeking.datum,
-      tijd: boeking.tijd,
-      status: boeking.status,
-      notities: boeking.notities ?? "",
+      serviceId: booking.serviceId,
+      customerName: booking.customerName,
+      customerPhone: booking.customerPhone,
+      date: booking.date,
+      time: booking.time,
+      status: booking.status,
+      notes: booking.notes ?? "",
     },
   });
   const { errors } = formState;
 
-  const opslaan = handleSubmit((waarden) =>
-    onOpslaan({
-      id: boeking.id,
-      ...waarden,
+  const save = handleSubmit((values) =>
+    onSave({
+      id: booking.id,
+      ...values,
       // Een leeg veld betekent: notitie wissen.
-      notities: waarden.notities?.trim() ? waarden.notities : null,
+      notes: values.notes?.trim() ? values.notes : null,
     }),
   );
 
   return (
-    <form onSubmit={opslaan} noValidate className="grid gap-4">
-      <Veld id="bewerk-naam" label="Klantnaam" fout={errors.klant_naam?.message}>
-        <Input id="bewerk-naam" {...register("klant_naam")} />
-      </Veld>
+    <form onSubmit={save} noValidate className="grid gap-4">
+      <Field id="edit-name" label="Klantnaam" error={errors.customerName?.message}>
+        <Input id="edit-name" {...register("customerName")} />
+      </Field>
 
-      <Veld id="bewerk-telefoon" label="Telefoonnummer" fout={errors.klant_telefoon?.message}>
-        <Input id="bewerk-telefoon" type="tel" {...register("klant_telefoon")} />
-      </Veld>
+      <Field id="edit-phone" label="Telefoonnummer" error={errors.customerPhone?.message}>
+        <Input id="edit-phone" type="tel" {...register("customerPhone")} />
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <Veld id="bewerk-dienst" label="Dienst" fout={errors.service_id?.message}>
+        <Field id="edit-service" label="Dienst" error={errors.serviceId?.message}>
           <Controller
             control={control}
-            name="service_id"
+            name="serviceId"
             render={({ field }) => (
               <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                <SelectTrigger id="bewerk-dienst">
+                <SelectTrigger id="edit-service">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {diensten.map((dienst) => (
-                    <SelectItem key={dienst.id} value={dienst.id}>
-                      {dienst.naam}
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
           />
-        </Veld>
+        </Field>
 
-        <Veld id="bewerk-status" label="Status" fout={errors.status?.message}>
+        <Field id="edit-status" label="Status" error={errors.status?.message}>
           <Controller
             control={control}
             name="status"
             render={({ field }) => (
               <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                <SelectTrigger id="bewerk-status">
+                <SelectTrigger id="edit-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -136,26 +148,26 @@ function BewerkFormulier({
               </Select>
             )}
           />
-        </Veld>
+        </Field>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Veld id="bewerk-datum" label="Datum" fout={errors.datum?.message}>
-          <Input id="bewerk-datum" type="date" {...register("datum")} />
-        </Veld>
-        <Veld id="bewerk-tijd" label="Tijd" fout={errors.tijd?.message}>
-          <Input id="bewerk-tijd" type="time" {...register("tijd")} />
-        </Veld>
+        <Field id="edit-date" label="Datum" error={errors.date?.message}>
+          <Input id="edit-date" type="date" {...register("date")} />
+        </Field>
+        <Field id="edit-time" label="Tijd" error={errors.time?.message}>
+          <Input id="edit-time" type="time" {...register("time")} />
+        </Field>
       </div>
 
-      <Veld id="bewerk-notities" label="Interne notitie" fout={errors.notities?.message}>
+      <Field id="edit-notes" label="Interne notitie" error={errors.notes?.message}>
         <Textarea
-          id="bewerk-notities"
+          id="edit-notes"
           rows={3}
           placeholder="Alleen zichtbaar voor jou."
-          {...register("notities")}
+          {...register("notes")}
         />
-      </Veld>
+      </Field>
 
       <p className="text-xs text-muted-foreground">
         Verandert de datum, tijd of dienst? Dan krijgt de klant automatisch een mail met de nieuwe
@@ -163,11 +175,11 @@ function BewerkFormulier({
       </p>
 
       <DialogFooter>
-        <Button type="button" variant="outline" disabled={bezig} onClick={onSluit}>
+        <Button type="button" variant="outline" disabled={isPending} onClick={onClose}>
           Annuleren
         </Button>
-        <Button type="submit" className="gap-2" disabled={bezig}>
-          {bezig ? <Loader2 className="size-4 animate-spin" /> : null}
+        <Button type="submit" className="gap-2" disabled={isPending}>
+          {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
           Opslaan
         </Button>
       </DialogFooter>
@@ -175,22 +187,22 @@ function BewerkFormulier({
   );
 }
 
-function Veld({
+function Field({
   id,
   label,
-  fout,
+  error,
   children,
 }: {
   id: string;
   label: string;
-  fout: string | undefined;
+  error: string | undefined;
   children: React.ReactNode;
 }) {
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {fout ? <p className="text-xs text-destructive">{fout}</p> : null}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

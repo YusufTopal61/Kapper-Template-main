@@ -1,11 +1,11 @@
 import "server-only";
-import { getResendConfig } from "@/shared/lib/env.server";
-import type { EmailInhoud } from "./mail-templates";
+import { getResendConfig } from "@/lib/env.server";
+import type { EmailContent } from "./mail-templates";
 
-export type VerzendResultaat =
-  | { status: "verzonden"; id: string }
-  | { status: "overgeslagen"; reden: string }
-  | { status: "mislukt"; reden: string };
+export type SendResult =
+  | { status: "sent"; id: string }
+  | { status: "skipped"; reason: string }
+  | { status: "failed"; reason: string };
 
 /**
  * Verstuurt een e-mail via Resend.
@@ -15,14 +15,14 @@ export type VerzendResultaat =
  * Zonder RESEND_API_KEY wordt de mail naar de console geschreven, zodat de
  * flow lokaal compleet te testen is voordat de key er is.
  */
-export async function verstuurEmail(
-  naar: string | null | undefined,
-  inhoud: EmailInhoud,
-): Promise<VerzendResultaat> {
-  if (!naar) {
-    const reden = "geen ontvanger ingesteld";
-    console.warn(`[email] overgeslagen (${reden}): ${inhoud.subject}`);
-    return { status: "overgeslagen", reden };
+export async function sendEmail(
+  to: string | null | undefined,
+  content: EmailContent,
+): Promise<SendResult> {
+  if (!to) {
+    const reason = "geen ontvanger ingesteld";
+    console.warn(`[email] overgeslagen (${reason}): ${content.subject}`);
+    return { status: "skipped", reason };
   }
 
   const { apiKey, from } = getResendConfig();
@@ -31,12 +31,12 @@ export async function verstuurEmail(
     console.info(
       [
         "[email] RESEND_API_KEY ontbreekt — niet verzonden.",
-        `  aan:      ${naar}`,
-        `  onderwerp: ${inhoud.subject}`,
+        `  aan:      ${to}`,
+        `  onderwerp: ${content.subject}`,
         "  (zet RESEND_API_KEY in .env.local om echt te versturen)",
       ].join("\n"),
     );
-    return { status: "overgeslagen", reden: "RESEND_API_KEY ontbreekt" };
+    return { status: "skipped", reason: "RESEND_API_KEY ontbreekt" };
   }
 
   try {
@@ -48,30 +48,30 @@ export async function verstuurEmail(
       },
       body: JSON.stringify({
         from,
-        to: [naar],
-        subject: inhoud.subject,
-        html: inhoud.html,
-        text: inhoud.text,
+        to: [to],
+        subject: content.subject,
+        html: content.html,
+        text: content.text,
       }),
     });
 
     if (!response.ok) {
       const body = await response.text();
-      console.error(`[email] Resend gaf ${response.status} voor "${inhoud.subject}": ${body}`);
-      return { status: "mislukt", reden: `Resend ${response.status}` };
+      console.error(`[email] Resend gaf ${response.status} voor "${content.subject}": ${body}`);
+      return { status: "failed", reason: `Resend ${response.status}` };
     }
 
     const data = (await response.json()) as { id?: string };
-    return { status: "verzonden", id: data.id ?? "onbekend" };
+    return { status: "sent", id: data.id ?? "unknown" };
   } catch (error) {
-    console.error(`[email] versturen mislukt voor "${inhoud.subject}":`, error);
-    return { status: "mislukt", reden: error instanceof Error ? error.message : "onbekende fout" };
+    console.error(`[email] versturen mislukt voor "${content.subject}":`, error);
+    return { status: "failed", reason: error instanceof Error ? error.message : "onbekende fout" };
   }
 }
 
 /** Verstuurt meerdere mails parallel; één mislukking laat de rest doorgaan. */
-export async function verstuurEmails(
-  mails: Array<{ naar: string | null | undefined; inhoud: EmailInhoud }>,
-): Promise<VerzendResultaat[]> {
-  return Promise.all(mails.map(({ naar, inhoud }) => verstuurEmail(naar, inhoud)));
+export async function sendEmails(
+  mails: Array<{ to: string | null | undefined; content: EmailContent }>,
+): Promise<SendResult[]> {
+  return Promise.all(mails.map(({ to, content }) => sendEmail(to, content)));
 }

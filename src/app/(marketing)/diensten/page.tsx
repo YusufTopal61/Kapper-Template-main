@@ -1,45 +1,45 @@
 import type { Metadata } from "next";
-import { getServiceDeps, getSettingsDeps } from "@/app/di/container";
-import { bedrijfsGegevens } from "@/app/site-seo";
-import { listActiveServices } from "@/modules/services/domain/usecases/listActiveServices";
-import { naarServiceUIModel } from "@/modules/services/presentation/service.uimodel";
-import { ServicesSection } from "@/modules/services/presentation/ServicesSection";
-import { getPublicSettings } from "@/modules/settings/domain/usecases/getPublicSettings";
-import { CtaBanner } from "@/modules/site/presentation/CtaBanner";
-import { PageHeader } from "@/modules/site/presentation/PageHeader";
-import { siteConfig } from "@/shared/config/site";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
-import { breadcrumbJsonLd, serviceJsonLd } from "@/shared/seo/structured-data";
+import { getServiceDeps, getSettingsDeps } from "@/lib/di/container";
+import { toBusinessData } from "@/lib/seo/business-data";
+import { listActiveServices } from "@/features/services/domain/usecases/list-active-services";
+import { toServiceUIModel } from "@/features/services/presentation/service.ui-model";
+import { ServicesSection } from "@/features/services/presentation/ServicesSection";
+import { getPublicSettings } from "@/features/settings/domain/usecases/get-public-settings";
+import { CtaBanner } from "@/features/marketing/presentation/CtaBanner";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { siteConfig } from "@/config/site";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, serviceJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = maakMetadata({
-  titel: "Diensten",
-  beschrijving:
+export const metadata: Metadata = buildMetadata({
+  title: "Diensten",
+  description:
     "Knippen, baard en de volledige behandeling. Bekijk prijs, duur en wat elke dienst inhoudt.",
-  pad: "/diensten",
+  path: "/diensten",
 });
 
-export default async function DienstenPage() {
-  const [diensten, instellingen] = await Promise.all([
+export default async function ServicesPage() {
+  const [services, settings] = await Promise.all([
     listActiveServices(getServiceDeps().repo),
     getPublicSettings(getSettingsDeps().repo),
   ]);
-  const bedrijf = bedrijfsGegevens(instellingen);
+  const business = toBusinessData(settings);
 
   return (
     <>
       <JsonLd
         data={[
-          breadcrumbJsonLd(bedrijf.url, [
-            { naam: siteConfig.merknaam, pad: "/" },
-            { naam: "Diensten", pad: "/diensten" },
+          breadcrumbJsonLd(business.url, [
+            { name: siteConfig.brandName, path: "/" },
+            { name: "Diensten", path: "/diensten" },
           ]),
-          ...diensten.map((dienst) =>
+          ...services.map((service) =>
             serviceJsonLd(
-              { naam: dienst.naam, beschrijving: dienst.beschrijving, prijs: dienst.prijs },
-              bedrijf,
+              { name: service.name, description: service.description, price: service.price },
+              business,
               "/diensten",
             ),
           ),
@@ -53,7 +53,7 @@ export default async function DienstenPage() {
           title="Wat we doen."
           description="Geen eindeloze menukaart. Alleen wat we tot in de puntjes beheersen — knippen, baard en de combinatie van de twee."
         />
-        <ServicesSection diensten={diensten.map(naarServiceUIModel)} />
+        <ServicesSection services={services.map(toServiceUIModel)} />
         <CtaBanner />
       </main>
     </>

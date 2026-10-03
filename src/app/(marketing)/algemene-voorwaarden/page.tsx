@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/modules/site/presentation/PageHeader";
-import { siteConfig } from "@/shared/config/site";
-import { getSiteUrl } from "@/shared/lib/env.server";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
-import { breadcrumbJsonLd } from "@/shared/seo/structured-data";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { siteConfig } from "@/config/site";
+import { getSiteUrl } from "@/lib/env.server";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
-const TITEL = "Algemene voorwaarden";
-const BESCHRIJVING = "De afspraken rond het maken, wijzigen en annuleren van een boeking.";
+const TITLE = "Algemene voorwaarden";
+const DESCRIPTION = "De afspraken rond het maken, wijzigen en annuleren van een boeking.";
 
-export const metadata: Metadata = maakMetadata({
-  titel: TITEL,
-  beschrijving: BESCHRIJVING,
-  pad: "/algemene-voorwaarden",
+export const metadata: Metadata = buildMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: "/algemene-voorwaarden",
 });
 
-export default function VoorwaardenPage() {
+export default function TermsPage() {
   return (
     <>
       <JsonLd
         data={breadcrumbJsonLd(getSiteUrl(), [
-          { naam: siteConfig.merknaam, pad: "/" },
-          { naam: TITEL, pad: "/algemene-voorwaarden" },
+          { name: siteConfig.brandName, path: "/" },
+          { name: TITLE, path: "/algemene-voorwaarden" },
         ])}
       />
       <main>

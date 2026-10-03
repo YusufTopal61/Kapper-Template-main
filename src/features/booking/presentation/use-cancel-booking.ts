@@ -5,22 +5,22 @@ import { cancelBookingByTokenAction } from "./booking.actions";
 
 /** View model van de annuleerpagina: bevestigen, wachten, uitkomst tonen. */
 export function useCancelBooking(bookingId: string, token: string) {
-  const [geannuleerd, setGeannuleerd] = useState(false);
-  const [fout, setFout] = useState<string | null>(null);
-  const [bezig, startTransition] = useTransition();
+  const [cancelled, setCancelled] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  function annuleer() {
-    setFout(null);
+  function cancel() {
+    setError(null);
     startTransition(async () => {
       try {
-        const uitkomst = await cancelBookingByTokenAction({ bookingId, token });
-        if (uitkomst.ok) setGeannuleerd(true);
-        else setFout(uitkomst.error);
+        const outcome = await cancelBookingByTokenAction({ bookingId, token });
+        if (outcome.ok) setCancelled(true);
+        else setError(outcome.error);
       } catch {
-        setFout("Er ging iets mis. Probeer het zo nog eens.");
+        setError("Er ging iets mis. Probeer het zo nog eens.");
       }
     });
   }
 
-  return { geannuleerd, fout, bezig, annuleer };
+  return { cancelled, error, isPending, cancel };
 }

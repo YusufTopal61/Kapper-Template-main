@@ -11,12 +11,12 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import { formatDatum } from "@/modules/settings/domain/opening-hours.rules";
+import { formatDate } from "@/features/settings/domain/opening-hours.rules";
 import type { AdminBookingUpdate } from "../domain/booking.schema";
 import { cancelBookingAdminAction, updateBookingAction } from "./booking.actions";
-import type { BookingUIModel } from "./booking.uimodel";
+import type { BookingUIModel } from "./booking.ui-model";
 
-type Uitkomst = { ok: true } | { ok: false; error: string };
+type Outcome = { ok: true } | { ok: false; error: string };
 
 /**
  * View model van het boekingenscherm: kalender of lijst, welke maand en dag,
@@ -24,88 +24,88 @@ type Uitkomst = { ok: true } | { ok: false; error: string };
  * props van de server; na elke wijziging vragen we de server om een verse
  * versie (router.refresh) in plaats van een eigen kopie bij te houden.
  */
-export function useBookingsCalendar(boekingen: BookingUIModel[]) {
+export function useBookingsCalendar(bookings: BookingUIModel[]) {
   const router = useRouter();
-  const [weergave, setWeergave] = useState<"kalender" | "lijst">("kalender");
-  const [maand, setMaand] = useState(() => startOfMonth(new Date()));
-  const [gekozenDag, setGekozenDag] = useState<string | null>(null);
-  const [bewerkt, setBewerkt] = useState<BookingUIModel | null>(null);
-  const [fout, setFout] = useState<string | null>(null);
-  const [bezig, startTransition] = useTransition();
+  const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [month, setMonth] = useState(() => startOfMonth(new Date()));
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [editing, setEditing] = useState<BookingUIModel | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const dagen = useMemo(
+  const days = useMemo(
     () =>
       eachDayOfInterval({
-        start: startOfWeek(startOfMonth(maand), { weekStartsOn: 1 }),
-        end: endOfWeek(endOfMonth(maand), { weekStartsOn: 1 }),
-      }).map((dag) => ({ datum: dag, iso: formatDatum(dag) })),
-    [maand],
+        start: startOfWeek(startOfMonth(month), { weekStartsOn: 1 }),
+        end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }),
+      }).map((day) => ({ date: day, iso: formatDate(day) })),
+    [month],
   );
 
-  const perDag = useMemo(() => {
-    const groepen = new Map<string, BookingUIModel[]>();
-    for (const boeking of boekingen) {
-      groepen.set(boeking.datum, [...(groepen.get(boeking.datum) ?? []), boeking]);
+  const perDay = useMemo(() => {
+    const groups = new Map<string, BookingUIModel[]>();
+    for (const booking of bookings) {
+      groups.set(booking.date, [...(groups.get(booking.date) ?? []), booking]);
     }
-    for (const lijst of groepen.values()) lijst.sort((a, b) => a.tijd.localeCompare(b.tijd));
-    return groepen;
-  }, [boekingen]);
+    for (const list of groups.values()) list.sort((a, b) => a.time.localeCompare(b.time));
+    return groups;
+  }, [bookings]);
 
-  const actieveOpDag = (iso: string) =>
-    (perDag.get(iso) ?? []).filter((boeking) => boeking.status !== "geannuleerd");
+  const activeOnDay = (iso: string) =>
+    (perDay.get(iso) ?? []).filter((booking) => booking.status !== "cancelled");
 
-  function voerUit(actie: () => Promise<Uitkomst>, naSucces?: () => void) {
-    setFout(null);
+  function run(action: () => Promise<Outcome>, onSuccess?: () => void) {
+    setError(null);
     startTransition(async () => {
       try {
-        const uitkomst = await actie();
-        if (!uitkomst.ok) {
-          setFout(uitkomst.error);
+        const outcome = await action();
+        if (!outcome.ok) {
+          setError(outcome.error);
           return;
         }
-        naSucces?.();
+        onSuccess?.();
         router.refresh();
       } catch {
-        setFout("Dit kon niet worden opgeslagen. Probeer het zo nog eens.");
+        setError("Dit kon niet worden opgeslagen. Probeer het zo nog eens.");
       }
     });
   }
 
   return {
-    weergave,
-    setWeergave,
-    maand,
-    dagen,
-    gekozenDag,
-    bewerkt,
-    fout,
-    bezig,
-    aantalActief: boekingen.filter((boeking) => boeking.status !== "geannuleerd").length,
-    actieveOpDag,
-    dagBoekingen: gekozenDag ? (perDag.get(gekozenDag) ?? []) : [],
-    kiesDag: (iso: string) => setGekozenDag((vorige) => (vorige === iso ? null : iso)),
-    sluitDag: () => setGekozenDag(null),
-    vorigeMaand: () => {
-      setMaand((huidig) => subMonths(huidig, 1));
-      setGekozenDag(null);
+    view,
+    setView,
+    month,
+    days,
+    selectedDay,
+    editing,
+    error,
+    isPending,
+    activeCount: bookings.filter((booking) => booking.status !== "cancelled").length,
+    activeOnDay,
+    dayBookings: selectedDay ? (perDay.get(selectedDay) ?? []) : [],
+    selectDay: (iso: string) => setSelectedDay((previous) => (previous === iso ? null : iso)),
+    closeDay: () => setSelectedDay(null),
+    previousMonth: () => {
+      setMonth((current) => subMonths(current, 1));
+      setSelectedDay(null);
     },
-    volgendeMaand: () => {
-      setMaand((huidig) => addMonths(huidig, 1));
-      setGekozenDag(null);
+    nextMonth: () => {
+      setMonth((current) => addMonths(current, 1));
+      setSelectedDay(null);
     },
-    bewerk: setBewerkt,
-    sluitBewerken: () => setBewerkt(null),
-    markeerVoltooid: (id: string) => voerUit(() => updateBookingAction({ id, status: "voltooid" })),
-    annuleer: (id: string) => {
+    edit: setEditing,
+    closeEditing: () => setEditing(null),
+    markCompleted: (id: string) => run(() => updateBookingAction({ id, status: "completed" })),
+    cancel: (id: string) => {
       if (!window.confirm("Deze afspraak annuleren? De klant krijgt hiervan bericht per e-mail.")) {
         return;
       }
-      voerUit(() => cancelBookingAdminAction({ id }));
+      run(() => cancelBookingAdminAction({ id }));
     },
-    opslaan: (wijziging: AdminBookingUpdate) =>
-      voerUit(
-        () => updateBookingAction(wijziging),
-        () => setBewerkt(null),
+    save: (change: AdminBookingUpdate) =>
+      run(
+        () => updateBookingAction(change),
+        () => setEditing(null),
       ),
   };
 }

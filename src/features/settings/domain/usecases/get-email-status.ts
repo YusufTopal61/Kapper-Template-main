@@ -1,4 +1,4 @@
-import type { AdminGuard } from "@/modules/auth/domain/auth.gateway";
+import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
 import type { EmailStatusChecker } from "../settings.repository";
 
 /** Beheer: kunnen we daadwerkelijk naar klanten mailen, of staat de provider nog in testmodus? */

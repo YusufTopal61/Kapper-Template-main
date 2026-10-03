@@ -1,26 +1,26 @@
 "use server";
 
-import { getAuthGateway } from "@/app/di/container";
-import { ongeldigeInvoer } from "@/shared/lib/action-result";
-import { beperkAanvragen } from "@/shared/lib/request-limit.server";
+import { getAuthGateway } from "@/lib/di/container";
+import { invalidInput } from "@/lib/utils/action-result";
+import { limitRequests } from "@/lib/utils/request-limit.server";
 import { loginSchema } from "../domain/auth.schema";
-import { signIn, type SignInResultaat } from "../domain/usecases/signIn";
+import { signIn, type SignInResult } from "../domain/usecases/sign-in";
 
-const LOGIN_VENSTER_MS = 15 * 60 * 1000;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
-export async function signInAction(input: unknown): Promise<SignInResultaat> {
-  const geldig = loginSchema.safeParse(input);
-  if (!geldig.success) return ongeldigeInvoer(geldig.error);
+export async function signInAction(input: unknown): Promise<SignInResult> {
+  const valid = loginSchema.safeParse(input);
+  if (!valid.success) return invalidInput(valid.error);
 
-  const wacht = await beperkAanvragen("login", 5, LOGIN_VENSTER_MS);
-  if (wacht !== null) {
+  const waitSeconds = await limitRequests("login", 5, LOGIN_WINDOW_MS);
+  if (waitSeconds !== null) {
     return {
       ok: false,
-      error: `Te veel inlogpogingen. Probeer het over ${wacht} seconden opnieuw.`,
+      error: `Te veel inlogpogingen. Probeer het over ${waitSeconds} seconden opnieuw.`,
     };
   }
 
-  return signIn(getAuthGateway(), geldig.data);
+  return signIn(getAuthGateway(), valid.data);
 }
 
 export async function signOutAction() {

@@ -1,6 +1,6 @@
-import { Reveal } from "@/app/ui/reveal";
-import { Badge } from "@/app/ui/pill-badge";
-import { WordsPullUp } from "@/app/ui/words-pull-up";
+import { Reveal } from "@/components/ui/reveal";
+import { Badge } from "@/components/ui/pill-badge";
+import { WordsPullUp } from "@/components/ui/words-pull-up";
 
 type PageHeaderProps = {
   badgeLabel: string;

@@ -5,14 +5,14 @@
  */
 export const siteConfig = {
   /** Merknaam in titels en structured data. */
-  merknaam: "BARBER",
-  titel: "BARBER — Premium barbershop",
-  beschrijving:
+  brandName: "BARBER",
+  title: "BARBER — Premium barbershop",
+  description:
     "Scherp geknipt, rustig afgewerkt. Knippen, baard en de volledige behandeling. Plan eenvoudig online je afspraak.",
-  taal: "nl",
+  language: "nl",
   locale: "nl_NL",
   themeColor: "#0a0a0a",
   ogImage: "/og-image.png",
   /** schema.org-type voor lokale SEO: BarberShop, HairSalon, AutoDealer, … */
-  lokaalType: "BarberShop",
+  localType: "BarberShop",
 } as const;

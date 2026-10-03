@@ -1,14 +1,14 @@
 "use server";
 
-import { getSettingsDeps } from "@/app/di/container";
-import { ongeldigeInvoer } from "@/shared/lib/action-result";
-import { uitvoerenAlsBeheerder } from "@/modules/auth/presentation/admin-action";
+import { getSettingsDeps } from "@/lib/di/container";
+import { invalidInput } from "@/lib/utils/action-result";
+import { runAsAdmin } from "@/features/auth/presentation/admin-action";
 import { settingsInputSchema } from "../domain/settings.schema";
-import { saveSettings } from "../domain/usecases/saveSettings";
+import { saveSettings } from "../domain/usecases/save-settings";
 
 export async function saveSettingsAction(input: unknown) {
-  const geldig = settingsInputSchema.safeParse(input);
-  if (!geldig.success) return ongeldigeInvoer(geldig.error);
+  const valid = settingsInputSchema.safeParse(input);
+  if (!valid.success) return invalidInput(valid.error);
 
-  return uitvoerenAlsBeheerder(() => saveSettings(getSettingsDeps(), geldig.data));
+  return runAsAdmin(() => saveSettings(getSettingsDeps(), valid.data));
 }

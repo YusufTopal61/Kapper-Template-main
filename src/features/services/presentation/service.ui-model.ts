@@ -1,27 +1,27 @@
-import { formatEuro } from "@/shared/lib/format";
+import { formatEuro } from "@/lib/utils/format";
 import type { Service } from "../domain/service.entity";
 
 /** Precies wat de schermen van een dienst nodig hebben, al opgemaakt. */
 export type ServiceUIModel = {
   id: string;
-  naam: string;
-  beschrijving: string;
-  prijs: number;
-  duurMinuten: number;
-  prijsLabel: string;
-  duurLabel: string;
-  actief: boolean;
+  name: string;
+  description: string;
+  price: number;
+  durationMinutes: number;
+  priceLabel: string;
+  durationLabel: string;
+  isActive: boolean;
 };
 
-export function naarServiceUIModel(dienst: Service): ServiceUIModel {
+export function toServiceUIModel(service: Service): ServiceUIModel {
   return {
-    id: dienst.id,
-    naam: dienst.naam,
-    beschrijving: dienst.beschrijving,
-    prijs: dienst.prijs,
-    duurMinuten: dienst.duur_minuten,
-    prijsLabel: formatEuro(dienst.prijs),
-    duurLabel: `${dienst.duur_minuten} min`,
-    actief: dienst.actief,
+    id: service.id,
+    name: service.name,
+    description: service.description,
+    price: service.price,
+    durationMinutes: service.durationMinutes,
+    priceLabel: formatEuro(service.price),
+    durationLabel: `${service.durationMinutes} min`,
+    isActive: service.isActive,
   };
 }

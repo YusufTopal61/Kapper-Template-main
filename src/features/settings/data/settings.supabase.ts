@@ -1,16 +1,14 @@
 import "server-only";
-import {
-  getSupabaseAdminClient,
-  getSupabaseServerClient,
-} from "@/shared/lib/supabase/supabase.server";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { SettingsRepository } from "../domain/settings.repository";
-import { naarBusinessSettings } from "./settings.mapper";
+import { toBusinessSettings, toSettingsUpdate } from "./settings.mapper";
 
 export function createSupabaseSettingsRepository(): SettingsRepository {
   return {
     async read() {
-      // admin_settings heeft bewust geen publieke leesrechten (admin_email is
-      // privé), dus server-intern lezen gaat met de service role.
+      // admin_settings deliberately has no public read access (admin_email is
+      // private), so server-internal reads go through the service role.
       const { data, error } = await getSupabaseAdminClient()
         .from("admin_settings")
         .select("*")
@@ -18,34 +16,26 @@ export function createSupabaseSettingsRepository(): SettingsRepository {
         .maybeSingle();
 
       if (error) throw error;
-      return data ? naarBusinessSettings(data) : null;
+      return data ? toBusinessSettings(data) : null;
     },
 
     async readAsAdmin() {
-      const { data, error } = await (
-        await getSupabaseServerClient()
-      )
+      const supabase = await getSupabaseServerClient();
+      const { data, error } = await supabase
         .from("admin_settings")
         .select("*")
         .eq("singleton", true)
         .maybeSingle();
 
       if (error) throw error;
-      return data ? naarBusinessSettings(data) : null;
+      return data ? toBusinessSettings(data) : null;
     },
 
     async save(input) {
-      const { error } = await (
-        await getSupabaseServerClient()
-      )
+      const supabase = await getSupabaseServerClient();
+      const { error } = await supabase
         .from("admin_settings")
-        .update({
-          bedrijfsnaam: input.bedrijfsnaam,
-          admin_email: input.admin_email,
-          telefoonnummer: input.telefoonnummer,
-          adres: input.adres,
-          openingstijden: input.openingstijden,
-        })
+        .update(toSettingsUpdate(input))
         .eq("singleton", true);
 
       if (error) throw error;

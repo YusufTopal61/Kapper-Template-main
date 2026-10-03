@@ -1,9 +1,9 @@
 export type Service = {
   id: string;
-  naam: string;
-  beschrijving: string;
-  prijs: number;
-  duur_minuten: number;
-  actief: boolean;
-  sorteer_volgorde: number;
+  name: string;
+  description: string;
+  price: number;
+  durationMinutes: number;
+  isActive: boolean;
+  sortOrder: number;
 };

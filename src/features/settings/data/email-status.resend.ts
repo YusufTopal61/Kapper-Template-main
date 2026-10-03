@@ -1,10 +1,10 @@
 import "server-only";
-import { getResendConfig } from "@/shared/lib/env.server";
+import { getResendConfig } from "@/lib/env.server";
 import type { EmailStatusChecker } from "../domain/settings.repository";
 import type { EmailStatus } from "../domain/settings.entity";
 
-function domeinVan(adres: string): string | null {
-  const match = adres.match(/@([^\s>]+)/);
+function domainOf(address: string): string | null {
+  const match = address.match(/@([^\s>]+)/);
   return match?.[1] ? match[1].toLowerCase() : null;
 }
 
@@ -16,11 +16,11 @@ function domeinVan(adres: string): string | null {
  * boeking zelf faalt. Dat gat moet zichtbaar zijn voor de beheerder, niet
  * alleen in een serverlog.
  */
-async function controleerEmailStatus(): Promise<EmailStatus> {
+async function checkEmailStatus(): Promise<EmailStatus> {
   const { apiKey, from } = getResendConfig();
 
   if (!apiKey) {
-    return { geconfigureerd: false, sandboxModus: true, vanAdres: from, geverifieerdeDomeinen: [] };
+    return { configured: false, sandboxMode: true, fromAddress: from, verifiedDomains: [] };
   }
 
   try {
@@ -32,33 +32,33 @@ async function controleerEmailStatus(): Promise<EmailStatus> {
       // Kan de status niet betrouwbaar vaststellen — dan liever "sandbox"
       // aannemen dan valse zekerheid geven.
       return {
-        geconfigureerd: true,
-        sandboxModus: true,
-        vanAdres: from,
-        geverifieerdeDomeinen: [],
+        configured: true,
+        sandboxMode: true,
+        fromAddress: from,
+        verifiedDomains: [],
       };
     }
 
     const data = (await response.json()) as { data?: Array<{ name: string; status: string }> };
-    const geverifieerd = (data.data ?? [])
-      .filter((domein) => domein.status === "verified")
-      .map((domein) => domein.name);
+    const verified = (data.data ?? [])
+      .filter((domainName) => domainName.status === "verified")
+      .map((domainName) => domainName.name);
 
-    const vanDomein = domeinVan(from);
-    const vanDomeinGeverifieerd = Boolean(vanDomein && geverifieerd.includes(vanDomein));
+    const fromDomain = domainOf(from);
+    const fromDomainVerified = Boolean(fromDomain && verified.includes(fromDomain));
 
     return {
-      geconfigureerd: true,
-      sandboxModus: !vanDomeinGeverifieerd,
-      vanAdres: from,
-      geverifieerdeDomeinen: geverifieerd,
+      configured: true,
+      sandboxMode: !fromDomainVerified,
+      fromAddress: from,
+      verifiedDomains: verified,
     };
   } catch (error) {
     console.error("[email] status ophalen bij Resend mislukt:", error);
-    return { geconfigureerd: true, sandboxModus: true, vanAdres: from, geverifieerdeDomeinen: [] };
+    return { configured: true, sandboxMode: true, fromAddress: from, verifiedDomains: [] };
   }
 }
 
 export function createResendEmailStatusChecker(): EmailStatusChecker {
-  return { check: controleerEmailStatus };
+  return { check: checkEmailStatus };
 }

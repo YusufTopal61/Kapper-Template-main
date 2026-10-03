@@ -1,43 +1,43 @@
 import type { Metadata } from "next";
-import { getSettingsDeps } from "@/app/di/container";
-import { bedrijfsGegevens } from "@/app/site-seo";
-import { getPublicSettings } from "@/modules/settings/domain/usecases/getPublicSettings";
-import { ContactSection } from "@/modules/settings/presentation/ContactSection";
-import { siteConfig } from "@/shared/config/site";
-import { JsonLd } from "@/shared/seo/JsonLd";
-import { maakMetadata } from "@/shared/seo/metadata";
-import { breadcrumbJsonLd, localBusinessJsonLd } from "@/shared/seo/structured-data";
+import { getSettingsDeps } from "@/lib/di/container";
+import { toBusinessData } from "@/lib/seo/business-data";
+import { getPublicSettings } from "@/features/settings/domain/usecases/get-public-settings";
+import { ContactSection } from "@/features/settings/presentation/ContactSection";
+import { siteConfig } from "@/config/site";
+import { JsonLd } from "@/lib/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { breadcrumbJsonLd, localBusinessJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = maakMetadata({
-  titel: "Contact",
-  beschrijving: "Adres, openingstijden en contactgegevens. Loop gerust binnen.",
-  pad: "/contact",
+export const metadata: Metadata = buildMetadata({
+  title: "Contact",
+  description: "Adres, openingstijden en contactgegevens. Loop gerust binnen.",
+  path: "/contact",
 });
 
 export default async function ContactPage() {
-  const instellingen = await getPublicSettings(getSettingsDeps().repo);
-  const bedrijf = bedrijfsGegevens(instellingen);
+  const settings = await getPublicSettings(getSettingsDeps().repo);
+  const business = toBusinessData(settings);
 
   return (
     <>
       <JsonLd
         data={[
           localBusinessJsonLd(
-            bedrijf,
-            siteConfig.lokaalType,
-            `${bedrijf.url}${siteConfig.ogImage}`,
+            business,
+            siteConfig.localType,
+            `${business.url}${siteConfig.ogImage}`,
           ),
-          breadcrumbJsonLd(bedrijf.url, [
-            { naam: siteConfig.merknaam, pad: "/" },
-            { naam: "Contact", pad: "/contact" },
+          breadcrumbJsonLd(business.url, [
+            { name: siteConfig.brandName, path: "/" },
+            { name: "Contact", path: "/contact" },
           ]),
         ]}
       />
 
       <main className="pt-24 sm:pt-28">
-        <ContactSection instellingen={instellingen} kop="h1" />
+        <ContactSection settings={settings} heading="h1" />
       </main>
     </>
   );

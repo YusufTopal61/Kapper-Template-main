@@ -1,32 +1,77 @@
-import type { BookingRow } from "@/shared/lib/supabase/database.types";
-import type { BookedService, BookingRecord, BusyBooking } from "../domain/booking.entity";
+import type { Tables, TablesInsert, TablesUpdate } from "@/lib/supabase/database.types";
+import type { BookingRecord, BusyBooking, NewBooking } from "../domain/booking.entity";
+import type { AdminBookingUpdate } from "../domain/booking.schema";
 
-/** Een databaserij met de gekoppelde dienst, zoals Supabase hem teruggeeft. */
-export type BookingRowMetDienst = BookingRow & { services: BookedService | null };
+/** Select list that joins the booked service onto a booking row. */
+export const BOOKING_WITH_SERVICE = "*, services(id, name, price, duration_minutes)";
 
-/** Select-lijst waarmee BookingRowMetDienst wordt opgehaald. */
-export const BOOKING_MET_DIENST = "*, services(id, naam, prijs, duur_minuten)";
+/** A booking row joined with its service, as Supabase returns it for BOOKING_WITH_SERVICE. */
+export type BookingRowWithService = Tables<"bookings"> & {
+  services: Pick<Tables<"services">, "id" | "name" | "price" | "duration_minutes"> | null;
+};
 
-export function naarBookingRecord(rij: BookingRowMetDienst): BookingRecord {
+/**
+ * The only place that knows the booking column names. Everything above the
+ * data layer works with the camelCase entities from the domain.
+ */
+export function toBookingRecord(row: BookingRowWithService): BookingRecord {
   return {
-    id: rij.id,
-    service_id: rij.service_id,
-    klant_naam: rij.klant_naam,
-    klant_email: rij.klant_email,
-    klant_telefoon: rij.klant_telefoon,
-    datum: rij.datum,
-    tijd: rij.tijd,
-    status: rij.status,
-    notities: rij.notities,
-    annuleer_token: rij.annuleer_token,
-    services: rij.services,
+    id: row.id,
+    serviceId: row.service_id,
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    date: row.booking_date,
+    time: row.start_time,
+    status: row.status,
+    notes: row.notes,
+    cancelToken: row.cancel_token,
+    services: row.services
+      ? {
+          id: row.services.id,
+          name: row.services.name,
+          price: row.services.price,
+          durationMinutes: row.services.duration_minutes,
+        }
+      : null,
   };
 }
 
-export function naarBusyBooking(rij: {
+export function toBusyBooking(row: {
   id: string;
-  tijd: string;
-  services: { duur_minuten: number } | null;
+  start_time: string;
+  services: { duration_minutes: number } | null;
 }): BusyBooking {
-  return { id: rij.id, tijd: rij.tijd, duurMinuten: rij.services?.duur_minuten ?? null };
+  return {
+    id: row.id,
+    time: row.start_time,
+    durationMinutes: row.services?.duration_minutes ?? null,
+  };
+}
+
+export function toBookingInsert(booking: NewBooking): TablesInsert<"bookings"> {
+  return {
+    id: booking.id,
+    service_id: booking.serviceId,
+    customer_name: booking.customerName,
+    customer_email: booking.customerEmail,
+    customer_phone: booking.customerPhone,
+    booking_date: booking.date,
+    start_time: booking.time,
+    cancel_token: booking.cancelToken,
+  };
+}
+
+/** Only the fields that were actually provided end up in the update. */
+export function toBookingUpdate(patch: Omit<AdminBookingUpdate, "id">): TablesUpdate<"bookings"> {
+  return {
+    ...(patch.serviceId !== undefined && { service_id: patch.serviceId }),
+    ...(patch.customerName !== undefined && { customer_name: patch.customerName }),
+    ...(patch.customerEmail !== undefined && { customer_email: patch.customerEmail }),
+    ...(patch.customerPhone !== undefined && { customer_phone: patch.customerPhone }),
+    ...(patch.date !== undefined && { booking_date: patch.date }),
+    ...(patch.time !== undefined && { start_time: patch.time }),
+    ...(patch.status !== undefined && { status: patch.status }),
+    ...(patch.notes !== undefined && { notes: patch.notes }),
+  };
 }

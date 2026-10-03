@@ -1,41 +1,37 @@
 import "server-only";
-import {
-  getSupabaseAdminClient,
-  getSupabaseServerClient,
-} from "@/shared/lib/supabase/supabase.server";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { ServiceRepository } from "../domain/service.repository";
-import { naarService } from "./service.mapper";
+import { toService, toServiceInsert, toServiceUpdate } from "./service.mapper";
 
-/** Postgres: foreign key violation — er hangen nog boekingen aan. */
+/** Postgres: foreign key violation — bookings still reference this service. */
 const FK_VIOLATION = "23503";
 
 export function createSupabaseServiceRepository(): ServiceRepository {
   return {
     async listActive() {
-      const { data, error } = await (
-        await getSupabaseServerClient()
-      )
+      const supabase = await getSupabaseServerClient();
+      const { data, error } = await supabase
         .from("services")
         .select("*")
-        .eq("actief", true)
-        .order("sorteer_volgorde", { ascending: true })
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return (data ?? []).map(naarService);
+      return data.map(toService);
     },
 
     async listAll() {
-      const { data, error } = await (
-        await getSupabaseServerClient()
-      )
+      const supabase = await getSupabaseServerClient();
+      const { data, error } = await supabase
         .from("services")
         .select("*")
-        .order("sorteer_volgorde", { ascending: true })
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return (data ?? []).map(naarService);
+      return data.map(toService);
     },
 
     async findById(id) {
@@ -46,55 +42,46 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .maybeSingle();
 
       if (error) throw error;
-      return data ? naarService(data) : null;
+      return data ? toService(data) : null;
     },
 
-    async hoogsteVolgorde() {
-      const { data } = await (
-        await getSupabaseServerClient()
-      )
+    async highestSortOrder() {
+      const supabase = await getSupabaseServerClient();
+      const { data, error } = await supabase
         .from("services")
-        .select("sorteer_volgorde")
-        .order("sorteer_volgorde", { ascending: false })
+        .select("sort_order")
+        .order("sort_order", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      return data?.sorteer_volgorde ?? 0;
+      if (error) throw error;
+      return data?.sort_order ?? 0;
     },
 
     async create(input) {
-      const { data, error } = await (
-        await getSupabaseServerClient()
-      )
+      const supabase = await getSupabaseServerClient();
+      const { data, error } = await supabase
         .from("services")
-        .insert({
-          naam: input.naam,
-          beschrijving: input.beschrijving,
-          prijs: input.prijs,
-          duur_minuten: input.duur_minuten,
-          actief: input.actief,
-          sorteer_volgorde: input.sorteer_volgorde,
-        })
+        .insert(toServiceInsert(input))
         .select()
         .single();
 
       if (error) throw error;
-      return naarService(data);
+      return toService(data);
     },
 
     async update(patch) {
-      const { id, ...velden } = patch;
-      const { data, error } = await (
-        await getSupabaseServerClient()
-      )
+      const { id, ...fields } = patch;
+      const supabase = await getSupabaseServerClient();
+      const { data, error } = await supabase
         .from("services")
-        .update(velden)
+        .update(toServiceUpdate(fields))
         .eq("id", id)
         .select()
         .single();
 
       if (error) throw error;
-      return naarService(data);
+      return toService(data);
     },
 
     async remove(id) {
@@ -102,7 +89,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
       const { error } = await supabase.from("services").delete().eq("id", id);
 
       if (error) {
-        if (error.code === FK_VIOLATION) return { ok: false, reden: "in-gebruik" };
+        if (error.code === FK_VIOLATION) return { ok: false, reason: "in-use" };
         throw error;
       }
       return { ok: true };

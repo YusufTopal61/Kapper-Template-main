@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { Badge } from "@/app/ui/pill-badge";
-import { WordsPullUp } from "@/app/ui/words-pull-up";
+import { Badge } from "@/components/ui/pill-badge";
+import { WordsPullUp } from "@/components/ui/words-pull-up";
 
 export function Hero() {
   return (

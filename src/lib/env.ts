@@ -10,36 +10,36 @@ import { z } from "zod";
  */
 
 /** Een lege string in .env.local betekent "niet ingesteld". */
-const leegIsUndefined = (waarde: unknown) => (waarde === "" ? undefined : waarde);
-const optioneel = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess(leegIsUndefined, schema.optional());
+const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
+const optional = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(emptyToUndefined, schema.optional());
 
 const publicSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: optioneel(z.string().url()),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: optioneel(z.string().min(1)),
-  NEXT_PUBLIC_PLAUSIBLE_DOMAIN: optioneel(z.string().min(1)),
+  NEXT_PUBLIC_SUPABASE_URL: optional(z.string().url()),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: optional(z.string().min(1)),
+  NEXT_PUBLIC_PLAUSIBLE_DOMAIN: optional(z.string().min(1)),
 });
 
-const publiek = publicSchema.safeParse({
+const publicResult = publicSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN,
 });
 
-if (!publiek.success) {
+if (!publicResult.success) {
   // Een ongeldige waarde behandelen we als "niet geconfigureerd": de site toont dan
   // de setup-melding in plaats van een wit scherm.
   console.error(
     "[env] ongeldige publieke omgevingsvariabelen:",
-    publiek.error.flatten().fieldErrors,
+    publicResult.error.flatten().fieldErrors,
   );
 }
 
-const publiekeEnv = publiek.success ? publiek.data : {};
+const publicEnv = publicResult.success ? publicResult.data : {};
 
-export const supabaseUrl = publiekeEnv.NEXT_PUBLIC_SUPABASE_URL;
-export const supabaseAnonKey = publiekeEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-export const plausibleDomain = publiekeEnv.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+export const supabaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL;
+export const supabaseAnonKey = publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export const plausibleDomain = publicEnv.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
 /** Is Supabase überhaupt geconfigureerd? Zo niet, tonen we een duidelijke melding. */
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);

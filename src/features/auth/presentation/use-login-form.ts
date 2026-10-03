@@ -10,31 +10,31 @@ import { signInAction } from "./auth.actions";
 /** View model van het inlogscherm: formulierstaat, versturen en doorsturen naar het beheer. */
 export function useLoginForm() {
   const router = useRouter();
-  const [fout, setFout] = useState<string | null>(null);
-  const [bezig, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const verstuur = form.handleSubmit((waarden) => {
-    setFout(null);
+  const submit = form.handleSubmit((values) => {
+    setError(null);
     startTransition(async () => {
       try {
-        const resultaat = await signInAction(waarden);
-        if (!resultaat.ok) {
-          setFout(resultaat.error);
+        const result = await signInAction(values);
+        if (!result.ok) {
+          setError(result.error);
           return;
         }
         // Verse server-render, zodat de beheer-layout de nieuwe sessie ziet.
         router.replace("/admin");
         router.refresh();
       } catch {
-        setFout("Inloggen mislukte. Probeer het zo nog eens.");
+        setError("Inloggen mislukte. Probeer het zo nog eens.");
       }
     });
   });
 
-  return { form, fout, bezig, verstuur, wisFout: () => setFout(null) };
+  return { form, error, isPending, submit, clearError: () => setError(null) };
 }

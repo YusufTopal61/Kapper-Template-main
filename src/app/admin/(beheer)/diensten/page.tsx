@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { getServiceDeps } from "@/app/di/container";
-import { listAllServices } from "@/modules/services/domain/usecases/listAllServices";
-import { ServicesManager } from "@/modules/services/presentation/ServicesManager";
-import { naarServiceUIModel } from "@/modules/services/presentation/service.uimodel";
+import { getServiceDeps } from "@/lib/di/container";
+import { listAllServices } from "@/features/services/domain/usecases/list-all-services";
+import { ServicesManager } from "@/features/services/presentation/ServicesManager";
+import { toServiceUIModel } from "@/features/services/presentation/service.ui-model";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Diensten" };
 
-export default async function DienstenBeheerPagina() {
-  const diensten = await listAllServices(getServiceDeps());
+export default async function ServicesAdminPage() {
+  const services = await listAllServices(getServiceDeps());
 
-  return <ServicesManager diensten={diensten.map(naarServiceUIModel)} />;
+  return <ServicesManager services={services.map(toServiceUIModel)} />;
 }

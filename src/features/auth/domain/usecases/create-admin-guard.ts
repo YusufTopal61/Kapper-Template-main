@@ -1,4 +1,4 @@
-import { NietIngelogdError, type AdminGuard, type AuthGateway } from "../auth.gateway";
+import { UnauthorizedError, type AdminGuard, type AuthGateway } from "../auth.gateway";
 
 /**
  * De autorisatiebeslissing voor alle beheeracties. Dit is het tweede slot
@@ -7,6 +7,6 @@ import { NietIngelogdError, type AdminGuard, type AuthGateway } from "../auth.ga
  */
 export function createAdminGuard(auth: Pick<AuthGateway, "isAdmin">): AdminGuard {
   return async () => {
-    if (!(await auth.isAdmin())) throw new NietIngelogdError();
+    if (!(await auth.isAdmin())) throw new UnauthorizedError();
   };
 }

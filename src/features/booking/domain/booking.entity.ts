@@ -1,23 +1,23 @@
-export type BookingStatus = "bevestigd" | "geannuleerd" | "voltooid" | "no_show";
+export type BookingStatus = "confirmed" | "cancelled" | "completed" | "no_show";
 
 export type BookedService = {
   id: string;
-  naam: string;
-  prijs: number;
-  duur_minuten: number;
+  name: string;
+  price: number;
+  durationMinutes: number;
 };
 
 export type Booking = {
   id: string;
-  service_id: string;
-  klant_naam: string;
-  klant_email: string;
-  klant_telefoon: string;
-  datum: string; // "YYYY-MM-DD"
-  tijd: string; // "HH:MM" (of "HH:MM:SS" uit de database)
+  serviceId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string; // "YYYY-MM-DD"
+  time: string; // "HH:MM" (of "HH:MM:SS" uit de database)
   status: BookingStatus;
   /** Interne notities van de kapper; nooit zichtbaar voor de klant. */
-  notities: string | null;
+  notes: string | null;
 };
 
 /**
@@ -25,77 +25,77 @@ export type Booking = {
  * Dit type verlaat de server nooit.
  */
 export type BookingRecord = Booking & {
-  annuleer_token: string;
+  cancelToken: string;
   services: BookedService | null;
 };
 
 /** Wat het beheerpaneel te zien krijgt: het token zit er bewust niet bij. */
-export type BookingWithService = Omit<BookingRecord, "annuleer_token">;
+export type BookingWithService = Omit<BookingRecord, "cancelToken">;
 
 /** Wat nodig is om een nieuwe boeking op te slaan. */
 export type NewBooking = {
   id: string;
-  service_id: string;
-  klant_naam: string;
-  klant_email: string;
-  klant_telefoon: string;
-  datum: string;
-  tijd: string;
-  annuleer_token: string;
+  serviceId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  cancelToken: string;
 };
 
 /** Een bestaande afspraak die tijd in beslag neemt. */
 export type BusyBooking = {
   id: string;
-  tijd: string;
+  time: string;
   /** null wanneer de gekoppelde dienst ontbreekt. */
-  duurMinuten: number | null;
+  durationMinutes: number | null;
 };
 
 /** Bezet tijdvak in minuten sinds middernacht. */
-export type BusyRange = { start: number; eind: number };
+export type BusyRange = { start: number; end: number };
 
-export type Tijdslot = { tijd: string; beschikbaar: boolean };
+export type TimeSlot = { time: string; available: boolean };
 
 /** Gegevens voor de e-mails rond een boeking. */
 export type BookingMailData = {
   id: string;
-  annuleer_token: string;
-  klant_naam: string;
-  klant_email: string;
-  klant_telefoon: string;
-  datum: string;
-  tijd: string;
-  dienstNaam: string;
-  prijs: number | null;
-  duurMinuten: number | null;
+  cancelToken: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  serviceName: string;
+  price: number | null;
+  durationMinutes: number | null;
 };
 
-export type BoekingResultaat =
+export type BookingResult =
   | {
       ok: true;
-      boeking: {
+      booking: {
         id: string;
-        datum: string;
-        tijd: string;
-        dienstNaam: string;
-        klant_naam: string;
-        klant_email: string;
+        date: string;
+        time: string;
+        serviceName: string;
+        customerName: string;
+        customerEmail: string;
       };
-      emailVerzonden: boolean;
+      emailSent: boolean;
     }
-  | { ok: false; error: string; veld?: "datum" | "tijd" | "service_id" };
+  | { ok: false; error: string; field?: "date" | "time" | "serviceId" };
 
 /** Wat de klant ziet op de annuleerpagina. */
-export type BoekingViaToken = {
+export type BookingByToken = {
   id: string;
-  klant_naam: string;
-  datum: string;
-  tijd: string;
+  customerName: string;
+  date: string;
+  time: string;
   status: BookingStatus;
-  dienstNaam: string;
-  prijs: number | null;
-  duurMinuten: number | null;
-  bedrijfsnaam: string;
-  adres: string | null;
+  serviceName: string;
+  price: number | null;
+  durationMinutes: number | null;
+  businessName: string;
+  address: string | null;
 };

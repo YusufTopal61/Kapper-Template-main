@@ -4,46 +4,46 @@ import { useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "cookie_consent";
 
-export type CookieConsentStatus = "onbekend" | "geaccepteerd" | "geweigerd";
+export type CookieConsentStatus = "unknown" | "accepted" | "declined";
 
-const luisteraars = new Set<() => void>();
+const listeners = new Set<() => void>();
 
 /** Houdt de keuze vast voor dit bezoek als localStorage geblokkeerd is. */
-let keuzeInGeheugen: CookieConsentStatus | null = null;
+let choiceInMemory: CookieConsentStatus | null = null;
 
-function leesOpgeslagenKeuze(): CookieConsentStatus {
-  if (keuzeInGeheugen) return keuzeInGeheugen;
+function readStoredChoice(): CookieConsentStatus {
+  if (choiceInMemory) return choiceInMemory;
   try {
-    const waarde = window.localStorage.getItem(STORAGE_KEY);
-    return waarde === "geaccepteerd" || waarde === "geweigerd" ? waarde : "onbekend";
+    const value = window.localStorage.getItem(STORAGE_KEY);
+    return value === "accepted" || value === "declined" ? value : "unknown";
   } catch {
     // localStorage kan geblokkeerd zijn (privénavigatie, restricted cookies).
     // Dan tonen we de banner gewoon opnieuw i.p.v. te crashen.
-    return "onbekend";
+    return "unknown";
   }
 }
 
-function abonneer(melding: () => void) {
-  luisteraars.add(melding);
+function subscribe(notice: () => void) {
+  listeners.add(notice);
   // Ook een wijziging in een ander tabblad moet de banner laten verdwijnen.
-  window.addEventListener("storage", melding);
+  window.addEventListener("storage", notice);
   return () => {
-    luisteraars.delete(melding);
-    window.removeEventListener("storage", melding);
+    listeners.delete(notice);
+    window.removeEventListener("storage", notice);
   };
 }
 
-function zetKeuze(keuze: Exclude<CookieConsentStatus, "onbekend">) {
-  keuzeInGeheugen = keuze;
+function setChoice(choice: Exclude<CookieConsentStatus, "unknown">) {
+  choiceInMemory = choice;
   try {
-    window.localStorage.setItem(STORAGE_KEY, keuze);
+    window.localStorage.setItem(STORAGE_KEY, choice);
   } catch {
     // Kon niet opgeslagen worden — de keuze geldt dan alleen voor dit bezoek.
   }
-  luisteraars.forEach((melding) => melding());
+  listeners.forEach((notice) => notice());
 }
 
-const naarClient = () => () => {};
+const subscribeNoop = () => () => {};
 
 /**
  * Consent-status voor niet-noodzakelijke cookies (analytics). De inlog-
@@ -52,21 +52,21 @@ const naarClient = () => () => {};
  */
 export function useCookieConsent() {
   const status = useSyncExternalStore<CookieConsentStatus>(
-    abonneer,
-    leesOpgeslagenKeuze,
-    () => "onbekend",
+    subscribe,
+    readStoredChoice,
+    () => "unknown",
   );
   /** false tijdens de server-render en hydratatie; true zodra de opgeslagen keuze is uitgelezen. */
-  const klaar = useSyncExternalStore(
-    naarClient,
+  const ready = useSyncExternalStore(
+    subscribeNoop,
     () => true,
     () => false,
   );
 
   return {
     status,
-    klaar,
-    accepteer: () => zetKeuze("geaccepteerd"),
-    weiger: () => zetKeuze("geweigerd"),
+    ready,
+    accept: () => setChoice("accepted"),
+    decline: () => setChoice("declined"),
   };
 }
