@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { formatDateLong } from "./booking.ui-model";
 
-/** De bedankkaart na een geslaagde boeking. Krijgt alleen niet-gevoelige velden mee. */
+/** The thank-you card after a successful booking. Only receives non-sensitive fields. */
 export function BookingConfirmedView({
   service,
   date,
@@ -12,7 +12,7 @@ export function BookingConfirmedView({
   service: string;
   date: string;
   time: string;
-  /** Is de bevestigingsmail daadwerkelijk verzonden? */
+  /** Was the confirmation mail actually sent? */
   mail: boolean;
 }) {
   const hasData = Boolean(service && date && time);

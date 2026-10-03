@@ -15,7 +15,7 @@ export async function signIn(
     case "not-admin":
       return { ok: false, error: "Dit account heeft geen beheerrechten voor deze zaak." };
     case "invalid-credentials":
-      // Bewust vaag: verklapt niet of het e-mailadres bestaat.
+      // Deliberately vague: does not reveal whether the email address exists.
       return { ok: false, error: "E-mailadres of wachtwoord klopt niet." };
   }
 }

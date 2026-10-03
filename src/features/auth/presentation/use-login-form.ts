@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { loginSchema, type LoginInput } from "../domain/auth.schema";
 import { signInAction } from "./auth.actions";
 
-/** View model van het inlogscherm: formulierstaat, versturen en doorsturen naar het beheer. */
+/** View model of the sign-in screen: form state, submitting and redirecting to the admin. */
 export function useLoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export function useLoginForm() {
           setError(result.error);
           return;
         }
-        // Verse server-render, zodat de beheer-layout de nieuwe sessie ziet.
+        // Fresh server render, so the admin layout sees the new session.
         router.replace("/admin");
         router.refresh();
       } catch {

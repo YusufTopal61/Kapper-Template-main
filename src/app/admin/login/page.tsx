@@ -11,9 +11,9 @@ export const metadata: Metadata = { title: "Inloggen" };
 export default async function LoginPage() {
   const session = await getSession(getAuthGateway());
 
-  // Al ingelogd? Dan is de loginpagina overbodig.
+  // Already signed in? Then the login page is redundant.
   if (session.signedIn) redirect("/admin");
 
-  // Ook zonder Supabase-configuratie renderen we hier: het formulier legt dan uit wat er nog mist.
+  // We render here even without Supabase configuration: the form then explains what is still missing.
   return <LoginForm supabaseConfigured={session.supabaseConfigured} />;
 }

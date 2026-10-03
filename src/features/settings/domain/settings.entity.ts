@@ -9,7 +9,7 @@ export type DayOpeningHours = {
 
 export type OpeningHours = Record<Weekday, DayOpeningHours>;
 
-/** De bedrijfsgegevens van de zaak, zoals het domein ze kent. */
+/** The business details of the shop, as the domain knows them. */
 export type BusinessSettings = {
   businessName: string;
   adminEmail: string | null;
@@ -18,25 +18,25 @@ export type BusinessSettings = {
   openingHours: OpeningHours;
 };
 
-/** Wat een bezoeker mag zien — bewust zonder admin_email. */
+/** What a visitor may see — deliberately without adminEmail. */
 export type PublicSettings = Pick<
   BusinessSettings,
   "businessName" | "address" | "phoneNumber" | "openingHours"
 >;
 
-/** Wat het beheerformulier nodig heeft. */
+/** What the admin form needs. */
 export type AdminSettings = BusinessSettings & {
-  /** Stuurt de prompt aan die vraagt om een notificatie-adres in te vullen. */
+  /** Drives the prompt that asks for a notification address. */
   emailConfigured: boolean;
 };
 
 export type EmailStatus = {
-  /** Staat er een RESEND_API_KEY? Zonder key worden mails alleen gelogd. */
+  /** Is there a RESEND_API_KEY? Without a key, mails are only logged. */
   configured: boolean;
   /**
-   * true = Resend staat nog in testmodus: mails komen alleen aan bij het eigen
-   * Resend-accountadres, niet bij echte klanten. De meest voorkomende manier
-   * waarop "waterdichte" e-mail alsnog stil faalt.
+   * true = Resend is still in test mode: mails only reach the Resend account's
+   * own address, not real customers. The most common way "watertight" email
+   * still fails silently.
    */
   sandboxMode: boolean;
   fromAddress: string;

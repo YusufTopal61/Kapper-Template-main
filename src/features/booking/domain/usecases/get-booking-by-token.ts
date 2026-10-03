@@ -5,7 +5,7 @@ import type { BookingByToken } from "../booking.entity";
 import type { CancelByTokenInput } from "../booking.schema";
 import { INVALID_LINK } from "./booking.messages";
 
-/** Klant: wat staat er voor deze annuleerlink gepland? Geen geldig token, geen gegevens. */
+/** Customer: what is scheduled for this cancel link? No valid token, no data. */
 export async function getBookingByToken(
   deps: Pick<BookingDeps, "bookings" | "settings">,
   input: CancelByTokenInput,

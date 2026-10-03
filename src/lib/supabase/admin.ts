@@ -5,11 +5,11 @@ import { requireServiceRoleKey } from "@/lib/env.server";
 import type { Database } from "./database.types";
 
 /**
- * Client met de service role key: omzeilt Row Level Security volledig.
+ * Client with the service role key: bypasses Row Level Security entirely.
  *
- * Alleen gebruiken waar dat echt moet en de toegang op een andere manier is
- * afgedekt — annuleren via een geheim token, en instellingen uitlezen om
- * e-mails te kunnen versturen. Nooit vanuit de browser aanroepen.
+ * Only use where it is really needed and access is secured another way —
+ * cancelling via a secret token, and reading settings to be able to send
+ * emails. Never call from the browser.
  */
 export function getSupabaseAdminClient() {
   const { url } = requirePublicSupabaseConfig();

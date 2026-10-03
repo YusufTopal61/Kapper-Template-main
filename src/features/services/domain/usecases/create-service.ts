@@ -2,7 +2,7 @@ import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
 import type { ServiceInput } from "../service.schema";
 import type { ServiceRepository } from "../service.repository";
 
-/** Beheer: een nieuwe dienst komt onderaan de lijst. */
+/** Admin: a new service goes at the bottom of the list. */
 export async function createService(
   deps: { assertAdmin: AdminGuard; repo: Pick<ServiceRepository, "highestSortOrder" | "create"> },
   input: ServiceInput,

@@ -10,7 +10,7 @@ export function CookieConsent() {
   const { status, ready, accept, decline } = useCookieConsent();
   const pathname = usePathname();
 
-  // Geen cookiebanner in het beheerpaneel — dat is geen publieke pagina.
+  // No cookie banner in the admin panel — that is not a public page.
   const isAdmin = pathname.startsWith("/admin");
   const visible = ready && status === "unknown" && !isAdmin;
 

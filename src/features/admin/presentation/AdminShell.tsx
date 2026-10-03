@@ -41,9 +41,9 @@ const adminNav = [
 type AdminShellProps = {
   children: ReactNode;
   email: string | null;
-  /** Is er een notificatie-adres ingesteld? Zo niet, dan tonen we een melding. */
+  /** Is a notification address configured? If not, we show a notice. */
   emailConfigured: boolean;
-  /** Staat de mailprovider nog in testmodus (klanten krijgen dan geen mail)? */
+  /** Is the mail provider still in test mode (customers then get no mail)? */
   emailSandbox: boolean;
 };
 

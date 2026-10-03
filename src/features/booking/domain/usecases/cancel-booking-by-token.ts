@@ -3,7 +3,7 @@ import { canCustomerCancel, buildMailData } from "../booking.rules";
 import type { CancelByTokenInput } from "../booking.schema";
 import { INVALID_LINK } from "./booking.messages";
 
-/** Klant: annuleren via de link in de mail. Een tweede keer annuleren doet niets en mailt niet opnieuw. */
+/** Customer: cancel via the link in the mail. Cancelling a second time does nothing and sends no mail again. */
 export async function cancelBookingByToken(
   deps: Pick<BookingDeps, "bookings" | "notifier">,
   input: CancelByTokenInput,

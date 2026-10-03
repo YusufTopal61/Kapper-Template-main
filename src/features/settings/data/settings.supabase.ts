@@ -1,4 +1,5 @@
 import "server-only";
+import { DatabaseError } from "@/lib/errors";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { SettingsRepository } from "../domain/settings.repository";
@@ -15,7 +16,7 @@ export function createSupabaseSettingsRepository(): SettingsRepository {
         .eq("singleton", true)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("settings.read", error);
       return data ? toBusinessSettings(data) : null;
     },
 
@@ -27,7 +28,7 @@ export function createSupabaseSettingsRepository(): SettingsRepository {
         .eq("singleton", true)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("settings.readAsAdmin", error);
       return data ? toBusinessSettings(data) : null;
     },
 
@@ -38,7 +39,7 @@ export function createSupabaseSettingsRepository(): SettingsRepository {
         .update(toSettingsUpdate(input))
         .eq("singleton", true);
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("settings.save", error);
     },
   };
 }

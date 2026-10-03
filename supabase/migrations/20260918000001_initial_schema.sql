@@ -1,11 +1,11 @@
--- Kapper-platform: basisschema.
--- Tabellen: services, bookings, admin_settings, admin_users.
+-- Kapper platform: base schema.
+-- Tables: services, bookings, admin_settings, admin_users.
 
 create extension if not exists "pgcrypto";
 
 create type public.booking_status as enum ('bevestigd', 'geannuleerd', 'voltooid', 'no_show');
 
--- Houdt updated_at automatisch bij.
+-- Keeps updated_at current automatically.
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -47,15 +47,15 @@ create table public.bookings (
   datum date not null,
   tijd time not null,
   status public.booking_status not null default 'bevestigd',
-  -- Interne notities van de kapper; nooit zichtbaar voor de klant.
+  -- Internal notes from the barber; never visible to the customer.
   notities text,
-  -- Geheime sleutel in de annuleerlink uit de bevestigingsmail.
+  -- Secret key in the cancel link from the confirmation mail.
   annuleer_token text not null default encode(gen_random_bytes(32), 'hex'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
--- Database-garantie tegen dubbele boekingen: één actieve afspraak per tijdslot.
+-- Database guarantee against double bookings: one active appointment per time slot.
 create unique index bookings_uniek_tijdslot
   on public.bookings (datum, tijd)
   where status <> 'geannuleerd';
@@ -70,15 +70,15 @@ create trigger bookings_set_updated_at
 
 -- ---------------------------------------------------------------- admin_users
 
--- Allowlist: alleen auth-gebruikers die hier staan tellen als beheerder.
+-- Allowlist: only auth users listed here count as admins.
 create table public.admin_users (
   user_id uuid primary key references auth.users (id) on delete cascade,
   email text not null,
   created_at timestamptz not null default now()
 );
 
--- security definer, zodat het controleren van admin-rechten zelf geen RLS
--- op admin_users triggert (dat zou oneindig recursief zijn).
+-- security definer, so that checking admin rights does not itself trigger RLS
+-- on admin_users (that would recurse infinitely).
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -95,10 +95,10 @@ $$;
 
 create table public.admin_settings (
   id uuid primary key default gen_random_uuid(),
-  -- Dwingt precies één rij af: de kolom mag alleen true zijn en is uniek.
+  -- Enforces exactly one row: the column may only be true and is unique.
   singleton boolean not null default true unique check (singleton),
   bedrijfsnaam text not null default 'Barber',
-  -- Hier komen de boekingsnotificaties binnen. Leeg = nog niet ingesteld.
+  -- Booking notifications arrive here. Empty = not configured yet.
   admin_email text,
   telefoonnummer text,
   adres text,

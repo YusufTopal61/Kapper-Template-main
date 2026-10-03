@@ -3,9 +3,9 @@ import { sitemapPages } from "@/config/navigation";
 import { getSiteUrl } from "@/lib/env.server";
 
 /**
- * De sitemap wordt gegenereerd uit dezelfde paginalijst als de navigatie en
- * wordt dus nooit handmatig bijgehouden. Er zijn nog geen pagina's per dienst;
- * komen die er, dan voegen we ze hier toe vanuit de database.
+ * The sitemap is generated from the same page list as the navigation, so it is
+ * never maintained by hand. There are no per-service pages yet; once there are,
+ * we add them here from the database.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getSiteUrl();

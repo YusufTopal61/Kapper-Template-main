@@ -3,10 +3,10 @@ import { headers } from "next/headers";
 import { getSiteUrl as getConfiguredSiteUrl } from "@/lib/env.server";
 
 /**
- * Basis-URL van de site, voor links in e-mails. In productie komt hij uit
- * SITE_URL (verplicht, zie controleerEnv): de Host-header van een request is
- * door de bezoeker te beïnvloeden en hoort dus niet in een annuleerlink te
- * belanden. Alleen in development vallen we terug op het request.
+ * Base URL of the site, for links in emails. In production it comes from
+ * SITE_URL (required, see validateEnv): a request's Host header can be
+ * influenced by the visitor and so does not belong in a cancel link. Only in
+ * development do we fall back to the request.
  */
 export async function getSiteUrl(): Promise<string> {
   const configured = getConfiguredSiteUrl();

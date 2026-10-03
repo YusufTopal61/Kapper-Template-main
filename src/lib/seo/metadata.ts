@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
 type MetadataInput = {
-  /** Paginatitel zonder merknaam; de root-layout plakt `— BARBER` erachter. */
+  /** Page title without the brand name; the root layout appends `— BARBER`. */
   title: string;
   description: string;
-  /** Pad vanaf de root, bijvoorbeeld "/diensten". Wordt canonical én og:url. */
+  /** Path from the root, for example "/diensten". Becomes canonical and og:url. */
   path: string;
-  /** Voor pagina's die niet in zoekmachines horen (beheer, annuleerlinks, bedankpagina). */
+  /** For pages that do not belong in search engines (admin, cancel links, thank-you page). */
   noIndex?: boolean;
-  /** Zet de merknaam achter de titel in Open Graph en Twitter. Uit voor de homepage, waar de titel hem al bevat. */
+  /** Appends the brand name to the title in Open Graph and Twitter. Off for the homepage, whose title already contains it. */
   withBrandName?: boolean;
 };
 
 /**
- * Eén plek voor canonical, Open Graph en Twitter-kaart, zodat geen enkele
- * route die vergeet. Relatieve URL's worden door Next.js tegen `metadataBase`
- * uit de root-layout opgelost (= SITE_URL).
+ * One place for canonical, Open Graph and Twitter card, so no route forgets
+ * them. Relative URLs are resolved by Next.js against `metadataBase` from the
+ * root layout (= SITE_URL).
  */
 export function buildMetadata({
   title,

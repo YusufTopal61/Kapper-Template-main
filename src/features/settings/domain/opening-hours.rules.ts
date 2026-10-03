@@ -31,13 +31,13 @@ export const DEFAULT_OPENING_HOURS: OpeningHours = {
   sunday: { open: false, from: "09:00", to: "18:00" },
 };
 
-/** Minuten tussen twee opeenvolgende tijdsloten in de boekingsflow. */
+/** Minutes between two consecutive time slots in the booking flow. */
 export const SLOT_INTERVAL_MINUTES = 30;
 
 /**
- * Bouwt een Date uit de losse onderdelen van "YYYY-MM-DD".
- * `new Date("2026-09-18")` wordt als UTC-middernacht geparsed en kan daardoor
- * een dag verspringen; deze variant blijft altijd op de bedoelde kalenderdag.
+ * Builds a Date from the separate parts of "YYYY-MM-DD".
+ * `new Date("2026-09-18")` is parsed as UTC midnight and can therefore shift by
+ * a day; this variant always stays on the intended calendar day.
  */
 export function parseDate(date: string): Date {
   const [year = 1970, month = 1, day = 1] = date.split("-").map(Number);
@@ -51,7 +51,7 @@ export function formatDate(date: Date): string {
 }
 
 export function weekdayOfDate(date: string): Weekday {
-  // getDay(): 0 = zondag. DAGEN begint op maandag.
+  // getDay(): 0 = Sunday. WEEKDAYS starts on Monday.
   const index = parseDate(date).getDay();
   return WEEKDAYS[(index + 6) % 7] ?? "monday";
 }
@@ -66,15 +66,15 @@ export function minutesToTime(minutes: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 }
 
-/** Normaliseert "9:00:00" of "09:00:00" naar "09:00". */
+/** Normalizes "9:00:00" or "09:00:00" to "09:00". */
 export function normalizeTime(time: string): string {
   const [hours = "0", minutes = "0"] = time.split(":");
   return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
 }
 
 /**
- * Controleert of een afspraak binnen de openingstijden valt. De behandeling
- * moet ook vóór sluitingstijd klaar zijn, dus de duur telt mee.
+ * Checks whether an appointment falls within the opening hours. The treatment
+ * must also finish before closing time, so the duration counts.
  */
 export function isWithinOpeningHours(
   openingHours: OpeningHours,
@@ -106,7 +106,7 @@ export function isWithinOpeningHours(
   return { ok: true };
 }
 
-/** Alle tijdsloten waarop een behandeling van deze duur nog past. */
+/** All time slots at which a treatment of this duration still fits. */
 export function timeSlotsForDay(
   openingHours: OpeningHours,
   date: string,
@@ -127,8 +127,8 @@ export function timeSlotsForDay(
 }
 
 /**
- * Ligt dit moment in het verleden? Vergelijkt in de lokale tijd van de server.
- * `nu` is injecteerbaar, zodat de regel zonder klok te testen is.
+ * Is this moment in the past? Compares in the server's local time.
+ * `now` is injectable, so the rule can be tested without a clock.
  */
 export function isInPast(date: string, time: string, now: Date = new Date()): boolean {
   const moment = parseDate(date);

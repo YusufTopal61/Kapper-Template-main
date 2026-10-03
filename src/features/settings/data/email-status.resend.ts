@@ -1,4 +1,5 @@
 import "server-only";
+import { logger } from "@/lib/logger";
 import { getResendConfig } from "@/lib/env.server";
 import type { EmailStatusChecker } from "../domain/settings.repository";
 import type { EmailStatus } from "../domain/settings.entity";
@@ -9,12 +10,11 @@ function domainOf(address: string): string | null {
 }
 
 /**
- * Vraagt bij Resend zelf op of er een geverifieerd domein is, en of het
- * huidige afzenderadres (RESEND_FROM) daar ook daadwerkelijk op draait.
- * Zonder geverifieerd domein levert Resend alleen af op het adres van de
- * accounteigenaar — elke andere klant krijgt geen mail, zonder dat de
- * boeking zelf faalt. Dat gat moet zichtbaar zijn voor de beheerder, niet
- * alleen in een serverlog.
+ * Asks Resend itself whether there is a verified domain, and whether the
+ * current sender address (RESEND_FROM) actually runs on it. Without a verified
+ * domain Resend only delivers to the account owner's address — every other
+ * customer gets no mail, without the booking itself failing. That gap must be
+ * visible to the admin, not only in a server log.
  */
 async function checkEmailStatus(): Promise<EmailStatus> {
   const { apiKey, from } = getResendConfig();
@@ -29,8 +29,8 @@ async function checkEmailStatus(): Promise<EmailStatus> {
     });
 
     if (!response.ok) {
-      // Kan de status niet betrouwbaar vaststellen — dan liever "sandbox"
-      // aannemen dan valse zekerheid geven.
+      // Cannot determine the status reliably — then we would rather assume "sandbox"
+      // than give false certainty.
       return {
         configured: true,
         sandboxMode: true,
@@ -54,7 +54,7 @@ async function checkEmailStatus(): Promise<EmailStatus> {
       verifiedDomains: verified,
     };
   } catch (error) {
-    console.error("[email] status ophalen bij Resend mislukt:", error);
+    logger.error("email", "fetching status from Resend failed", error);
     return { configured: true, sandboxMode: true, fromAddress: from, verifiedDomains: [] };
   }
 }

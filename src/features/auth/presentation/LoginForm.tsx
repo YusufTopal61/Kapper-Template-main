@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLoginForm } from "./use-login-form";
 
-/** Het inlogscherm van het beheerpaneel. */
+/** The sign-in screen of the admin panel. */
 export function LoginForm({ supabaseConfigured }: { supabaseConfigured: boolean }) {
   const { form, error, isPending, submit, clearError } = useLoginForm();
   const { register, formState } = form;

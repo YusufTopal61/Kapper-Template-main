@@ -1,11 +1,11 @@
 import { serializeJsonLd } from "./structured-data";
 
-/** Rendert structured data server-side, zodat Google het in de eerste HTML ziet. */
+/** Renders structured data server-side, so Google sees it in the first HTML. */
 export function JsonLd({ data }: { data: Record<string, unknown> | Record<string, unknown>[] }) {
   return (
     <script
       type="application/ld+json"
-      // Veilig: serialiseerJsonLd escapet `<`.
+      // Safe: serializeJsonLd escapes `<`.
       dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );

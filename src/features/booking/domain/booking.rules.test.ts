@@ -20,19 +20,19 @@ const TUESDAY = "2026-09-08";
 describe("overlapt", () => {
   const busy = [{ start: 600, end: 645 }]; // 10:00–10:45
 
-  it("botst op een gedeeltelijke overlap, aan beide kanten", () => {
+  it("collides on a partial overlap, on both sides", () => {
     expect(overlaps(570, 45, busy)).toBe(true); // 09:30–10:15
     expect(overlaps(630, 30, busy)).toBe(true); // 10:30–11:00
   });
 
-  it("botst niet wanneer de ene afspraak precies begint waar de andere eindigt", () => {
+  it("does not collide when one appointment starts exactly where the other ends", () => {
     expect(overlaps(645, 30, busy)).toBe(false); // 10:45–11:15
     expect(overlaps(570, 30, busy)).toBe(false); // 09:30–10:00
   });
 });
 
 describe("naarBusyRanges", () => {
-  it("rekent met de duur van de dienst, en met een standaardduur als die ontbreekt", () => {
+  it("uses the service duration, and a default duration when it is missing", () => {
     const ranges = toBusyRanges([
       { id: "a", time: "10:00:00", durationMinutes: 45 },
       { id: "b", time: "12:00", durationMinutes: null },
@@ -43,13 +43,13 @@ describe("naarBusyRanges", () => {
     ]);
   });
 
-  it("sluit de afspraak uit die je zelf verplaatst", () => {
+  it("excludes the appointment you are moving yourself", () => {
     expect(toBusyRanges([{ id: "a", time: "10:00", durationMinutes: 30 }], "a")).toEqual([]);
   });
 });
 
 describe("bepaalTijdsloten", () => {
-  it("markeert slots die overlappen met een bestaande afspraak als niet beschikbaar", () => {
+  it("marks slots that overlap an existing appointment as unavailable", () => {
     const { slots, closed } = getTimeSlots({
       openingHours: DEFAULT_OPENING_HOURS,
       date: TUESDAY,
@@ -67,7 +67,7 @@ describe("bepaalTijdsloten", () => {
     expect(status["11:00"]).toBe(true);
   });
 
-  it("meldt een gesloten dag", () => {
+  it("reports a closed day", () => {
     const outcome = getTimeSlots({
       openingHours: DEFAULT_OPENING_HOURS,
       date: "2026-09-13",
@@ -78,7 +78,7 @@ describe("bepaalTijdsloten", () => {
     expect(outcome).toEqual({ slots: [], closed: true });
   });
 
-  it("markeert slots in het verleden als niet beschikbaar", () => {
+  it("marks slots in the past as unavailable", () => {
     const { slots } = getTimeSlots({
       openingHours: DEFAULT_OPENING_HOURS,
       date: TUESDAY,
@@ -100,11 +100,11 @@ describe("controleerRooster", () => {
     now: NOW,
   };
 
-  it("laat een vrij moment binnen de openingstijden toe", () => {
+  it("allows a free moment within the opening hours", () => {
     expect(checkSchedule({ ...base, time: "10:00" })).toEqual({ ok: true });
   });
 
-  it("controleert eerst het verleden, dan de openingstijden, dan de bezetting", () => {
+  it("checks the past first, then the opening hours, then occupancy", () => {
     expect(checkSchedule({ ...base, date: "2026-08-25", time: "10:00" })).toMatchObject({
       reason: "past",
     });
@@ -116,7 +116,7 @@ describe("controleerRooster", () => {
     ).toMatchObject({ reason: "busy" });
   });
 
-  it("laat de beheerder het verleden bewerken, maar niet buiten de openingstijden", () => {
+  it("lets the admin edit the past, but not outside the opening hours", () => {
     const admin = { ...base, date: "2026-08-25", ignorePast: true };
     expect(checkSchedule({ ...admin, time: "10:00" })).toEqual({ ok: true });
     expect(checkSchedule({ ...admin, time: "07:00" })).toMatchObject({
@@ -149,7 +149,7 @@ describe("bepaalMailIntentie", () => {
       expected: "rescheduled",
     },
     {
-      name: "andere dienst",
+      name: "other service",
       from: confirmed,
       to: { ...confirmed, serviceId: "s2" },
       expected: "rescheduled",
@@ -167,13 +167,13 @@ describe("bepaalMailIntentie", () => {
       expected: null,
     },
     {
-      name: "een al geannuleerde afspraak nogmaals annuleren",
+      name: "cancelling an already cancelled appointment again",
       from: cancelled,
       to: cancelled,
       expected: null,
     },
     {
-      name: "een geannuleerde afspraak die van tijd verschuift",
+      name: "a cancelled appointment that moves to another time",
       from: cancelled,
       to: { ...cancelled, time: "15:00" },
       expected: null,
@@ -184,7 +184,7 @@ describe("bepaalMailIntentie", () => {
 });
 
 describe("kanKlantAnnuleren", () => {
-  it("staat alleen open afspraken toe", () => {
+  it("only allows open appointments", () => {
     expect(canCustomerCancel("confirmed")).toEqual({ ok: true });
     expect(canCustomerCancel("cancelled").ok).toBe(false);
     expect(canCustomerCancel("completed").ok).toBe(false);
@@ -206,11 +206,11 @@ describe("zonderToken / maakMailData", () => {
     services: { id: "s1", name: "Knippen", price: 25, durationMinutes: 30 },
   };
 
-  it("laat het geheime token nooit naar het beheerpaneel lekken", () => {
+  it("never leaks the secret token to the admin panel", () => {
     expect(withoutToken(record)).not.toHaveProperty("cancelToken");
   });
 
-  it("valt terug op neutrale waarden als de dienst ontbreekt", () => {
+  it("falls back to neutral values when the service is missing", () => {
     const mail = buildMailData(record, null);
     expect(mail).toMatchObject({ serviceName: "Behandeling", price: null, durationMinutes: null });
     expect(mail.cancelToken).toBe("geheim");
@@ -218,17 +218,17 @@ describe("zonderToken / maakMailData", () => {
 });
 
 describe("bepaalBoekbareDagen", () => {
-  it("slaat gesloten dagen over en begint vandaag", () => {
-    // dinsdag 1 sept 2026; maandag en zondag zijn standaard gesloten
+  it("skips closed days and starts today", () => {
+    // Tuesday 1 Sept 2026; Monday and Sunday are closed by default
     const days = getBookableDays(DEFAULT_OPENING_HOURS, NOW);
 
     expect(days[0]).toBe("2026-09-01");
-    expect(days).not.toContain("2026-09-06"); // zondag
-    expect(days).not.toContain("2026-09-07"); // maandag
+    expect(days).not.toContain("2026-09-06"); // Sunday
+    expect(days).not.toContain("2026-09-07"); // Monday
     expect(days).toContain("2026-09-08");
   });
 
-  it("toont nooit meer dan twaalf dagen en kijkt niet verder dan drie weken vooruit", () => {
+  it("never shows more than twelve days and looks no further than three weeks ahead", () => {
     const allOpen = Object.fromEntries(
       Object.keys(DEFAULT_OPENING_HOURS).map((day) => [
         day,
@@ -240,7 +240,7 @@ describe("bepaalBoekbareDagen", () => {
     expect(getBookableDays(DEFAULT_OPENING_HOURS, NOW).at(-1)! <= "2026-09-21").toBe(true);
   });
 
-  it("geeft niets terug als de zaak helemaal gesloten is", () => {
+  it("returns nothing when the business is closed entirely", () => {
     const allClosed = Object.fromEntries(
       Object.keys(DEFAULT_OPENING_HOURS).map((day) => [
         day,
@@ -286,12 +286,12 @@ describe("samenvattingVanBoekingen", () => {
     });
   });
 
-  it("toont alleen bevestigde afspraken vanaf vandaag als aankomend", () => {
+  it("only shows confirmed appointments from today as upcoming", () => {
     const ids = summarizeBookings(list, "2026-09-01").upcoming.map((b) => b.id);
     expect(ids).toEqual(["vandaag", "morgen"]);
   });
 
-  it("kapt het aantal aankomende afspraken af", () => {
+  it("caps the number of upcoming appointments", () => {
     const many = Array.from({ length: 9 }, (_, i) => make(`b${i}`, "2026-09-10", "confirmed"));
     expect(summarizeBookings(many, "2026-09-01", 5).upcoming).toHaveLength(5);
   });

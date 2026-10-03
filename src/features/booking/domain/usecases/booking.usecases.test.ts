@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { UnauthorizedError } from "@/features/auth/domain/auth.gateway";
+import { AuthenticationError } from "@/lib/errors";
 import type { Service } from "@/features/services/domain/service.entity";
 import { DEFAULT_SETTINGS } from "@/features/settings/domain/settings.rules";
 import type { BookingDeps } from "../booking.deps";
@@ -29,7 +29,7 @@ const HAIRCUT: Service = {
   sortOrder: 1,
 };
 
-/** In-memory vervanging van Supabase en Resend — de use cases weten het verschil niet. */
+/** In-memory replacement for Supabase and Resend — the use cases cannot tell the difference. */
 function makeEnvironment(
   options: { insertConflict?: boolean; isAdmin?: boolean; services?: Service[] } = {},
 ) {
@@ -104,7 +104,7 @@ function makeEnvironment(
     notifier,
     ids: { newId: () => UUID(100 + ++counter), newToken: () => `token-${counter}`.padEnd(32, "x") },
     assertAdmin: async () => {
-      if (options.isAdmin === false) throw new UnauthorizedError();
+      if (options.isAdmin === false) throw new AuthenticationError();
     },
     now: () => NOW,
   };
@@ -122,7 +122,7 @@ const validBooking = {
 };
 
 describe("createBooking", () => {
-  it("slaat de boeking op, mailt en geeft een samenvatting terug", async () => {
+  it("stores the booking, mails and returns a summary", async () => {
     const { deps, saved, notifier } = makeEnvironment();
     const outcome = await createBooking(deps, validBooking);
 
@@ -134,7 +134,7 @@ describe("createBooking", () => {
     );
   });
 
-  it("laat de boeking slagen ook als de bevestigingsmail niet verstuurd kon worden", async () => {
+  it("lets the booking succeed even when the confirmation mail could not be sent", async () => {
     const { deps, notifier } = makeEnvironment();
     vi.mocked(notifier.bookingCreated).mockResolvedValueOnce({ customerMailSent: false });
 
@@ -144,7 +144,7 @@ describe("createBooking", () => {
     });
   });
 
-  it("weigert een dubbele boeking op hetzelfde moment, zonder iets op te slaan of te mailen", async () => {
+  it("rejects a double booking at the same moment, without storing or mailing anything", async () => {
     const { deps, saved, notifier } = makeEnvironment();
     await createBooking(deps, validBooking);
 
@@ -155,7 +155,7 @@ describe("createBooking", () => {
     expect(notifier.bookingCreated).toHaveBeenCalledOnce();
   });
 
-  it("weigert een overlappende boeking, niet alleen een identieke tijd", async () => {
+  it("rejects an overlapping booking, not only an identical time", async () => {
     const { deps } = makeEnvironment({ services: [{ ...HAIRCUT, durationMinutes: 45 }] });
     await createBooking(deps, validBooking); // 10:00–10:45
 
@@ -163,7 +163,7 @@ describe("createBooking", () => {
     expect(overlap).toMatchObject({ ok: false });
   });
 
-  it("vangt een race af: de database zegt dat het tijdslot net bezet raakte", async () => {
+  it("handles a race: the database says the time slot was just taken", async () => {
     const { deps, notifier } = makeEnvironment({ insertConflict: true });
     const outcome = await createBooking(deps, validBooking);
 
@@ -171,7 +171,7 @@ describe("createBooking", () => {
     expect(notifier.bookingCreated).not.toHaveBeenCalled();
   });
 
-  it("weigert een inactieve of onbekende dienst", async () => {
+  it("rejects an inactive or unknown service", async () => {
     const { deps, saved } = makeEnvironment({ services: [{ ...HAIRCUT, isActive: false }] });
     const outcome = await createBooking(deps, validBooking);
 
@@ -179,7 +179,7 @@ describe("createBooking", () => {
     expect(saved).toHaveLength(0);
   });
 
-  it("weigert het verleden en gesloten dagen", async () => {
+  it("rejects the past and closed days", async () => {
     const { deps } = makeEnvironment();
     expect(await createBooking(deps, { ...validBooking, date: "2026-08-25" })).toMatchObject({
       ok: false,
@@ -193,7 +193,7 @@ describe("createBooking", () => {
 });
 
 describe("getAvailableSlots", () => {
-  it("toont een bezet tijdslot als niet beschikbaar", async () => {
+  it("shows a busy time slot as unavailable", async () => {
     const { deps } = makeEnvironment();
     await createBooking(deps, validBooking);
 
@@ -202,7 +202,7 @@ describe("getAvailableSlots", () => {
     expect(slots.find((s) => s.time === "10:30")?.available).toBe(true);
   });
 
-  it("meldt gesloten voor een onbekende dienst", async () => {
+  it("reports closed for an unknown service", async () => {
     const { deps } = makeEnvironment();
     expect(await getAvailableSlots(deps, { date: TUESDAY, serviceId: UUID(99) })).toEqual({
       slots: [],
@@ -211,16 +211,16 @@ describe("getAvailableSlots", () => {
   });
 });
 
-describe("beheer: autorisatie", () => {
-  it("raakt de opslag niet aan zonder beheerder", async () => {
+describe("admin: authorization", () => {
+  it("does not touch storage without an admin", async () => {
     const { deps, updateCalls } = makeEnvironment({ isAdmin: false });
     const listAll = vi.spyOn(deps.bookings, "listAll");
 
-    await expect(listAdminBookings(deps)).rejects.toBeInstanceOf(UnauthorizedError);
+    await expect(listAdminBookings(deps)).rejects.toBeInstanceOf(AuthenticationError);
     await expect(
       updateBookingAsAdmin(deps, { id: UUID(1), status: "completed" }),
-    ).rejects.toBeInstanceOf(UnauthorizedError);
-    await expect(cancelBookingAsAdmin(deps, UUID(1))).rejects.toBeInstanceOf(UnauthorizedError);
+    ).rejects.toBeInstanceOf(AuthenticationError);
+    await expect(cancelBookingAsAdmin(deps, UUID(1))).rejects.toBeInstanceOf(AuthenticationError);
 
     expect(listAll).not.toHaveBeenCalled();
     expect(updateCalls).toHaveLength(0);
@@ -231,12 +231,12 @@ describe("updateBookingAsAdmin", () => {
   async function withExistingBooking() {
     const environment = makeEnvironment();
     const outcome = await createBooking(environment.deps, validBooking);
-    if (!outcome.ok) throw new Error("setup mislukt");
+    if (!outcome.ok) throw new Error("setup failed");
     vi.mocked(environment.notifier.bookingCreated).mockClear();
     return { ...environment, id: outcome.booking.id };
   }
 
-  it("mailt de klant bij een verzette afspraak en lekt het token niet", async () => {
+  it("mails the customer on a rescheduled appointment and does not leak the token", async () => {
     const { deps, notifier, id } = await withExistingBooking();
     const outcome = await updateBookingAsAdmin(deps, { id, time: "14:00" });
 
@@ -246,7 +246,7 @@ describe("updateBookingAsAdmin", () => {
     expect(notifier.bookingCancelled).not.toHaveBeenCalled();
   });
 
-  it("mailt klant én beheerder bij annuleren door de beheerder", async () => {
+  it("mails customer and admin when the admin cancels", async () => {
     const { deps, notifier, id } = await withExistingBooking();
     await cancelBookingAsAdmin(deps, id);
 
@@ -254,7 +254,7 @@ describe("updateBookingAsAdmin", () => {
     expect(notifier.bookingRescheduled).not.toHaveBeenCalled();
   });
 
-  it("stuurt geen mail bij alleen een interne notitie of status voltooid", async () => {
+  it("sends no mail for only an internal note or the completed status", async () => {
     const { deps, notifier, id } = await withExistingBooking();
     await updateBookingAsAdmin(deps, { id, notes: "Wil graag korter aan de zijkant" });
     await updateBookingAsAdmin(deps, { id, status: "completed" });
@@ -263,7 +263,7 @@ describe("updateBookingAsAdmin", () => {
     expect(notifier.bookingCancelled).not.toHaveBeenCalled();
   });
 
-  it("weigert verplaatsen naar een bezet moment of een gesloten dag, zonder te wijzigen", async () => {
+  it("refuses moving to a busy moment or a closed day, without changing anything", async () => {
     const { deps, updateCalls, id } = await withExistingBooking();
     await createBooking(deps, { ...validBooking, customerName: "Piet", time: "15:00" });
 
@@ -272,12 +272,12 @@ describe("updateBookingAsAdmin", () => {
     expect(updateCalls).toHaveLength(0);
   });
 
-  it("botst niet met zichzelf bij een kleine verschuiving", async () => {
+  it("does not collide with itself on a small shift", async () => {
     const { deps, id } = await withExistingBooking();
     expect(await updateBookingAsAdmin(deps, { id, time: "10:15" })).toMatchObject({ ok: true });
   });
 
-  it("meldt een boeking die niet meer bestaat", async () => {
+  it("reports a booking that no longer exists", async () => {
     const { deps } = makeEnvironment();
     expect(await updateBookingAsAdmin(deps, { id: UUID(42), status: "completed" })).toEqual({
       ok: false,
@@ -286,16 +286,16 @@ describe("updateBookingAsAdmin", () => {
   });
 });
 
-describe("annuleren via de link in de mail", () => {
+describe("cancelling via the link in the mail", () => {
   async function withBooking() {
     const environment = makeEnvironment();
     const outcome = await createBooking(environment.deps, validBooking);
-    if (!outcome.ok) throw new Error("setup mislukt");
+    if (!outcome.ok) throw new Error("setup failed");
     const record = environment.saved[0]!;
     return { ...environment, id: outcome.booking.id, token: record.cancelToken };
   }
 
-  it("geeft niets prijs bij een verkeerd token", async () => {
+  it("reveals nothing for a wrong token", async () => {
     const { deps, id } = await withBooking();
     const wrong = { bookingId: id, token: "x".repeat(40) };
 
@@ -303,7 +303,7 @@ describe("annuleren via de link in de mail", () => {
     expect(await cancelBookingByToken(deps, wrong)).toMatchObject({ ok: false });
   });
 
-  it("annuleert met het juiste token en mailt klant en beheerder", async () => {
+  it("cancels with the right token and mails customer and admin", async () => {
     const { deps, notifier, id, token, saved } = await withBooking();
     const outcome = await cancelBookingByToken(deps, { bookingId: id, token });
 
@@ -312,7 +312,7 @@ describe("annuleren via de link in de mail", () => {
     expect(notifier.bookingCancelled).toHaveBeenCalledWith(expect.anything(), "customer");
   });
 
-  it("annuleert niet twee keer en mailt dan ook niet opnieuw", async () => {
+  it("does not cancel twice and then does not mail again", async () => {
     const { deps, notifier, id, token } = await withBooking();
     await cancelBookingByToken(deps, { bookingId: id, token });
     vi.mocked(notifier.bookingCancelled).mockClear();
@@ -322,7 +322,7 @@ describe("annuleren via de link in de mail", () => {
     expect(notifier.bookingCancelled).not.toHaveBeenCalled();
   });
 
-  it("toont bedrijfsgegevens maar niet het token op de annuleerpagina", async () => {
+  it("shows business details but not the token on the cancel page", async () => {
     const { deps, id, token } = await withBooking();
     const outcome = await getBookingByToken(deps, { bookingId: id, token });
 

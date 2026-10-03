@@ -41,7 +41,7 @@ export default function TermsPage() {
               controleren door een jurist voordat je live gaat.
             </div>
 
-            <div className="prose-kapper">
+            <div className="prose-legal">
               <h2>Toepasselijkheid</h2>
               <p>
                 Deze voorwaarden gelden voor iedere afspraak die je via deze website maakt bij

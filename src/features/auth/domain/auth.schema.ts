@@ -3,8 +3,8 @@ import { emailSchema } from "@/lib/validations/primitives";
 
 export const loginSchema = z.object({
   email: emailSchema,
-  // Bovengrens tegen een long-password DoS: extreem lange input maakt het
-  // hash-algoritme van de auth-provider onnodig duur om te verwerken.
+  // Upper bound against a long-password DoS: extremely long input makes the
+  // auth provider's hashing algorithm needlessly expensive to process.
   password: z
     .string()
     .min(8, "Wachtwoord moet minimaal 8 tekens zijn.")

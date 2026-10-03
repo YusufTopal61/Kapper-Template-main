@@ -1,17 +1,17 @@
 import type { BookingMailData } from "./booking.entity";
 
 /**
- * Poort naar de berichtgeving rond boekingen. Implementaties mogen nooit
- * gooien: een mislukte mail mag een boeking niet laten falen.
+ * Port to the messaging around bookings. Implementations must never throw:
+ * a failed mail must not make a booking fail.
  */
 export interface BookingNotifier {
-  /** Geeft terug of de bevestiging aan de klant daadwerkelijk is verzonden. */
+  /** Returns whether the confirmation to the customer was actually sent. */
   bookingCreated(booking: BookingMailData): Promise<{ customerMailSent: boolean }>;
   bookingCancelled(booking: BookingMailData, by: "customer" | "admin"): Promise<void>;
   bookingRescheduled(booking: BookingMailData): Promise<void>;
 }
 
-/** Poort naar toevalswaarden, zodat use cases deterministisch te testen zijn. */
+/** Port to random values, so use cases can be tested deterministically. */
 export interface IdGenerator {
   newId(): string;
   newToken(): string;

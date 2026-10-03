@@ -28,7 +28,7 @@ const business: BusinessData = {
 };
 
 describe("parseAdres", () => {
-  it("splitst straat, postcode en plaats", () => {
+  it("splits street, postal code and city", () => {
     expect(parseAddress("Dorpsstraat 1, 1234 AB Utrecht")).toMatchObject({
       streetAddress: "Dorpsstraat 1",
       postalCode: "1234 AB",
@@ -36,7 +36,7 @@ describe("parseAdres", () => {
     });
   });
 
-  it("valt terug op de hele tekst als het formaat niet past", () => {
+  it("falls back to the whole text when the format does not fit", () => {
     expect(parseAddress("Ergens in de stad")).toMatchObject({ streetAddress: "Ergens in de stad" });
     expect(parseAddress("Ergens in de stad")).not.toHaveProperty("postalCode");
   });
@@ -45,7 +45,7 @@ describe("parseAdres", () => {
 describe("localBusinessJsonLd", () => {
   const data = localBusinessJsonLd(business, "BarberShop", "https://kapperx.nl/og.png");
 
-  it("neemt alleen open dagen op, met de juiste Engelse dagnaam en tijden", () => {
+  it("only includes open days, with the right English day name and times", () => {
     const days = data.openingHoursSpecification.map((d) => d.dayOfWeek);
     expect(days).toEqual(["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]);
     expect(data.openingHoursSpecification.at(-1)).toMatchObject({
@@ -54,12 +54,12 @@ describe("localBusinessJsonLd", () => {
     });
   });
 
-  it("gebruikt het gekozen lokale type en het NAW uit de database", () => {
+  it("uses the chosen local type and the name/address/phone from the database", () => {
     expect(data["@type"]).toBe("BarberShop");
     expect(data).toMatchObject({ name: "Kapper X", telephone: "06 12345678" });
   });
 
-  it("laat adres en telefoon weg als ze niet bekend zijn, in plaats van leeg te publiceren", () => {
+  it("omits address and phone when unknown, instead of publishing empty values", () => {
     const bare = localBusinessJsonLd(
       { ...business, address: null, phone: null },
       "BarberShop",
@@ -71,7 +71,7 @@ describe("localBusinessJsonLd", () => {
 });
 
 describe("serviceJsonLd", () => {
-  it("geeft de prijs als tekst met twee decimalen in euro's", () => {
+  it("gives the price as text with two decimals in euros", () => {
     const data = serviceJsonLd(
       { name: "Knippen", description: "", price: 25 },
       business,
@@ -81,7 +81,7 @@ describe("serviceJsonLd", () => {
     expect(data).not.toHaveProperty("description");
   });
 
-  it("meldt geen aanbod als de prijs nog op 0 (niet ingesteld) staat", () => {
+  it("reports no offer when the price is still 0 (not set)", () => {
     const data = serviceJsonLd(
       { name: "Knippen", description: "", price: 0 },
       business,
@@ -92,7 +92,7 @@ describe("serviceJsonLd", () => {
 });
 
 describe("breadcrumbJsonLd", () => {
-  it("nummert de items vanaf 1 met absolute URL's", () => {
+  it("numbers the items from 1 with absolute URLs", () => {
     const data = breadcrumbJsonLd("https://kapperx.nl", [
       { name: "Home", path: "/" },
       { name: "Diensten", path: "/diensten" },
@@ -112,7 +112,7 @@ describe("faqJsonLd", () => {
 });
 
 describe("serialiseerJsonLd", () => {
-  it("kan niet uit de script-tag breken via een kwaadaardige naam", () => {
+  it("cannot break out of the script tag via a malicious name", () => {
     const output = serializeJsonLd({ name: "</script><script>alert(1)</script>" });
     expect(output).not.toContain("</script>");
     expect(JSON.parse(output).name).toBe("</script><script>alert(1)</script>");

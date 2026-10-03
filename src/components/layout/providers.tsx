@@ -5,7 +5,7 @@ import { Analytics } from "@/components/layout/Analytics";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { StickyBookCta } from "@/components/layout/StickyBookCta";
 
-/** Client-kant van de root: dingen die op elke pagina meedraaien (cookiebanner, analytics, mobiele boekknop). */
+/** Client side of the root: things that run on every page (cookie banner, analytics, mobile booking button). */
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <>

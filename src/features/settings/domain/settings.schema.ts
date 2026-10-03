@@ -20,7 +20,7 @@ export const openingHoursSchema = z
     "Openingstijd moet vóór sluitingstijd liggen.",
   );
 
-/** Lege invoer wordt `null`: zo kan de beheerder een veld weer leegmaken. */
+/** Empty input becomes `null`: that lets the admin clear a field again. */
 const optionalText = (max: number) =>
   z
     .string()

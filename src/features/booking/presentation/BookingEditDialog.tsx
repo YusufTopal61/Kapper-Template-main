@@ -51,7 +51,7 @@ export function BookingEditDialog({
           <DialogTitle>Boeking bewerken</DialogTitle>
         </DialogHeader>
 
-        {/* De key zorgt dat het formulier met verse waarden begint bij elke andere boeking. */}
+        {/* The key makes the form start with fresh values for every different booking. */}
         {booking ? (
           <EditForm
             key={booking.id}
@@ -92,7 +92,7 @@ function EditForm({
     onSave({
       id: booking.id,
       ...values,
-      // Een leeg veld betekent: notitie wissen.
+      // An empty field means: clear the note.
       notes: values.notes?.trim() ? values.notes : null,
     }),
   );

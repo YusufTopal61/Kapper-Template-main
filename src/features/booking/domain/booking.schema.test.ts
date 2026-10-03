@@ -11,24 +11,24 @@ const valid = {
 };
 
 describe("bookingInputSchema", () => {
-  it("normaliseert het e-mailadres", () => {
+  it("normalizes the email address", () => {
     expect(bookingInputSchema.parse(valid).customerEmail).toBe("jan@example.nl");
   });
 
   it.each([
-    ["telefoon met te weinig cijfers", { customerPhone: "123" }],
-    ["geen e-mailadres", { customerEmail: "nietgeldig" }],
-    ["een absurd lang e-mailadres", { customerEmail: `${"a".repeat(300)}@example.nl` }],
-    ["een te lange naam", { customerName: "x".repeat(121) }],
-    ["een datum in het verkeerde formaat", { date: "08-09-2026" }],
-    ["een dienst-id dat geen uuid is", { serviceId: "1; drop table bookings" }],
+    ["a phone number with too few digits", { customerPhone: "123" }],
+    ["not an email address", { customerEmail: "nietgeldig" }],
+    ["an absurdly long email address", { customerEmail: `${"a".repeat(300)}@example.nl` }],
+    ["a name that is too long", { customerName: "x".repeat(121) }],
+    ["a date in the wrong format", { date: "08-09-2026" }],
+    ["a service id that is not a uuid", { serviceId: "1; drop table bookings" }],
   ])("weigert %s", (_name, deviation) => {
     expect(bookingInputSchema.safeParse({ ...valid, ...deviation }).success).toBe(false);
   });
 });
 
 describe("cancelByTokenSchema", () => {
-  it("begrenst het token aan beide kanten", () => {
+  it("bounds the token on both sides", () => {
     const id = "00000000-0000-4000-8000-000000000001";
     expect(cancelByTokenSchema.safeParse({ bookingId: id, token: "kort" }).success).toBe(false);
     expect(cancelByTokenSchema.safeParse({ bookingId: id, token: "x".repeat(500) }).success).toBe(

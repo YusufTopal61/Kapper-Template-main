@@ -19,15 +19,15 @@ import type {
   TimeSlot,
 } from "./booking.entity";
 
-/** Statussen die een tijdslot bezet houden. Een geannuleerde afspraak telt niet mee. */
+/** Statuses that keep a time slot busy. A cancelled appointment does not count. */
 export const ACTIVE_STATUSES = ["confirmed", "completed", "no_show"] as const;
 
-/** Duur waarmee we rekenen als de gekoppelde dienst ontbreekt. */
+/** Duration we calculate with when the linked service is missing. */
 export const DEFAULT_DURATION_MINUTES = 30;
 
 /**
- * Met `negeerId` sluit je de afspraak uit die je zelf aan het verplaatsen
- * bent — die zou anders met zichzelf botsen.
+ * With `ignoreId` you exclude the appointment you are moving yourself —
+ * it would otherwise collide with itself.
  */
 export function toBusyRanges(busy: BusyBooking[], ignoreId?: string): BusyRange[] {
   return busy
@@ -38,13 +38,13 @@ export function toBusyRanges(busy: BusyBooking[], ignoreId?: string): BusyRange[
     });
 }
 
-/** Botst een behandeling van `duur` minuten vanaf `start` met iets bestaands? */
+/** Does a treatment of `duration` minutes from `start` collide with anything existing? */
 export function overlaps(start: number, duration: number, ranges: BusyRange[]): boolean {
   const end = start + duration;
   return ranges.some((range) => start < range.end && end > range.start);
 }
 
-/** Tijdsloten voor een dag, met per slot of de behandeling er nog in past. */
+/** Time slots for a day, with per slot whether the treatment still fits. */
 export function getTimeSlots(input: {
   openingHours: OpeningHours;
   date: string;
@@ -72,9 +72,9 @@ export type ScheduleCheckResult =
   | { ok: false; reason: "busy" };
 
 /**
- * Past deze afspraak in het rooster? De volgorde is bewust: eerst het verleden,
- * dan de openingstijden, dan pas of iemand anders het tijdslot al heeft.
- * De beheerder mag een afspraak in het verleden bewerken (`negeerVerleden`).
+ * Does this appointment fit the schedule? The order is deliberate: first the past,
+ * then the opening hours, only then whether someone else already has the slot.
+ * The admin may edit an appointment in the past (`ignorePast`).
  */
 export function checkSchedule(input: {
   openingHours: OpeningHours;
@@ -108,7 +108,7 @@ export type MailIntent = "cancelled" | "rescheduled" | null;
 
 type AppointmentData = { status: BookingStatus; date: string; time: string; serviceId: string };
 
-/** Welke mail hoort de klant te krijgen na deze wijziging, als er al een hoort? */
+/** Which mail should the customer get after this change, if any? */
 export function getMailIntent(current: AppointmentData, newBooking: AppointmentData): MailIntent {
   if (newBooking.status === "cancelled") {
     return current.status !== "cancelled" ? "cancelled" : null;
@@ -124,7 +124,7 @@ export function getMailIntent(current: AppointmentData, newBooking: AppointmentD
 
 export type CustomerCancellationResult = { ok: true } | { ok: false; error: string };
 
-/** Mag de klant deze afspraak nog zelf annuleren? */
+/** May the customer still cancel this appointment themselves? */
 export function canCustomerCancel(status: BookingStatus): CustomerCancellationResult {
   if (status === "cancelled") return { ok: false, error: "Deze afspraak is al geannuleerd." };
   if (status === "completed") {
@@ -136,7 +136,7 @@ export function canCustomerCancel(status: BookingStatus): CustomerCancellationRe
   return { ok: true };
 }
 
-/** Het geheime annuleertoken hoort niet in het beheerpaneel. */
+/** The secret cancel token does not belong in the admin panel. */
 export function withoutToken(record: BookingRecord): BookingWithService {
   const { cancelToken: _token, ...rest } = record;
   return rest;
@@ -163,13 +163,13 @@ export function buildMailData(
   };
 }
 
-/** Hoe ver vooruit een klant kan boeken, en hoeveel dagen we er tegelijk tonen. */
+/** How far ahead a customer can book, and how many days we show at once. */
 export const BOOKABLE_WINDOW_DAYS = 21;
 export const MAX_VISIBLE_DAYS = 12;
 
 /**
- * De eerstvolgende dagen waarop de zaak open is, als "YYYY-MM-DD". Vandaag telt
- * mee: de tijdsloten van vandaag filteren zelf al wat in het verleden ligt.
+ * The next days on which the business is open, as "YYYY-MM-DD". Today counts:
+ * the time slots of today already filter out what lies in the past.
  */
 export function getBookableDays(openingHours: OpeningHours, since: Date): string[] {
   const days: string[] = [];
@@ -187,13 +187,13 @@ export type BookingsSummary = {
   confirmed: number;
   completed: number;
   cancelled: number;
-  /** De eerstvolgende bevestigde afspraken vanaf vandaag, op volgorde van de lijst. */
+  /** The next confirmed appointments from today, in list order. */
   upcoming: BookingWithService[];
 };
 
 /**
- * Cijfers voor het beheeroverzicht. Een afspraak van vandaag telt nog als
- * aankomend; alleen dagen vóór vandaag vallen af.
+ * Numbers for the admin overview. An appointment today still counts as
+ * upcoming; only days before today drop out.
  */
 export function summarizeBookings(
   bookings: BookingWithService[],

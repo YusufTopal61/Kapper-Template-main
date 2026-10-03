@@ -1,4 +1,5 @@
 import "server-only";
+import { DatabaseError } from "@/lib/errors";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { ServiceRepository } from "../domain/service.repository";
@@ -18,7 +19,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("services.listActive", error);
       return data.map(toService);
     },
 
@@ -30,7 +31,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("services.listAll", error);
       return data.map(toService);
     },
 
@@ -41,7 +42,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .eq("id", id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("services.findById", error);
       return data ? toService(data) : null;
     },
 
@@ -54,7 +55,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .limit(1)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("services.highestSortOrder", error);
       return data?.sort_order ?? 0;
     },
 
@@ -66,7 +67,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("services.create", error);
       return toService(data);
     },
 
@@ -80,7 +81,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("services.update", error);
       return toService(data);
     },
 
@@ -90,7 +91,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
 
       if (error) {
         if (error.code === FK_VIOLATION) return { ok: false, reason: "in-use" };
-        throw error;
+        throw new DatabaseError("services.remove", error);
       }
       return { ok: true };
     },

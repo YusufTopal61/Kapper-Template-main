@@ -6,9 +6,9 @@ import { ArrowRight } from "lucide-react";
 import { useCookieConsent } from "@/hooks/use-cookie-consent";
 
 /**
- * Vaste onderbalk op mobiel met een directe boekingsknop. Blijft weg op
- * /boeken zelf (al een CTA in beeld), in het beheerpaneel, en zolang de
- * cookiebanner nog een keuze vraagt — zo botsen de twee vaste balken nooit.
+ * Fixed bottom bar on mobile with a direct booking button. Stays away on
+ * /boeken itself (already a CTA in view), in the admin panel, and while the
+ * cookie banner still asks for a choice — so the two fixed bars never collide.
  */
 export function StickyBookCta() {
   const pathname = usePathname();

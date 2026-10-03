@@ -1,7 +1,7 @@
 "use server";
 
 import { getAuthGateway } from "@/lib/di/container";
-import { invalidInput } from "@/lib/utils/action-result";
+import { invalidInput, runAction } from "@/lib/utils/action-result";
 import { limitRequests } from "@/lib/utils/request-limit.server";
 import { loginSchema } from "../domain/auth.schema";
 import { signIn, type SignInResult } from "../domain/usecases/sign-in";
@@ -20,10 +20,12 @@ export async function signInAction(input: unknown): Promise<SignInResult> {
     };
   }
 
-  return signIn(getAuthGateway(), valid.data);
+  return runAction(() => signIn(getAuthGateway(), valid.data));
 }
 
 export async function signOutAction() {
-  await getAuthGateway().signOut();
-  return { ok: true as const };
+  return runAction(async () => {
+    await getAuthGateway().signOut();
+    return { ok: true as const };
+  });
 }

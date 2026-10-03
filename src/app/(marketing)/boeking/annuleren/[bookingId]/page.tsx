@@ -11,7 +11,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 
 export const dynamic = "force-dynamic";
 
-// Annuleerpagina's horen niet in zoekmachines.
+// Cancel pages do not belong in search engines.
 export const metadata: Metadata = buildMetadata({
   title: "Afspraak annuleren",
   description: "Annuleer je afspraak.",
@@ -25,7 +25,7 @@ async function load(bookingId: string, token: string): Promise<CancelLoadResult>
   const input = cancelByTokenSchema.safeParse({ bookingId, token });
   if (!input.success) return INVALID;
 
-  // Rem op het raden van annuleertokens.
+  // Brake on guessing cancel tokens.
   if ((await limitRequests("cancel-read", 20)) !== null) {
     return { ok: false, error: "Te veel pogingen. Probeer het straks opnieuw." };
   }

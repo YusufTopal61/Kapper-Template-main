@@ -8,7 +8,7 @@ export type CookieConsentStatus = "unknown" | "accepted" | "declined";
 
 const listeners = new Set<() => void>();
 
-/** Houdt de keuze vast voor dit bezoek als localStorage geblokkeerd is. */
+/** Keeps the choice for this visit when localStorage is blocked. */
 let choiceInMemory: CookieConsentStatus | null = null;
 
 function readStoredChoice(): CookieConsentStatus {
@@ -17,15 +17,15 @@ function readStoredChoice(): CookieConsentStatus {
     const value = window.localStorage.getItem(STORAGE_KEY);
     return value === "accepted" || value === "declined" ? value : "unknown";
   } catch {
-    // localStorage kan geblokkeerd zijn (privénavigatie, restricted cookies).
-    // Dan tonen we de banner gewoon opnieuw i.p.v. te crashen.
+    // localStorage can be blocked (private browsing, restricted cookies).
+    // Then we simply show the banner again instead of crashing.
     return "unknown";
   }
 }
 
 function subscribe(notice: () => void) {
   listeners.add(notice);
-  // Ook een wijziging in een ander tabblad moet de banner laten verdwijnen.
+  // A change in another tab must also make the banner disappear.
   window.addEventListener("storage", notice);
   return () => {
     listeners.delete(notice);
@@ -46,9 +46,9 @@ function setChoice(choice: Exclude<CookieConsentStatus, "unknown">) {
 const subscribeNoop = () => () => {};
 
 /**
- * Consent-status voor niet-noodzakelijke cookies (analytics). De inlog-
- * sessie van de beheerder loopt via functionele Supabase-cookies die geen
- * toestemming vereisen; alleen tracking wordt hierdoor gate-gehouden.
+ * Consent status for non-essential cookies (analytics). The admin's sign-in
+ * session runs on functional Supabase cookies that need no consent; only
+ * tracking is gated by this.
  */
 export function useCookieConsent() {
   const status = useSyncExternalStore<CookieConsentStatus>(
@@ -56,7 +56,7 @@ export function useCookieConsent() {
     readStoredChoice,
     () => "unknown",
   );
-  /** false tijdens de server-render en hydratatie; true zodra de opgeslagen keuze is uitgelezen. */
+  /** false during server render and hydration; true once the stored choice has been read. */
   const ready = useSyncExternalStore(
     subscribeNoop,
     () => true,

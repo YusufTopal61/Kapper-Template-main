@@ -1,11 +1,11 @@
--- Startdata, zodat een verse installatie meteen werkt.
--- admin_email blijft bewust leeg: de beheerder vult die in bij /admin/instellingen.
+-- Starter data, so a fresh install works right away.
+-- admin_email is deliberately left empty: the admin fills it in at /admin/instellingen.
 
 insert into public.admin_settings (singleton)
 values (true)
 on conflict (singleton) do nothing;
 
--- Alleen vullen als er nog niets staat, zodat opnieuw draaien geen duplicaten geeft.
+-- Only fill when nothing exists yet, so running again does not create duplicates.
 insert into public.services (naam, beschrijving, prijs, duur_minuten, sorteer_volgorde)
 select * from (values
   (

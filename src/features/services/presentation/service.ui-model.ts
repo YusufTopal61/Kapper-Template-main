@@ -1,7 +1,7 @@
 import { formatEuro } from "@/lib/utils/format";
 import type { Service } from "../domain/service.entity";
 
-/** Precies wat de schermen van een dienst nodig hebben, al opgemaakt. */
+/** Exactly what the screens need for a service, already formatted. */
 export type ServiceUIModel = {
   id: string;
   name: string;

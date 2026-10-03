@@ -22,7 +22,7 @@ import {
   websiteJsonLd,
 } from "@/lib/seo/structured-data";
 
-// Leest de database; nooit statisch voorgerenderd (een mislukte query bij de build zou anders blijven hangen).
+// Reads the database; never statically prerendered (a failed query at build time would otherwise stick).
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {

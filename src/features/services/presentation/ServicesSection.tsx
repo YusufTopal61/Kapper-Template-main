@@ -5,7 +5,7 @@ import Link from "next/link";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { ServiceUIModel } from "./service.ui-model";
 
-/** Afwisselende vlakken, zodat de kaarten ook zonder foto's ritme houden. */
+/** Alternating blocks, so the cards keep their rhythm even without photos. */
 const BLOCKS = ["block-fog", "block-accent", "block-fog", "block-mid"];
 
 export function ServicesSection({ services }: { services: ServiceUIModel[] }) {

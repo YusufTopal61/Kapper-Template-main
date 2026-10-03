@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 /**
- * Zod-bouwstenen die door meerdere modules gebruikt worden. Puur Zod, geen
- * framework: daarom mag domain/ ze importeren.
+ * Zod building blocks used by several features. Pure Zod, no framework:
+ * that is why domain/ may import them.
  */
 
-/** RFC 5321 staat maximaal 254 tekens toe — een langere string is sowieso geen geldig adres. */
+/** RFC 5321 allows at most 254 characters — a longer string is never a valid address anyway. */
 export const emailSchema = z
   .string()
   .trim()

@@ -30,7 +30,7 @@ export const formatDateShort = (date: string) =>
 /** "8 sep" */
 export const formatDateShorter = (date: string) => format(parseDate(date), "d MMM", { locale: nl });
 
-/** Een boeking zoals het beheerpaneel hem toont. Het annuleertoken zit er bewust niet in. */
+/** A booking as the admin panel shows it. The cancel token is deliberately not in it. */
 export type BookingUIModel = {
   id: string;
   serviceId: string;

@@ -8,7 +8,7 @@ function subscribe(onChange: () => void) {
   return () => mql.removeEventListener("change", onChange);
 }
 
-/** Server en eerste client-render gaan uit van desktop; daarna volgt de echte schermbreedte. */
+/** Server and first client render assume desktop; the real screen width follows afterwards. */
 export function useIsMobile() {
   return React.useSyncExternalStore(
     subscribe,

@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV !== "production";
 
 /**
- * Content-Security-Policy. `unsafe-inline` voor scripts is nodig omdat Next.js
- * zijn hydratatie-scripts inline plaatst; een nonce-gebaseerde CSP via proxy.ts
- * is de volgende stap (zie README). Alles wat niet van onszelf komt, staat
- * hieronder expliciet toegestaan.
+ * Content-Security-Policy. `unsafe-inline` for scripts is needed because Next.js
+ * places its hydration scripts inline; a nonce-based CSP via proxy.ts is the
+ * next step (see README). Everything that does not come from ourselves is
+ * listed explicitly below.
  */
 const csp = [
   "default-src 'self'",
@@ -37,8 +37,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   experimental: {
-    // Ruim boven de grootste geldige payload (de instellingen met alle
-    // openingstijden is ruim onder 5 KB); weigert te grote request-bodies.
+    // Far above the largest valid payload (the settings with all opening hours
+    // are well under 5 KB); rejects oversized request bodies.
     serverActions: { bodySizeLimit: "100kb" },
   },
   async headers() {

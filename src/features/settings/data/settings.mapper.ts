@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import type { Json, Tables, TablesUpdate } from "@/lib/supabase/database.types";
 import { DEFAULT_OPENING_HOURS } from "../domain/opening-hours.rules";
 import type { BusinessSettings } from "../domain/settings.entity";
@@ -12,7 +13,7 @@ export function toBusinessSettings(row: Tables<"admin_settings">): BusinessSetti
   const openingHours = openingHoursSchema.safeParse(row.opening_hours);
 
   if (!openingHours.success) {
-    console.error("[settings] opening_hours in the database is invalid, using defaults");
+    logger.warn("settings", "opening_hours in the database is invalid, using defaults");
   }
 
   return {

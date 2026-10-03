@@ -1,11 +1,11 @@
 -- Row Level Security.
 --
--- Uitgangspunt: het publiek mag alleen actieve diensten lezen en een boeking
--- aanmaken. Alles wat daarna met die boeking gebeurt — lezen, wijzigen,
--- annuleren — kan alleen een ingelogde beheerder.
+-- Principle: the public may only read active services and create a booking.
+-- Everything that happens to that booking afterwards — reading, changing,
+-- cancelling — can only be done by a signed-in admin.
 --
--- De service_role sleutel omzeilt RLS volledig en wordt uitsluitend server-side
--- gebruikt (annuleren via token, instellingen uitlezen voor e-mails).
+-- The service_role key bypasses RLS entirely and is used exclusively
+-- server-side (cancelling via token, reading settings for emails).
 
 alter table public.services enable row level security;
 alter table public.bookings enable row level security;
@@ -29,9 +29,9 @@ create policy "beheerder beheert diensten"
 
 -- ---------------------------------------------------------------- bookings
 
--- Het publiek mag uitsluitend een nieuwe, bevestigde afspraak in de toekomst
--- aanmaken op een actieve dienst. Interne notities kunnen niet meegestuurd
--- worden en de status kan niet zelf gekozen worden.
+-- The public may only create a new, confirmed appointment in the future on an
+-- active service. Internal notes cannot be sent along and the status cannot
+-- be chosen.
 create policy "publiek maakt een boeking aan"
   on public.bookings
   for insert
@@ -55,8 +55,8 @@ create policy "beheerder beheert boekingen"
 
 -- ---------------------------------------------------------------- admin_settings
 
--- Bewust géén publieke leesrechten: admin_email hoort niet in de browser.
--- Publieke pagina's halen de veilige velden op via een server function.
+-- Deliberately no public read access: admin_email does not belong in the browser.
+-- Public pages fetch the safe fields through server-side code.
 create policy "beheerder beheert instellingen"
   on public.admin_settings
   for all

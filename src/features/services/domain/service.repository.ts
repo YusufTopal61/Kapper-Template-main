@@ -3,17 +3,17 @@ import type { Service } from "./service.entity";
 
 export type DeleteOutcome = { ok: true } | { ok: false; reason: "in-use" };
 
-/** Poort naar de opslag van diensten. */
+/** Port to the storage of services. */
 export interface ServiceRepository {
-  /** Actieve diensten voor de publieke site (leesbaar zonder inlog). */
+  /** Active services for the public site (readable without signing in). */
   listActive(): Promise<Service[]>;
-  /** Alle diensten, ook inactieve (onder de rechten van de beheerder). */
+  /** All services, including inactive ones (under the admin's permissions). */
   listAll(): Promise<Service[]>;
-  /** Server-intern opzoeken, buiten de beheerderssessie om (de boekingsflow is publiek). */
+  /** Server-internal lookup, outside the admin session (the booking flow is public). */
   findById(id: string): Promise<Service | null>;
   highestSortOrder(): Promise<number>;
   create(input: ServiceInput & { sortOrder: number }): Promise<Service>;
   update(patch: ServiceUpdate): Promise<Service>;
-  /** Weigert wanneer er boekingen aan de dienst hangen: die historie gooien we niet weg. */
+  /** Refuses when bookings reference the service: we do not throw away that history. */
   remove(id: string): Promise<DeleteOutcome>;
 }

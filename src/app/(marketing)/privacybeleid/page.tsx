@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
               gaat.
             </div>
 
-            <div className="prose-kapper">
+            <div className="prose-legal">
               <h2>Wie we zijn</h2>
               <p>
                 Dit privacybeleid is van toepassing op de website en het boekingssysteem van

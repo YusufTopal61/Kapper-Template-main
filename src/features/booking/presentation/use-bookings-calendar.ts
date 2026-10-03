@@ -19,10 +19,10 @@ import type { BookingUIModel } from "./booking.ui-model";
 type Outcome = { ok: true } | { ok: false; error: string };
 
 /**
- * View model van het boekingenscherm: kalender of lijst, welke maand en dag,
- * welke boeking wordt bewerkt, en de beheeracties. De boekingen zelf komen als
- * props van de server; na elke wijziging vragen we de server om een verse
- * versie (router.refresh) in plaats van een eigen kopie bij te houden.
+ * View model of the bookings screen: calendar or list, which month and day,
+ * which booking is being edited, and the admin actions. The bookings themselves
+ * come as props from the server; after every change we ask the server for a
+ * fresh version (router.refresh) instead of keeping our own copy.
  */
 export function useBookingsCalendar(bookings: BookingUIModel[]) {
   const router = useRouter();

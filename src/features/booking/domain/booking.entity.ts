@@ -14,25 +14,25 @@ export type Booking = {
   customerEmail: string;
   customerPhone: string;
   date: string; // "YYYY-MM-DD"
-  time: string; // "HH:MM" (of "HH:MM:SS" uit de database)
+  time: string; // "HH:MM" (or "HH:MM:SS" from the database)
   status: BookingStatus;
-  /** Interne notities van de kapper; nooit zichtbaar voor de klant. */
+  /** Internal notes from the barber; never visible to the customer. */
   notes: string | null;
 };
 
 /**
- * Een boeking zoals de server haar kent, inclusief het geheime annuleertoken.
- * Dit type verlaat de server nooit.
+ * A booking as the server knows it, including the secret cancel token.
+ * This type never leaves the server.
  */
 export type BookingRecord = Booking & {
   cancelToken: string;
   services: BookedService | null;
 };
 
-/** Wat het beheerpaneel te zien krijgt: het token zit er bewust niet bij. */
+/** What the admin panel gets to see: the token is deliberately not included. */
 export type BookingWithService = Omit<BookingRecord, "cancelToken">;
 
-/** Wat nodig is om een nieuwe boeking op te slaan. */
+/** What is needed to store a new booking. */
 export type NewBooking = {
   id: string;
   serviceId: string;
@@ -44,20 +44,20 @@ export type NewBooking = {
   cancelToken: string;
 };
 
-/** Een bestaande afspraak die tijd in beslag neemt. */
+/** An existing appointment that occupies time. */
 export type BusyBooking = {
   id: string;
   time: string;
-  /** null wanneer de gekoppelde dienst ontbreekt. */
+  /** null when the linked service is missing. */
   durationMinutes: number | null;
 };
 
-/** Bezet tijdvak in minuten sinds middernacht. */
+/** Busy time range in minutes since midnight. */
 export type BusyRange = { start: number; end: number };
 
 export type TimeSlot = { time: string; available: boolean };
 
-/** Gegevens voor de e-mails rond een boeking. */
+/** Data for the emails around a booking. */
 export type BookingMailData = {
   id: string;
   cancelToken: string;
@@ -86,7 +86,7 @@ export type BookingResult =
     }
   | { ok: false; error: string; field?: "date" | "time" | "serviceId" };
 
-/** Wat de klant ziet op de annuleerpagina. */
+/** What the customer sees on the cancel page. */
 export type BookingByToken = {
   id: string;
   customerName: string;

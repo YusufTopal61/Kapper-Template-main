@@ -11,12 +11,12 @@ import { nowInAmsterdam } from "@/lib/utils/clock";
 import { generateId, generateToken } from "@/lib/utils/random";
 
 /**
- * Composition root: het enige bestand dat interfaces uit domain/ aan hun
- * implementaties in data/ koppelt. Wil je Supabase of Resend vervangen, dan
- * verandert alleen dit bestand en de betreffende data/-map.
+ * Composition root: the only file that couples interfaces from domain/ to their
+ * implementations in data/. To replace Supabase or Resend, only this file and
+ * the relevant data/ folder change.
  *
- * Alles hier wordt per request opnieuw opgebouwd: de Supabase-clients lezen de
- * sessie uit de cookies van het huidige request en mogen niet gedeeld worden.
+ * Everything here is rebuilt per request: the Supabase clients read the session
+ * from the current request's cookies and must not be shared.
  */
 
 export function getAuthGateway() {

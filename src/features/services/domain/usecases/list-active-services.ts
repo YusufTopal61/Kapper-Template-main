@@ -1,11 +1,12 @@
+import { logger } from "@/lib/logger";
 import type { ServiceRepository } from "../service.repository";
 
-/** Publiek: een storing mag de site niet breken, dan tonen we gewoon geen diensten. */
+/** Public: an outage must not break the site, so we simply show no services. */
 export async function listActiveServices(repo: Pick<ServiceRepository, "listActive">) {
   try {
     return await repo.listActive();
   } catch (error) {
-    console.error("[services] actieve diensten ophalen mislukt:", error);
+    logger.error("services", "fetching active services failed, showing none", error);
     return [];
   }
 }

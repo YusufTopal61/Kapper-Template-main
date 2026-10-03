@@ -2,9 +2,9 @@ import "server-only";
 import { headers } from "next/headers";
 
 /**
- * IP van de bezoeker, voor rate limiting. Achter een vertrouwde proxy (Vercel)
- * is het eerste adres in X-Forwarded-For het echte clientadres. "onbekend" deelt
- * één emmer — liever te streng dan geen limiet.
+ * The visitor's IP, for rate limiting. Behind a trusted proxy (Vercel) the
+ * first address in X-Forwarded-For is the real client address. "unknown" shares
+ * one bucket — better too strict than no limit.
  */
 export async function getClientIp(): Promise<string> {
   const list = await headers();

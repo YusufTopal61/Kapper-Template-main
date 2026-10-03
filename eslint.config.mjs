@@ -48,6 +48,7 @@ const config = [
   ...nextTypescript,
   {
     rules: {
+      "no-console": "error",
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": [
         "warn",
@@ -106,7 +107,7 @@ const config = [
   // ---- presentation (components and hooks): talks to actions and domain types, never to data or the container
   {
     files: ["src/features/*/presentation/**/*.{ts,tsx}"],
-    ignores: ["**/*.actions.ts", "**/admin-action.ts", "**/*.test.{ts,tsx}"],
+    ignores: ["**/*.actions.ts", "**/*.test.{ts,tsx}"],
     rules: layer(
       "Components and hooks never touch data/, Supabase or the DI container. Use a server action or let the page pass the data in.",
       [
@@ -124,10 +125,7 @@ const config = [
 
   // ---- server actions: thin layer; may use the container, never data/ directly
   {
-    files: [
-      "src/features/*/presentation/**/*.actions.ts",
-      "src/features/*/presentation/admin-action.ts",
-    ],
+    files: ["src/features/*/presentation/**/*.actions.ts"],
     rules: layer(
       "A server action validates, rate limits and calls one use case. No data/ or Supabase; wiring belongs in lib/di/container.ts.",
       ["**/data/**", "@/features/*/data/**", "@/lib/supabase/**", "@supabase/*", "resend"],

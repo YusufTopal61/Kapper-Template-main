@@ -9,12 +9,12 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
   openingHours: DEFAULT_OPENING_HOURS,
 };
 
-/** Zonder rij in de database (of bij een storing) valt de site terug op veilige defaults. */
+/** Without a row in the database (or during an outage) the site falls back to safe defaults. */
 export function withDefaults(settings: BusinessSettings | null): BusinessSettings {
   return settings ?? DEFAULT_SETTINGS;
 }
 
-/** Bewust een allowlist: nieuwe velden op BusinessSettings lekken zo niet vanzelf naar de browser. */
+/** Deliberately an allowlist: new fields on BusinessSettings do not leak to the browser by themselves. */
 export function toPublicSettings(settings: BusinessSettings | null): PublicSettings {
   const { businessName, address, phoneNumber, openingHours } = withDefaults(settings);
   return { businessName, address, phoneNumber, openingHours };

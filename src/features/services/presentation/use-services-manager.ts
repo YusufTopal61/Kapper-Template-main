@@ -9,9 +9,9 @@ import type { ServiceUIModel } from "./service.ui-model";
 type Outcome = { ok: true } | { ok: false; error: string };
 
 /**
- * View model van het dienstenbeheer: welke kaart wordt bewerkt, een nieuwe
- * dienst toevoegen, en de beheeracties. De lijst komt van de server; na elke
- * wijziging vragen we een verse versie (router.refresh).
+ * View model of the services admin: which card is being edited, adding a new
+ * service, and the admin actions. The list comes from the server; after every
+ * change we ask for a fresh version (router.refresh).
  */
 export function useServicesManager(services: ServiceUIModel[]) {
   const router = useRouter();

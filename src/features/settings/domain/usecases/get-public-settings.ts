@@ -1,15 +1,16 @@
+import { logger } from "@/lib/logger";
 import type { SettingsRepository } from "../settings.repository";
 import { toPublicSettings } from "../settings.rules";
 
 /**
- * Instellingen voor publieke pagina's. De publieke site moet ook overeind
- * blijven als de database even onbereikbaar is: dan vallen we terug op defaults.
+ * Settings for public pages. The public site must also stay up when the
+ * database is briefly unreachable: then we fall back to defaults.
  */
 export async function getPublicSettings(repo: Pick<SettingsRepository, "read">) {
   try {
     return toPublicSettings(await repo.read());
   } catch (error) {
-    console.error("[settings] publieke instellingen ophalen mislukt:", error);
+    logger.error("settings", "fetching public settings failed, using defaults", error);
     return toPublicSettings(null);
   }
 }

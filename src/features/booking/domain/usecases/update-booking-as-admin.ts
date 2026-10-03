@@ -15,7 +15,7 @@ import { SLOT_TAKEN_ADMIN } from "./booking.messages";
 
 export type UpdateResult = { ok: true; booking: BookingWithService } | { ok: false; error: string };
 
-/** Beheer: een afspraak wijzigen. Verzetten of annuleren stuurt de klant automatisch een mail. */
+/** Admin: change an appointment. Rescheduling or cancelling automatically mails the customer. */
 export async function updateBookingAsAdmin(
   deps: BookingDeps,
   patch: AdminBookingUpdate,
@@ -35,8 +35,8 @@ export async function updateBookingAsAdmin(
 
   const service = await deps.services.findById(next.serviceId);
 
-  // Alleen controleren zolang de afspraak actief blijft; een geannuleerde
-  // afspraak hoeft niet meer in het rooster te passen.
+  // Only check while the appointment stays active; a cancelled
+  // appointment no longer needs to fit the schedule.
   if (next.status !== "cancelled") {
     const { openingHours } = withDefaults(await deps.settings.read());
     const busy = toBusyRanges(await deps.bookings.listBusy(next.date), id);

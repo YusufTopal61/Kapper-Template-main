@@ -11,7 +11,7 @@ import { saveSettingsAction } from "./settings.actions";
 
 export type SettingsFormValues = z.input<typeof settingsInputSchema>;
 
-/** Zoekt de eerste leesbare foutmelding in een (mogelijk geneste) foutboom. */
+/** Finds the first readable error message in a (possibly nested) error tree. */
 function firstErrorMessage(errors: FieldErrors): string | null {
   for (const error of Object.values(errors)) {
     if (!error || typeof error !== "object") continue;
@@ -23,7 +23,7 @@ function firstErrorMessage(errors: FieldErrors): string | null {
   return null;
 }
 
-/** View model van het instellingenscherm: formulierstaat, opslaan en bevestiging tonen. */
+/** View model of the settings screen: form state, saving and showing confirmation. */
 export function useSettingsForm(settings: AdminSettings) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);

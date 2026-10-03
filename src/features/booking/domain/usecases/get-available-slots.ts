@@ -4,7 +4,7 @@ import type { TimeSlot } from "../booking.entity";
 import { getTimeSlots, toBusyRanges } from "../booking.rules";
 import type { AvailableSlotsInput } from "../booking.schema";
 
-/** Publiek: welke tijdsloten zijn er die dag nog vrij voor deze dienst? */
+/** Public: which time slots are still free that day for this service? */
 export async function getAvailableSlots(
   deps: Pick<BookingDeps, "bookings" | "services" | "settings" | "now">,
   input: AvailableSlotsInput,

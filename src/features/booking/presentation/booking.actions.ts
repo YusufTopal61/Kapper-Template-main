@@ -1,9 +1,8 @@
 "use server";
 
 import { getBookingDeps } from "@/lib/di/container";
-import { invalidInput } from "@/lib/utils/action-result";
+import { invalidInput, runAction } from "@/lib/utils/action-result";
 import { limitRequests } from "@/lib/utils/request-limit.server";
-import { runAsAdmin } from "@/features/auth/presentation/admin-action";
 import type { BookingResult } from "../domain/booking.entity";
 import {
   adminBookingUpdateSchema,
@@ -23,13 +22,17 @@ const TOO_MANY_REQUESTS = {
   error: "Te veel pogingen. Probeer het straks opnieuw.",
 };
 
-// ------------------------------------------------------------ publiek
+// ------------------------------------------------------------ public
 
+/** Public read, called from the wizard when the visitor picks a day. */
 export async function fetchAvailableSlots(input: unknown) {
   const valid = availableSlotsSchema.safeParse(input);
-  if (!valid.success) return { slots: [], closed: true };
+  if (!valid.success) return invalidInput(valid.error);
 
-  return getAvailableSlots(getBookingDeps(), valid.data);
+  return runAction(async () => ({
+    ok: true as const,
+    ...(await getAvailableSlots(getBookingDeps(), valid.data)),
+  }));
 }
 
 export async function createBookingAction(input: unknown): Promise<BookingResult> {
@@ -44,7 +47,7 @@ export async function createBookingAction(input: unknown): Promise<BookingResult
     };
   }
 
-  return createBooking(getBookingDeps(), valid.data);
+  return runAction(() => createBooking(getBookingDeps(), valid.data));
 }
 
 export async function cancelBookingByTokenAction(input: unknown) {
@@ -53,21 +56,21 @@ export async function cancelBookingByTokenAction(input: unknown) {
 
   if ((await limitRequests("cancel-action", 20)) !== null) return TOO_MANY_REQUESTS;
 
-  return cancelBookingByToken(getBookingDeps(), valid.data);
+  return runAction(() => cancelBookingByToken(getBookingDeps(), valid.data));
 }
 
-// ------------------------------------------------------------ beheer
+// ------------------------------------------------------------ admin
 
 export async function updateBookingAction(input: unknown) {
   const valid = adminBookingUpdateSchema.safeParse(input);
   if (!valid.success) return invalidInput(valid.error);
 
-  return runAsAdmin(() => updateBookingAsAdmin(getBookingDeps(), valid.data));
+  return runAction(() => updateBookingAsAdmin(getBookingDeps(), valid.data));
 }
 
 export async function cancelBookingAdminAction(input: unknown) {
   const valid = bookingIdSchema.safeParse(input);
   if (!valid.success) return invalidInput(valid.error);
 
-  return runAsAdmin(() => cancelBookingAsAdmin(getBookingDeps(), valid.data.id));
+  return runAction(() => cancelBookingAsAdmin(getBookingDeps(), valid.data.id));
 }

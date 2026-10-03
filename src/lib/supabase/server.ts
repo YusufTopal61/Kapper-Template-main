@@ -5,15 +5,15 @@ import { requirePublicSupabaseConfig } from "@/lib/env";
 import type { Database } from "./database.types";
 
 /**
- * Supabase-client die de sessie van de ingelogde beheerder uit de cookies van
- * het huidige request leest. Per request opnieuw aanmaken — nooit hergebruiken
- * tussen requests, anders lek je andermans sessie.
+ * Supabase client that reads the signed-in admin's session from the current
+ * request's cookies. Create it anew per request — never reuse it between
+ * requests, or you leak someone else's session.
  */
 export async function getSupabaseServerClient() {
-  const { url, anonKey } = requirePublicSupabaseConfig();
+  const { url, publishableKey } = requirePublicSupabaseConfig();
   const saveResult = await cookies();
 
-  return createServerClient<Database>(url, anonKey, {
+  return createServerClient<Database>(url, publishableKey, {
     cookies: {
       getAll() {
         return saveResult.getAll();

@@ -1,7 +1,7 @@
 import type { AdminGuard } from "@/features/auth/domain/auth.gateway";
 import type { ServiceRepository } from "../service.repository";
 
-/** Beheer: verwijderen mag alleen als er geen boekingen aan hangen; die historie houden we. */
+/** Admin: deleting is only allowed when no bookings reference it; we keep that history. */
 export async function deleteService(
   deps: { assertAdmin: AdminGuard; repo: Pick<ServiceRepository, "remove"> },
   id: string,

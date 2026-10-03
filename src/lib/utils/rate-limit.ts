@@ -1,18 +1,18 @@
 /**
- * Eenvoudige sliding-window rate limiter in het geheugen.
+ * Simple in-memory sliding-window rate limiter.
  *
- * Let op: de teller leeft per server-instantie. Op één server (of tijdens
- * development) is dat precies genoeg om spam en geautomatiseerd misbruik van
- * het publieke boekingsformulier tegen te houden. Draai je straks op meerdere
- * instanties of op serverless, vervang de opslag dan door iets gedeelds
- * (Upstash Redis, of een tabel in Supabase) — de aanroep hieronder blijft gelijk.
+ * Note: the counter lives per server instance. On a single server (or during
+ * development) that is exactly enough to stop spam and automated abuse of the
+ * public booking form. When you later run on multiple instances or serverless,
+ * replace the storage with something shared (Upstash Redis, or a table in
+ * Supabase) — the call below stays the same.
  */
 
 type Bucket = { timestamps: number[] };
 
 const buckets = new Map<string, Bucket>();
 
-/** Ruimt vensters op die niemand meer raadpleegt, zodat de Map niet groeit. */
+/** Cleans up buckets nobody consults any more, so the Map does not grow. */
 function cleanup(now: number, maxAgeMs: number) {
   for (const [key, bucket] of buckets) {
     const recent = bucket.timestamps.filter((t) => now - t < maxAgeMs);
@@ -35,7 +35,7 @@ export function rateLimit(
 ): RateLimitResult {
   const now = Date.now();
 
-  // Hooguit één keer per minuut grootschalig opruimen.
+  // At most one large cleanup per minute.
   if (now - lastCleanup > 60_000) {
     cleanup(now, options.windowMs);
     lastCleanup = now;

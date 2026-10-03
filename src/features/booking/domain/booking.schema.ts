@@ -2,8 +2,8 @@ import { z } from "zod";
 import { dateSchema, emailSchema, timeSchema } from "@/lib/validations/primitives";
 
 /**
- * Nederlands telefoonnummer, tolerant voor spaties, streepjes en +31.
- * 0612345678, 06 12 34 56 78, +31 6 12345678 en 010-1234567 zijn allemaal goed.
+ * Dutch phone number, tolerant of spaces, dashes and +31.
+ * 0612345678, 06 12 34 56 78, +31 6 12345678 and 010-1234567 are all fine.
  */
 const phoneSchema = z
   .string()
@@ -26,7 +26,7 @@ export const bookingInputSchema = z.object({
   time: timeSchema,
 });
 
-/** Alleen de klantgegevens, voor de laatste stap van het boekingsformulier. */
+/** Only the customer details, for the last step of the booking form. */
 export const bookingCustomerSchema = bookingInputSchema.pick({
   customerName: true,
   customerEmail: true,
@@ -35,7 +35,7 @@ export const bookingCustomerSchema = bookingInputSchema.pick({
 
 export const cancelByTokenSchema = z.object({
   bookingId: z.string().uuid(),
-  // Het gegenereerde token is 64 hex-tekens; ruim boven die lengte is nooit geldig.
+  // The generated token is 64 hex characters; anything far beyond that length is never valid.
   token: z.string().min(16, "Ongeldige annuleerlink.").max(128, "Ongeldige annuleerlink."),
 });
 

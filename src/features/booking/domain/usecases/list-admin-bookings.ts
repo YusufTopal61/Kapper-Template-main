@@ -1,7 +1,7 @@
 import type { BookingDeps } from "../booking.deps";
 import type { BookingWithService } from "../booking.entity";
 
-/** Beheer: alle boekingen, zonder annuleertokens. */
+/** Admin: all bookings, without cancel tokens. */
 export async function listAdminBookings(
   deps: Pick<BookingDeps, "bookings" | "assertAdmin">,
 ): Promise<BookingWithService[]> {

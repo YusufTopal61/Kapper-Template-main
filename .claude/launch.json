@@ -4,10 +4,7 @@
     {
       "name": "kapper-dev",
       "runtimeExecutable": "/opt/homebrew/opt/node@22/bin/corepack",
-      "runtimeArgs": [
-        "pnpm",
-        "dev"
-      ],
+      "runtimeArgs": ["pnpm", "dev"],
       "port": 3000
     }
   ]

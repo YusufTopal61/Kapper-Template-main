@@ -1,8 +1,8 @@
 /**
- * JSON-LD builders (schema.org). Pure functies zonder framework: ze krijgen
- * gewone gegevens binnen en geven een object terug dat <JsonLd> rendert.
- * NAW en openingstijden komen uit de database, zodat site, JSON-LD en Google
- * Bedrijfsprofiel nooit uit elkaar lopen.
+ * JSON-LD builders (schema.org). Pure functions without a framework: they take
+ * plain data and return an object that <JsonLd> renders. Name/address/phone
+ * and opening hours come from the database, so site, JSON-LD and Google
+ * Business Profile never drift apart.
  */
 
 type JsonLdObject = Record<string, unknown>;
@@ -30,7 +30,7 @@ export type BusinessData = {
 
 export type ServiceData = { name: string; description: string; price: number };
 
-/** "Straat 1, 1234 AB Stad" wordt een PostalAddress; past het niet, dan blijft de hele tekst als straat staan. */
+/** "Street 1, 1234 AB City" becomes a PostalAddress; if it does not fit, the whole text stays as the street. */
 export function parseAddress(address: string): JsonLdObject {
   const [street = address, rest = ""] = address.split(",").map((part) => part.trim());
   const match = rest.match(/^(\d{4}\s?[A-Za-z]{2})\s+(.+)$/);
@@ -77,7 +77,7 @@ export function websiteJsonLd(business: Pick<BusinessData, "name" | "url">, lang
   };
 }
 
-/** Het lokale bedrijfstype (BarberShop, HairSalon, …) met NAW en openingstijden. */
+/** The local business type (BarberShop, HairSalon, …) with address and opening hours. */
 export function localBusinessJsonLd(business: BusinessData, type: string, image: string) {
   return {
     "@context": "https://schema.org",
@@ -105,7 +105,7 @@ export function serviceJsonLd(
     provider: { "@id": `${business.url}/#localbusiness` },
     areaServed: "NL",
     url: `${business.url}${path}`,
-    // Prijs 0 betekent "nog niet ingesteld", niet "gratis": dan melden we geen aanbod aan Google.
+    // Price 0 means "not set yet", not "free": then we report no offer to Google.
     ...(service.price > 0
       ? {
           offers: {
@@ -135,7 +135,7 @@ export function breadcrumbJsonLd(
   };
 }
 
-/** Alleen gebruiken op een pagina waar de vragen en antwoorden ook echt zichtbaar staan. */
+/** Only use on a page where the questions and answers are actually visible. */
 export function faqJsonLd(questions: ReadonlyArray<{ question: string; answer: string }>) {
   return {
     "@context": "https://schema.org",
@@ -149,8 +149,8 @@ export function faqJsonLd(questions: ReadonlyArray<{ question: string; answer: s
 }
 
 /**
- * Serialiseert voor in een <script>-tag. `<` wordt geëscaped zodat een dienst-
- * of bedrijfsnaam met `</script>` de pagina niet kan breken (XSS).
+ * Serializes for use inside a <script> tag. `<` is escaped so a service or
+ * business name containing `</script>` cannot break the page (XSS).
  */
 export function serializeJsonLd(data: JsonLdObject | JsonLdObject[]): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");

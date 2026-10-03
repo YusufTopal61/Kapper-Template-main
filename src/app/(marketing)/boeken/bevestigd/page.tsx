@@ -11,7 +11,7 @@ export const metadata: Metadata = buildMetadata({
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-/** Eén tekstwaarde uit de URL, ingekort zodat een absurd lange link de pagina niet opblaast. */
+/** One text value from the URL, truncated so an absurdly long link cannot blow up the page. */
 function text(value: string | string[] | undefined): string {
   return (typeof value === "string" ? value : "").slice(0, 120);
 }
@@ -21,7 +21,7 @@ export default async function BookingConfirmedPage({
 }: {
   searchParams: SearchParams;
 }) {
-  // Alleen niet-gevoelige velden voor op het scherm; e-mail, telefoon en token staan bewust niet in de URL.
+  // Only non-sensitive fields for display; email, phone and token are deliberately not in the URL.
   const query = await searchParams;
 
   return (

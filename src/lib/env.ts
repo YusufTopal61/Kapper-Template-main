@@ -1,54 +1,54 @@
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 /**
- * Publieke omgevingsvariabelen (NEXT_PUBLIC_ prefix), één keer gevalideerd. Ze
- * belanden in de browser-bundle en mogen dus niets geheims bevatten. Server-
- * variabelen staan in `env.server.ts`.
+ * Public environment variables (NEXT_PUBLIC_ prefix), validated once. They end
+ * up in the browser bundle and so must contain nothing secret. Server
+ * variables live in `env.server.ts`.
  *
- * Next.js vervangt `process.env.NEXT_PUBLIC_X` alleen als hij letterlijk zo
- * wordt geschreven — daarom staan de namen hieronder uitgeschreven.
+ * Next.js only replaces `process.env.NEXT_PUBLIC_X` when it is written
+ * literally like that — which is why the names are spelled out below.
  */
 
-/** Een lege string in .env.local betekent "niet ingesteld". */
+/** An empty string in .env.local means "not set". */
 const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
 const optional = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess(emptyToUndefined, schema.optional());
 
 const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: optional(z.string().url()),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: optional(z.string().min(1)),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: optional(z.string().min(1)),
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: optional(z.string().min(1)),
 });
 
 const publicResult = publicSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN,
 });
 
 if (!publicResult.success) {
-  // Een ongeldige waarde behandelen we als "niet geconfigureerd": de site toont dan
-  // de setup-melding in plaats van een wit scherm.
-  console.error(
-    "[env] ongeldige publieke omgevingsvariabelen:",
-    publicResult.error.flatten().fieldErrors,
-  );
+  // We treat an invalid value as "not configured": the site then shows
+  // the setup notice instead of a white screen.
+  logger.error("env", "invalid public environment variables", undefined, {
+    fieldErrors: publicResult.error.flatten().fieldErrors,
+  });
 }
 
 const publicEnv = publicResult.success ? publicResult.data : {};
 
 export const supabaseUrl = publicEnv.NEXT_PUBLIC_SUPABASE_URL;
-export const supabaseAnonKey = publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export const supabasePublishableKey = publicEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 export const plausibleDomain = publicEnv.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
-/** Is Supabase überhaupt geconfigureerd? Zo niet, tonen we een duidelijke melding. */
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+/** Is Supabase configured at all? If not, we show a clear notice. */
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
 export function requirePublicSupabaseConfig() {
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error(
-      "Supabase is niet geconfigureerd. Zet NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local (zie .env.example).",
+      "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env.local (see .env.example).",
     );
   }
-  return { url: supabaseUrl, anonKey: supabaseAnonKey };
+  return { url: supabaseUrl, publishableKey: supabasePublishableKey };
 }

@@ -19,7 +19,7 @@ const manrope = Manrope({
   display: "swap",
 });
 
-/** In development zonder SITE_URL valt Next.js terug op de lokale server. */
+/** In development without SITE_URL, Next.js falls back to the local server. */
 const LOCAL_URL = `http://localhost:${process.env.PORT ?? 3000}`;
 
 export function generateMetadata(): Metadata {

@@ -13,7 +13,7 @@ import { serviceInputSchema, type ServiceInput } from "../domain/service.schema"
 type FormValues = z.input<typeof serviceInputSchema>;
 
 type ServiceFormProps = {
-  /** Beginwaarden; leeg voor een nieuwe dienst. */
+  /** Initial values; empty for a new service. */
   initialValues?: FormValues;
   isPending: boolean;
   onSave: (values: ServiceInput) => void;
@@ -28,7 +28,7 @@ const EMPTY_SERVICE: FormValues = {
   isActive: true,
 };
 
-/** Formulier om een dienst aan te maken of te wijzigen. Valideert met hetzelfde schema als de server. */
+/** Form to create or edit a service. Validates with the same schema as the server. */
 export function ServiceForm({
   initialValues = EMPTY_SERVICE,
   isPending,

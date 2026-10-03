@@ -1,6 +1,6 @@
 export type NavItem = { label: string; href: string };
 
-/** Hoofdnavigatie. De sitemap leest deze lijst ook, zodat een nieuwe pagina nooit vergeten wordt. */
+/** Main navigation. The sitemap reads this list too, so a new page is never forgotten. */
 export const mainNavigation: readonly NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Diensten", href: "/diensten" },
@@ -16,7 +16,7 @@ export const legalLinks: readonly NavItem[] = [
   { label: "Algemene voorwaarden", href: "/algemene-voorwaarden" },
 ];
 
-/** Pagina's die in de sitemap horen, met de prioriteit die zoekmachines als hint krijgen. */
+/** Pages that belong in the sitemap, with the priority search engines get as a hint. */
 export const sitemapPages: ReadonlyArray<{
   href: string;
   priority: number;
@@ -32,5 +32,5 @@ export const sitemapPages: ReadonlyArray<{
   { href: "/algemene-voorwaarden", priority: 0.2, frequency: "yearly" },
 ];
 
-/** Paden die zoekmachines niet mogen indexeren. */
+/** Paths search engines must not index. */
 export const noIndex: readonly string[] = ["/admin", "/boeking/annuleren"];

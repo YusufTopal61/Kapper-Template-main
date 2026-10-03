@@ -11,7 +11,7 @@ export function ContactSection({
   heading: Heading = "h2",
 }: {
   settings?: PublicSettings;
-  /** Op de eigen contactpagina is dit de h1; op de homepage een h2. */
+  /** On the dedicated contact page this is the h1; on the homepage an h2. */
   heading?: "h1" | "h2";
 }) {
   const openingHours = settings?.openingHours ?? DEFAULT_OPENING_HOURS;

@@ -4,7 +4,7 @@ import type { SettingsRepository } from "@/features/settings/domain/settings.rep
 import type { BookingNotifier, IdGenerator } from "./booking.ports";
 import type { BookingRepository } from "./booking.repository";
 
-/** Alles wat de boekings-use-cases van buiten nodig hebben. De bedrading staat in app/di/container.ts. */
+/** Everything the booking use cases need from outside. The wiring lives in lib/di/container.ts. */
 export type BookingDeps = {
   bookings: BookingRepository;
   services: Pick<ServiceRepository, "findById">;
@@ -12,6 +12,6 @@ export type BookingDeps = {
   notifier: BookingNotifier;
   ids: IdGenerator;
   assertAdmin: AdminGuard;
-  /** Injecteerbaar zodat tijdsafhankelijke regels zonder klok te testen zijn. */
+  /** Injectable so time-dependent rules can be tested without a clock. */
   now?: () => Date;
 };

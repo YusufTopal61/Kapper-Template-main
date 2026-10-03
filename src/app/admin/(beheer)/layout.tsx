@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getAuthGateway, getSettingsDeps } from "@/lib/di/container";
 import { AdminShell } from "@/features/admin/presentation/AdminShell";
-import { UnauthorizedError } from "@/features/auth/domain/auth.gateway";
+import { AuthenticationError, AuthorizationError } from "@/lib/errors";
 import { getSession } from "@/features/auth/domain/usecases/get-session";
 import { getAdminSettings } from "@/features/settings/domain/usecases/get-admin-settings";
 import { getEmailStatus } from "@/features/settings/domain/usecases/get-email-status";
@@ -10,9 +10,9 @@ import { getEmailStatus } from "@/features/settings/domain/usecases/get-email-st
 export const dynamic = "force-dynamic";
 
 /**
- * Tweede slot voor alles onder /admin (het eerste is proxy.ts): is er een
- * sessie, en is die gebruiker ook als beheerder geregistreerd? Dit is de
- * UX-laag; de echte afdwinging zit in de use cases (assertAdmin) en in RLS.
+ * Second lock for everything under /admin (the first is proxy.ts): is there a
+ * session, and is that user registered as an admin? This is the UX layer;
+ * the real enforcement lives in the use cases (assertAdmin) and in RLS.
  */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getSession(getAuthGateway());
@@ -24,7 +24,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   try {
     [settings, emailStatus] = await Promise.all([getAdminSettings(deps), getEmailStatus(deps)]);
   } catch (error) {
-    if (error instanceof UnauthorizedError) redirect("/admin/login");
+    if (error instanceof AuthenticationError || error instanceof AuthorizationError) {
+      redirect("/admin/login");
+    }
     throw error;
   }
 

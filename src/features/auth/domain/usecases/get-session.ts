@@ -1,6 +1,6 @@
 import type { AuthGateway } from "../auth.gateway";
 
-/** Wie is er aan de lijn, en mag die beheren? Voor de beheer-layout en de loginpagina. */
+/** Who is on the line, and may they administer? For the admin layout and the login page. */
 export function getSession(auth: Pick<AuthGateway, "getSession">) {
   return auth.getSession();
 }

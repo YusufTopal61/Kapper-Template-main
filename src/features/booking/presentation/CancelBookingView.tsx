@@ -8,7 +8,7 @@ import { useCancelBooking } from "./use-cancel-booking";
 
 export type CancelLoadResult = { ok: true; booking: BookingByToken } | { ok: false; error: string };
 
-/** De kaart op de annuleerpagina: toont de afspraak en laat de klant bevestigen. */
+/** The card on the cancel page: shows the appointment and lets the customer confirm. */
 export function CancelBookingView({
   result,
   bookingId,

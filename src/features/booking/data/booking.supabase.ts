@@ -1,4 +1,5 @@
 import "server-only";
+import { DatabaseError } from "@/lib/errors";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { BookingRepository } from "../domain/booking.repository";
@@ -23,7 +24,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
         .eq("booking_date", date)
         .in("status", ACTIVE_STATUSES);
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("bookings.listBusy", error);
       return data.map(toBusyBooking);
     },
 
@@ -35,7 +36,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
 
       if (error) {
         if (error.code === UNIQUE_VIOLATION) return { ok: false, reason: "slot-taken" };
-        throw error;
+        throw new DatabaseError("bookings.insert", error);
       }
       return { ok: true };
     },
@@ -48,7 +49,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
         .order("booking_date", { ascending: true })
         .order("start_time", { ascending: true });
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("bookings.listAll", error);
       return data.map(toBookingRecord).map(withoutToken);
     },
 
@@ -60,7 +61,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
         .eq("id", id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("bookings.findForAdmin", error);
       return data ? toBookingRecord(data) : null;
     },
 
@@ -75,7 +76,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
 
       if (error) {
         if (error.code === UNIQUE_VIOLATION) return { ok: false, reason: "slot-taken" };
-        throw error;
+        throw new DatabaseError("bookings.updateAsAdmin", error);
       }
       return { ok: true, booking: toBookingRecord(data) };
     },
@@ -89,7 +90,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
         .eq("cancel_token", token)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("bookings.findByToken", error);
       return data ? toBookingRecord(data) : null;
     },
 
@@ -100,7 +101,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
         .eq("id", id)
         .eq("cancel_token", token);
 
-      if (error) throw error;
+      if (error) throw new DatabaseError("bookings.cancelByToken", error);
     },
   };
 }

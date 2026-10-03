@@ -6,7 +6,7 @@ import { checkSchedule, buildMailData, toBusyRanges } from "../booking.rules";
 import type { BookingInput } from "../booking.schema";
 import { SLOT_TAKEN_PUBLIC } from "./booking.messages";
 
-/** Publiek: een afspraak maken. De bevestigingsmail is een bijzaak; de afspraak staat dan al. */
+/** Public: make an appointment. The confirmation mail is secondary; the appointment already exists. */
 export async function createBooking(
   deps: Omit<BookingDeps, "assertAdmin">,
   input: BookingInput,
@@ -54,8 +54,8 @@ export async function createBooking(
     cancelToken: token,
   });
 
-  // De unieke index in de database is de laatste verdediging tegen twee
-  // gelijktijdige boekingen op hetzelfde moment.
+  // The unique index in the database is the last defence against two
+  // simultaneous bookings at the same moment.
   if (!saveResult.ok) return { ok: false, error: SLOT_TAKEN_PUBLIC, field: "time" };
 
   const { customerMailSent } = await deps.notifier.bookingCreated(

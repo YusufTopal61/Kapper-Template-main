@@ -12,17 +12,17 @@ const settings: BusinessSettings = {
 };
 
 describe("naarPubliekeInstellingen", () => {
-  it("geeft het notificatie-adres nooit aan bezoekers", () => {
+  it("never gives the notification address to visitors", () => {
     expect(toPublicSettings(settings)).not.toHaveProperty("adminEmail");
   });
 
-  it("valt terug op defaults zonder rij in de database", () => {
+  it("falls back to defaults without a row in the database", () => {
     expect(toPublicSettings(null).businessName).toBe("Barber");
   });
 });
 
 describe("naarAdminInstellingen", () => {
-  it("meldt of het notificatie-adres is ingesteld", () => {
+  it("reports whether the notification address is configured", () => {
     expect(toAdminSettings(settings).emailConfigured).toBe(true);
     expect(toAdminSettings({ ...settings, adminEmail: null }).emailConfigured).toBe(false);
     expect(toAdminSettings(null).emailConfigured).toBe(false);

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { cancelBookingByTokenAction } from "./booking.actions";
 
-/** View model van de annuleerpagina: bevestigen, wachten, uitkomst tonen. */
+/** View model of the cancel page: confirm, wait, show the outcome. */
 export function useCancelBooking(bookingId: string, token: string) {
   const [cancelled, setCancelled] = useState(false);
   const [error, setError] = useState<string | null>(null);

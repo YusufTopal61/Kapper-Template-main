@@ -21,13 +21,13 @@ type SlotsState = {
   error: boolean;
 };
 
-/** Het laatst opgehaalde antwoord, met de keuze waarvoor het geldt. */
+/** The most recently fetched answer, with the choice it applies to. */
 type LoadedSlots = { key: string; slots: TimeSlot[]; closed: boolean; error: boolean };
 
 /**
- * View model van de boekingswizard: welke stap, welke keuzes, beschikbaarheid
- * ophalen en versturen. Bedrijfsregels (welke dagen boekbaar zijn, of een tijd
- * past) staan in domain/ en op de server; hier zit alleen de schermstaat.
+ * View model of the booking wizard: which step, which choices, fetching
+ * availability and submitting. Business rules (which days are bookable, whether a
+ * time fits) live in domain/ and on the server; only screen state lives here.
  */
 export function useBookingWizard(props: {
   services: ServiceUIModel[];
@@ -40,7 +40,7 @@ export function useBookingWizard(props: {
   const [time, setTime] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState<LoadedSlots | null>(null);
-  /** Ophogen om de beschikbaarheid opnieuw op te halen (bijvoorbeeld nadat een slot net bezet raakte). */
+  /** Increment to refetch availability (for example after a slot was just taken). */
   const [slotsVersion, setSlotsVersion] = useState(0);
   const [isPending, startTransition] = useTransition();
 
@@ -57,7 +57,7 @@ export function useBookingWizard(props: {
 
   const selectedService = props.services.find((service) => service.id === serviceId) ?? null;
 
-  // Zolang het laatst opgehaalde antwoord niet bij de huidige keuze hoort, is het nog "laden".
+  // As long as the most recently fetched answer does not belong to the current choice, it is still "loading".
   const key = date && serviceId ? `${date}|${serviceId}|${slotsVersion}` : null;
   const slotsState: SlotsState =
     key && loaded?.key === key
@@ -70,11 +70,15 @@ export function useBookingWizard(props: {
     const thisKey = `${date}|${serviceId}|${slotsVersion}`;
     let isCurrent = true;
 
-    fetchAvailableSlots({ date, serviceId: serviceId })
+    fetchAvailableSlots({ date, serviceId })
       .then((result) => {
         if (!isCurrent) return;
-        setLoaded({ key: thisKey, ...result, error: false });
-        // Een eerder gekozen tijd kan door de nieuwe dag of dienst bezet zijn geraakt.
+        if (!result.ok) {
+          setLoaded({ key: thisKey, slots: [], closed: false, error: true });
+          return;
+        }
+        setLoaded({ key: thisKey, slots: result.slots, closed: result.closed, error: false });
+        // A previously chosen time may have been taken by the new day or service.
         setTime((current) =>
           current && result.slots.some((slot) => slot.time === current && slot.available)
             ? current
@@ -106,7 +110,7 @@ export function useBookingWizard(props: {
     startTransition(async () => {
       try {
         const result = await createBookingAction({
-          serviceId: serviceId,
+          serviceId,
           date,
           time,
           ...customer,
@@ -114,7 +118,7 @@ export function useBookingWizard(props: {
 
         if (!result.ok) {
           setFormError(result.error);
-          // Het tijdslot is in de tussentijd vergeven: terug naar de tijdkeuze met verse beschikbaarheid.
+          // The time slot was taken in the meantime: back to the time choice with fresh availability.
           if (result.field === "time" || result.field === "date") {
             setTime(null);
             setStep(1);
@@ -123,8 +127,8 @@ export function useBookingWizard(props: {
           return;
         }
 
-        // Eigen bedankpagina i.p.v. inline wisselen: bruikbaar als conversiedoel
-        // en werkt correct met de terug-knop. Geen e-mail of telefoon in de URL.
+        // Dedicated thank-you page instead of switching inline: usable as a conversion goal
+        // and works correctly with the back button. No email or phone in the URL.
         const query = new URLSearchParams({
           service: result.booking.serviceName,
           date: result.booking.date,

@@ -1,32 +1,30 @@
 import "server-only";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { isSupabaseConfigured } from "./env";
 
 /**
- * Server-omgevingsvariabelen, gevalideerd bij het opstarten (zie
- * instrumentation.ts) en daarna uit de cache gelezen. `server-only` zorgt dat
- * dit bestand nooit in de client-bundle belandt. Publieke variabelen staan in `env.ts`.
+ * Server environment variables, validated at startup (see instrumentation.ts)
+ * and read from the cache afterwards. `server-only` makes sure this file never
+ * ends up in the client bundle. Public variables live in `env.ts`.
  */
 
-/** Een lege string in .env.local betekent "niet ingesteld". */
+/** An empty string in .env.local means "not set". */
 const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
 
 const serverSchema = z.object({
-  SUPABASE_SERVICE_ROLE_KEY: z.string({ required_error: "ontbreekt" }).min(1, "ontbreekt"),
-  /** Optioneel: zonder key worden mails gelogd in plaats van verstuurd. */
+  SUPABASE_SERVICE_ROLE_KEY: z.string({ required_error: "missing" }).min(1, "missing"),
+  /** Optional: without a key, mails are logged instead of sent. */
   RESEND_API_KEY: z.string().default(""),
   RESEND_FROM: z.preprocess(emptyToUndefined, z.string().default("Barber <onboarding@resend.dev>")),
-  /** Publieke URL van de site: canonical, sitemap, Open Graph en links in e-mails. */
-  SITE_URL: z.preprocess(
-    emptyToUndefined,
-    z.string().url("moet een volledige URL zijn").optional(),
-  ),
+  /** Public URL of the site: canonical, sitemap, Open Graph and links in emails. */
+  SITE_URL: z.preprocess(emptyToUndefined, z.string().url("must be a full URL").optional()),
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;
 let serverCache: ServerEnv | undefined;
 
-/** Server-only. Gooit één leesbare fout met álle ontbrekende of ongeldige variabelen. */
+/** Server-only. Throws one readable error listing all missing or invalid variables. */
 export function getServerEnv(): ServerEnv {
   if (serverCache) return serverCache;
 
@@ -36,7 +34,7 @@ export function getServerEnv(): ServerEnv {
       ([name, errors]) => `  - ${name}: ${(errors ?? []).join(", ")}`,
     );
     throw new Error(
-      `Ongeldige of ontbrekende omgevingsvariabelen (zie .env.example):\n${lines.join("\n")}`,
+      `Invalid or missing environment variables (see .env.example):\n${lines.join("\n")}`,
     );
   }
 
@@ -45,9 +43,8 @@ export function getServerEnv(): ServerEnv {
 }
 
 /**
- * Controle bij het opstarten. In productie start de app niet met een ontbrekende
- * variabele; in development waarschuwen we alleen, zodat de setup-melding in de
- * browser zichtbaar blijft.
+ * Startup check. In production the app does not start with a missing variable;
+ * in development we only warn, so the setup notice stays visible in the browser.
  */
 export function validateEnv(): void {
   const problems: string[] = [];
@@ -55,28 +52,28 @@ export function validateEnv(): void {
   try {
     const env = getServerEnv();
     if (process.env.NODE_ENV === "production" && !env.SITE_URL) {
-      problems.push("  - SITE_URL: ontbreekt (nodig voor canonical, sitemap en links in e-mails)");
+      problems.push("  - SITE_URL: missing (needed for canonical, sitemap and links in emails)");
     }
   } catch (error) {
     problems.push(error instanceof Error ? error.message : String(error));
   }
 
   if (!isSupabaseConfigured) {
-    problems.push("  - NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY: ontbreken");
+    problems.push("  - NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: missing");
   }
 
   if (problems.length === 0) return;
 
-  const message = `[env] configuratie onvolledig:\n${problems.join("\n")}`;
+  const message = `[env] incomplete configuration:\n${problems.join("\n")}`;
   if (process.env.NODE_ENV === "production") throw new Error(message);
-  console.warn(message);
+  logger.warn("env", message);
 }
 
 export function requireServiceRoleKey() {
   return getServerEnv().SUPABASE_SERVICE_ROLE_KEY;
 }
 
-/** Leeg betekent: e-mails loggen in plaats van versturen. */
+/** Empty means: log emails instead of sending them. */
 export function getResendConfig() {
   const env = getServerEnv();
   return { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM };
@@ -87,9 +84,9 @@ const siteSchema = z.object({
 });
 
 /**
- * Basis-URL van de site zonder slash aan het eind, of leeg als hij niet (geldig)
- * is ingesteld. Gooit bewust nooit: metadata en sitemap moeten ook renderen
- * als een andere variabele nog ontbreekt.
+ * Base URL of the site without a trailing slash, or empty when it is not (validly)
+ * set. Deliberately never throws: metadata and sitemap must render even when
+ * another variable is still missing.
  */
 export function getSiteUrl(): string {
   const result = siteSchema.safeParse(process.env);

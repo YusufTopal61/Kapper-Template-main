@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildMetadata } from "./metadata";
 
 describe("maakMetadata", () => {
-  it("zet canonical, Open Graph en Twitter op dezelfde pagina", () => {
+  it("sets canonical, Open Graph and Twitter for the same page", () => {
     const metadata = buildMetadata({
       title: "Diensten",
       description: "Beschrijving",
@@ -17,7 +17,7 @@ describe("maakMetadata", () => {
     });
   });
 
-  it("plakt de merknaam niet dubbel achter een titel die hem al bevat", () => {
+  it("does not append the brand name twice to a title that already contains it", () => {
     const metadata = buildMetadata({
       title: "BARBER — Premium barbershop",
       description: "x",
@@ -28,7 +28,7 @@ describe("maakMetadata", () => {
     expect(metadata.openGraph).toMatchObject({ title: "BARBER — Premium barbershop" });
   });
 
-  it("houdt pagina's die niet in Google horen uit de index", () => {
+  it("keeps pages that do not belong in Google out of the index", () => {
     expect(
       buildMetadata({ title: "x", description: "x", path: "/x", noIndex: true }).robots,
     ).toEqual({

@@ -2,21 +2,21 @@ import type { SettingsInput } from "./settings.schema";
 import type { BusinessSettings, EmailStatus } from "./settings.entity";
 
 /**
- * Poort naar de opslag van de bedrijfsgegevens. De implementatie staat in
- * data/; niets buiten data/ weet waar de gegevens vandaan komen.
+ * Port to the storage of the business details. The implementation lives in
+ * data/; nothing outside data/ knows where the data comes from.
  */
 export interface SettingsRepository {
   /**
-   * Volledige instellingen voor server-intern gebruik (mails, boekingsregels).
-   * Leest buiten de beheerderssessie om: de publieke site heeft die ook nodig.
+   * Full settings for server-internal use (mails, booking rules).
+   * Reads outside the admin session: the public site needs them too.
    */
   read(): Promise<BusinessSettings | null>;
-  /** Idem, maar onder de rechten van de ingelogde beheerder. */
+  /** Same, but under the signed-in admin's permissions. */
   readAsAdmin(): Promise<BusinessSettings | null>;
   save(input: SettingsInput): Promise<void>;
 }
 
-/** Poort naar de mailprovider: kan er daadwerkelijk naar klanten verstuurd worden? */
+/** Port to the mail provider: can mail actually be sent to customers? */
 export interface EmailStatusChecker {
   check(): Promise<EmailStatus>;
 }

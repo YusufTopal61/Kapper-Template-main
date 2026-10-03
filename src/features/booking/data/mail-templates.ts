@@ -35,7 +35,7 @@ function euro(price?: number | null) {
   return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(price);
 }
 
-/** Voorkomt dat klantinvoer de HTML van de e-mail kan breken. */
+/** Prevents customer input from breaking the email's HTML. */
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -56,8 +56,8 @@ type LayoutOptions = {
 };
 
 /**
- * Gedeelde opmaak: zwart/wit, tabel-gebaseerd zodat het ook in Outlook klopt,
- * en een systeem-fontstack omdat e-mailclients geen webfonts laden.
+ * Shared layout: black and white, table-based so it also works in Outlook,
+ * and a system font stack because email clients do not load web fonts.
  */
 function layout({ business, title, intro, rows, button, closing, footnote }: LayoutOptions) {
   const font = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
@@ -163,7 +163,7 @@ function bookingRows(booking: EmailBooking): Array<[string, string]> {
   return rows;
 }
 
-// ------------------------------------------------------------------ klant
+// ------------------------------------------------------------------ customer
 
 export function bookingConfirmationCustomer(
   booking: EmailBooking,

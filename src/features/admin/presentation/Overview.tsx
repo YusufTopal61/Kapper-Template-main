@@ -12,7 +12,7 @@ type OverviewProps = {
   upcoming: BookingUIModel[];
 };
 
-/** Snelle blik op de zaak. Server Component: de cijfers komen kant-en-klaar binnen. */
+/** Quick look at the business. Server Component: the numbers arrive ready-made. */
 export function Overview({
   confirmed,
   completed,

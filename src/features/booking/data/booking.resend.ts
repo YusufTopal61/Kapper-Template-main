@@ -1,4 +1,5 @@
 import "server-only";
+import { logger } from "@/lib/logger";
 import { withDefaults } from "@/features/settings/domain/settings.rules";
 import type { SettingsRepository } from "@/features/settings/domain/settings.repository";
 import type { BookingNotifier } from "../domain/booking.ports";
@@ -30,9 +31,9 @@ function toEmailBooking(booking: BookingMailData): EmailBooking {
 }
 
 /**
- * Verstuurt de mails rond een boeking via Resend. Elke methode vangt al haar
- * fouten af: de afspraak staat op dat moment al, en een mislukte mail mag die
- * niet terugdraaien. Fouten worden gelogd, niet doorgegeven.
+ * Sends the mails around a booking via Resend. Every method catches all its
+ * errors: the booking already exists at that point, and a failed mail must not
+ * roll it back. Errors are logged, not passed on.
  */
 export function createResendBookingNotifier(deps: {
   settings: Pick<SettingsRepository, "read">;
@@ -67,7 +68,7 @@ export function createResendBookingNotifier(deps: {
 
         return { customerMailSent: results[0]?.status === "sent" };
       } catch (error) {
-        console.error("[booking] bevestigingsmails versturen mislukt:", error);
+        logger.error("booking", "sending confirmation mails failed", error);
         return { customerMailSent: false };
       }
     },
@@ -88,7 +89,7 @@ export function createResendBookingNotifier(deps: {
           },
         ]);
       } catch (error) {
-        console.error("[booking] annuleringsmails versturen mislukt:", error);
+        logger.error("booking", "sending cancellation mails failed", error);
       }
     },
 
@@ -107,7 +108,7 @@ export function createResendBookingNotifier(deps: {
           },
         ]);
       } catch (error) {
-        console.error("[booking] wijzigingsmail versturen mislukt:", error);
+        logger.error("booking", "sending reschedule mail failed", error);
       }
     },
   };

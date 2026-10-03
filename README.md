@@ -1,82 +1,152 @@
-# Kapper — boekingsplatform voor een kapsalon
+# Kapper
 
-Nederlandstalige website met online afspraken maken, annuleren via een link in de mail en een beheerpaneel (agenda, diensten, instellingen). Generiek sjabloon: merknaam, teksten en openingstijden zijn instelbaar. Projectregels staan in [CLAUDE.md](./CLAUDE.md).
+A Dutch barbershop website with online booking, cancelling through a link in the
+confirmation email, and an admin panel (calendar, services, settings). It is also
+the reference implementation of the Yusuf Web Development Standard v1.0.
 
-## Afwijkingen van de standaard opzet (met reden)
+## Overview
 
-| Standaard | Hier | Reden |
-| --- | --- | --- |
-| `middleware.ts` | `src/proxy.ts` | In Next.js 16 heet middleware "proxy". Zelfde functie. |
-| Server Actions alleen voor schrijven | `fetchAvailableSlots` is een Server Action die leest | De beschikbaarheid hangt af van een keuze die de bezoeker in de browser maakt (dag + dienst); een Server Component kan dat niet opnieuw ophalen zonder paginanavigatie. |
-| `domain/` importeert niets behalve Zod | Ook `@/shared/domain/primitives` (puur Zod: e-mail, tijd, datum) en het `domain/` van andere modules | Anders staat dezelfde e-mailvalidatie in drie modules. Alleen domain-naar-domain, nooit naar data of presentation. |
-| `presentation/` kent `app/` niet | `*.actions.ts` importeren `@/app/di/container`; componenten importeren `@/app/ui` | De standaard plaatst server actions in `presentation/` en de DI-container in `app/`; dat kan niet zonder die ene import. ESLint staat hem alleen toe in actions. |
-| JSON-LD voor elke dienst op eigen pagina | Diensten staan gebundeld op `/diensten` | Er zijn geen pagina's per dienst; `serviceJsonLd` verwijst naar `/diensten`. |
-| `sitemap.ts` uit de database | Uit `shared/config/navigation.ts` | Er zijn nog geen databasegestuurde pagina's. Komen die er (bijv. per dienst), dan worden ze hier toegevoegd. |
-| Strikte CSP met nonce | CSP met `'unsafe-inline'` voor scripts | Next.js zet hydratatie-scripts inline. Nonce-gebaseerde CSP via `proxy.ts` is de volgende stap. |
-| `noPropertyAccessFromIndexSignature` aan | Uit | Next.js vervangt `process.env.NEXT_PUBLIC_X` alleen bij puntnotatie. |
-| Resend verplicht | Zonder `RESEND_API_KEY` worden mails gelogd | Lokaal ontwikkelen zonder account; een boeking faalt nooit op mail. |
+- **Visitors** browse the site, pick a service, day and time, and book without an account.
+  They get a confirmation email with a personal cancel link.
+- **The owner** signs in at `/admin` to see the agenda, manage services and opening hours,
+  and receives an email for every new booking or cancellation.
+- Brand name, texts, prices and opening hours are configurable; the project is a template.
 
-## Structuur
+## Deviations from the standard (with reasons)
 
-```
-src/
-  app/                    routes, layouts, providers, design system (ui/), di/container.ts, sitemap.ts, robots.ts
-  modules/<domein>/
-    domain/               entities, Zod-schema's, rules, repository-interfaces, usecases/  (importeert niets van buiten)
-    data/                 Supabase/Resend-implementaties + mappers                         (kent alleen domain)
-    presentation/         view models, UI-modellen, server actions, componenten
-  shared/
-    lib/                  env (+ env.server), Supabase-clients, rate limit, klok, opmaak
-    seo/                  metadata-helper en JSON-LD-builders
-    config/               site en navigatie
-    domain/               gedeelde Zod-bouwstenen
-  proxy.ts                eerste slot voor /admin (sessie), instrumentation.ts: env-controle bij opstarten
-```
+| Standard                             | Here                                                                             | Reason                                                                                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| English everywhere                   | Dutch UI copy and Dutch URL slugs (`/boeken`, `/diensten`, …)                    | The site is for Dutch customers; Dutch slugs rank better for local search. Code, comments and docs are English.                  |
+| `middleware.ts`                      | `src/proxy.ts`                                                                   | Next.js 16 renamed middleware to proxy. Same function.                                                                           |
+| Server Actions only for writes       | `fetchAvailableSlots` is a Server Action that reads                              | Availability depends on a choice made in the browser (day + service); a Server Component cannot refetch it without a navigation. |
+| `dashboard/` route                   | `/admin`                                                                         | "Admin" is already English and short; a rename would break links in emails.                                                      |
+| `features/` is a flat folder         | Each feature has `domain/`, `data/`, `presentation/`                             | Keeps business rules testable without a database or browser. Enforced by ESLint.                                                 |
+| `lib/` knows no features             | `lib/di/container.ts` wires features to their implementations                    | A composition root must see both sides. It is the only exception (ESLint).                                                       |
+| `domain/` imports only Zod           | Also `lib/validations`, `lib/errors`, `lib/logger` and other features' `domain/` | Shared Zod primitives, the error classes and the logger are pure and framework-free.                                             |
+| Strict CSP with a nonce              | CSP with `'unsafe-inline'` for scripts                                           | Next.js places hydration scripts inline. A nonce via `proxy.ts` is the next step.                                                |
+| `noPropertyAccessFromIndexSignature` | Off                                                                              | Next.js only inlines `process.env.NEXT_PUBLIC_X` with dot access.                                                                |
+| Zod 4                                | Zod 3.25                                                                         | Forms and resolvers are built on v3; migrating is a separate, tested step.                                                       |
+| Resend not in the standard           | Used for email (via `fetch`, no package)                                         | Transactional email is functionally required. Without `RESEND_API_KEY` mails are logged, never fail.                             |
+| Unit tests in `tests/`               | Next to the code (`*.test.ts`); E2E in `tests/e2e/`                              | Colocated tests are easier to find and keep in sync.                                                                             |
 
-Modules: `booking`, `services`, `settings`, `auth`, `admin` (alleen presentation), `site` (alleen presentation).
+## Tech stack
 
-## Omgevingsvariabelen
+TypeScript 5.9 · Next.js 16 (App Router, Turbopack) · React 19 · Tailwind CSS 4 · shadcn/ui ·
+Supabase (Postgres, Auth, RLS) · Zod 3 · React Hook Form · Resend · Plausible (opt-in) ·
+pnpm 10 · Vitest · Playwright · ESLint 9 · Prettier · GitHub Actions · Vercel.
 
-Zie `.env.example`. Gevalideerd met Zod: publiek in `src/shared/lib/env.ts`, server in `env.server.ts`. In productie start de app niet met een ontbrekende variabele.
+## Requirements
 
-| Variabele | Waar | Verplicht |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | publiek | ja |
-| `SUPABASE_SERVICE_ROLE_KEY` | alleen server | ja |
-| `SITE_URL` | alleen server | in productie (canonical, sitemap, JSON-LD, links in mails) |
-| `RESEND_API_KEY`, `RESEND_FROM` | alleen server | nee (zonder key: mails loggen) |
-| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | publiek | nee (analytics alleen na cookietoestemming) |
+- Node.js 22 (see `.nvmrc`; `nvm use`)
+- pnpm 10 — enable it with `corepack enable` (the version comes from `packageManager`)
+- A Supabase project (free tier works)
+- Optional: a Resend account with a verified domain, to email real customers
 
-## Ontwikkelen
+## Installation
 
 ```bash
-npm install                  # Node 20.9+ (22 aanbevolen)
-cp .env.example .env.local   # vul de waarden in
-npm run dev                  # http://localhost:8080
+git clone <repo-url> && cd <repo>
+corepack enable
+pnpm install
+cp .env.example .env.local   # then fill in the values
 ```
 
-Database: migraties staan in `supabase/migrations/` en draai je in volgorde in de Supabase SQL-editor. Vraag eerst akkoord voor elke migratie die data wijzigt of verwijdert. Een gratis Supabase-project pauzeert na inactiviteit; hervat het in het dashboard als de site "geen diensten" toont.
+## Environment variables
 
-## Controles
+See `.env.example`. They are validated with Zod: public ones in `src/lib/env.ts`, server ones
+in `src/lib/env.server.ts`. In production the app refuses to start with a missing variable.
+
+| Variable                                                           | Where       | Required                                                 |
+| ------------------------------------------------------------------ | ----------- | -------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public      | yes                                                      |
+| `SUPABASE_SERVICE_ROLE_KEY`                                        | server only | yes                                                      |
+| `SITE_URL`                                                         | server only | in production (canonical, sitemap, JSON-LD, email links) |
+| `RESEND_API_KEY`, `RESEND_FROM`                                    | server only | no (without a key, mails are logged)                     |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`                                     | public      | no (analytics only after cookie consent)                 |
+| `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`                            | tests only  | no (admin E2E test is skipped without them)              |
+
+Secrets never go in the repo (`.env*` is git-ignored except `.env.example`) and never in the client bundle.
+
+## Development
 
 ```bash
-npm run typecheck   # strict TypeScript
-npm run lint        # Next-regels + laaggrenzen
-npm test            # Vitest: domain/ en use cases, zonder database en browser
-npm run build       # productiebuild
+pnpm dev            # http://localhost:3000
+pnpm lint           # Next.js rules + architecture boundaries
+pnpm format         # prettier --write   (format:check in CI)
+pnpm typecheck      # strict TypeScript
 ```
 
-## Beveiliging
+## Database setup
 
-RLS op alle tabellen; annuleren uitsluitend met een token van 64 hex-tekens; rate limiting (login, boeken, token-acties; in-memory per instantie); Server Actions valideren met Zod en weigeren te grote bodies (100 KB); maximumlengtes op alle velden; beheerroutes achter `proxy.ts` én `assertAdmin` in elke use case; geheimen alleen op de server (na elke build gecontroleerd dat ze niet in de client-bundle staan); security headers in `next.config.ts`; links in mails komen uit `SITE_URL`, niet uit de Host-header.
+All schema changes live in `supabase/migrations/` — never edit the schema only in the dashboard.
 
-Rooster- en openingstijdenregels rekenen in `Europe/Amsterdam` (`shared/lib/clock.ts`), ook op een server in UTC.
+```bash
+pnpm exec supabase login
+pnpm exec supabase link --project-ref <your-project-ref>
+pnpm db:migrate          # apply pending migrations
+pnpm db:types            # regenerate src/lib/supabase/database.types.ts from the live schema
+```
 
-## Open punten
+Local development with Docker: `pnpm exec supabase start`, then `pnpm exec supabase db reset`
+applies the migrations and `supabase/seed.sql`.
 
-- Resend: een eigen domein verifiëren; met `onboarding@resend.dev` komt mail alleen aan bij de accounteigenaar.
-- `SITE_URL` instellen op het echte domein en in Search Console indienen.
-- Nog niet aanwezig: Sentry, Playwright (kritieke flows), bot-bescherming (honeypot/Turnstile), Vercel-koppeling en redirects.
-- Rate limiting is in-memory: per serverinstantie, niet gedeeld (op serverless vervangen door Upstash/Supabase).
-- De seed-diensten hebben prijs 0 (= nog niet ingesteld); vul ze in via `/admin/diensten`. Bij prijs 0 meldt de JSON-LD geen aanbod.
-- Sleutels die ooit in een chat of ticket zijn gedeeld, horen geroteerd te worden.
+**Existing project whose first migrations were run by hand in the SQL editor:** mark them as applied
+once, then push the rest:
+
+```bash
+pnpm exec supabase migration repair --status applied 20260918000001 20260918000002 20260918000003
+pnpm db:migrate         # applies 20261003000001_english_naming.sql
+```
+
+`20261003000001_english_naming.sql` renames Dutch columns, enum values and policies to English
+(no data is dropped; `supabase/rollback/` has the reverse). Run it, then `pnpm db:types`, **before**
+deploying code from this version: the app reads the English column names.
+
+Create the first admin: add a user in Supabase Auth, then
+`insert into public.admin_users (user_id, email) values ('<auth user id>', '<email>');`.
+
+## Testing
+
+```bash
+pnpm test            # Vitest: domain rules, use cases, schemas, SEO builders (no database, no browser)
+pnpm test:e2e        # Playwright: public pages, booking flow, admin access
+```
+
+E2E uses your installed Google Chrome locally (no download) and Chromium in CI. The booking flow
+writes (and cancels) a booking in the database configured in `.env.local`. The GitHub workflow
+`E2E` runs it on demand with repository secrets.
+
+## Build
+
+```bash
+pnpm build && pnpm start
+```
+
+## Deployment
+
+Vercel, connected to the GitHub repository. Set the same environment variables per environment
+(Preview and Production), with `SITE_URL` set to the real domain. DNS at the domain registrar points
+to Vercel. CI (`.github/workflows/ci.yml`) runs install → lint → format check → typecheck → test → build
+on every pull request; a PR that fails these is not production-ready.
+
+## Project structure
+
+See `CLAUDE.md` for the full layout and the architecture rules. In short:
+
+```
+src/app            routes          src/features/<name>/{domain,data,presentation}
+src/components     ui, layout      src/lib            infrastructure and tooling
+src/hooks          shared hooks    src/config         site and navigation config
+supabase/          migrations, seed.sql, config.toml     tests/e2e   Playwright
+```
+
+## Open points
+
+- Verify a domain in Resend; without it customers do not receive mail (the admin panel shows a warning).
+- Set `SITE_URL` to the real domain and submit the sitemap in Search Console.
+- Not yet in place: Sentry, bot protection on the booking form (honeypot/Turnstile), Vercel link and redirects,
+  a nonce-based CSP.
+- Rate limiting is in-memory (per instance). Before going live on serverless, move it to shared storage
+  (a Supabase table or Upstash).
+- The seed services have price 0 ("not set"); fill them in under `/admin/diensten`.
+- Rotate any key that was ever pasted into a chat or ticket.

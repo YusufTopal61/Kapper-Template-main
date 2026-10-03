@@ -12,9 +12,9 @@ import { useBookingWizard } from "./use-booking-wizard";
 type BookingWizardProps = {
   services: ServiceUIModel[];
   openingHours: OpeningHours;
-  /** Is Supabase ingesteld? Zo niet, dan leggen we uit wat er nog mist in plaats van een leeg formulier te tonen. */
+  /** Is Supabase configured? If not, we explain what is still missing instead of showing an empty form. */
   configured: boolean;
-  /** Op de eigen boekingspagina is dit de h1; op de homepage (waar de hero de h1 heeft) een h2. */
+  /** On the dedicated booking page this is the h1; on the homepage (where the hero has the h1) an h2. */
   heading?: "h1" | "h2";
 };
 

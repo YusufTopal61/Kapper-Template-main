@@ -179,7 +179,7 @@ export function SettingsForm({ settings, emailStatus }: SettingsFormProps) {
                   </Label>
                 </div>
 
-                {/* readOnly in plaats van disabled: een disabled veld levert geen waarde aan het formulier. */}
+                {/* readOnly instead of disabled: a disabled field delivers no value to the form. */}
                 <div className={cn("ml-auto flex items-center gap-2", !open && "opacity-50")}>
                   <Input
                     type="time"
