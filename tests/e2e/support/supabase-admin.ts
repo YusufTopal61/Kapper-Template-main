@@ -20,12 +20,12 @@ export function getTestDatabase() {
 export async function findCancelLink(customerEmail: string) {
   const { data, error } = await getTestDatabase()
     .from("bookings")
-    .select("id, cancel_token")
-    .eq("customer_email", customerEmail)
+    .select("id, annuleer_token")
+    .eq("klant_email", customerEmail)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
 
   if (error) throw error;
-  return `/boeking/annuleren/${data.id}?token=${data.cancel_token}`;
+  return `/boeking/annuleren/${data.id}?token=${data.annuleer_token}`;
 }

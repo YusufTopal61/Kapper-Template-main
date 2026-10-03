@@ -2,16 +2,19 @@ import type { Tables, TablesInsert, TablesUpdate } from "@/lib/supabase/database
 import type { Service } from "../domain/service.entity";
 import type { ServiceInput, ServiceUpdate } from "../domain/service.schema";
 
-/** The only place that knows the service column names. */
+/**
+ * The live schema uses Dutch column names. This file is the only place that
+ * knows them: everything above the data layer works with the English entity.
+ */
 export function toService(row: Tables<"services">): Service {
   return {
     id: row.id,
-    name: row.name,
-    description: row.description,
-    price: row.price,
-    durationMinutes: row.duration_minutes,
-    isActive: row.is_active,
-    sortOrder: row.sort_order,
+    name: row.naam,
+    description: row.beschrijving,
+    price: row.prijs,
+    durationMinutes: row.duur_minuten,
+    isActive: row.actief,
+    sortOrder: row.sorteer_volgorde,
   };
 }
 
@@ -19,22 +22,22 @@ export function toServiceInsert(
   input: ServiceInput & { sortOrder: number },
 ): TablesInsert<"services"> {
   return {
-    name: input.name,
-    description: input.description,
-    price: input.price,
-    duration_minutes: input.durationMinutes,
-    is_active: input.isActive,
-    sort_order: input.sortOrder,
+    naam: input.name,
+    beschrijving: input.description,
+    prijs: input.price,
+    duur_minuten: input.durationMinutes,
+    actief: input.isActive,
+    sorteer_volgorde: input.sortOrder,
   };
 }
 
 /** Only the fields that were actually provided end up in the update. */
 export function toServiceUpdate(patch: Omit<ServiceUpdate, "id">): TablesUpdate<"services"> {
   return {
-    ...(patch.name !== undefined && { name: patch.name }),
-    ...(patch.description !== undefined && { description: patch.description }),
-    ...(patch.price !== undefined && { price: patch.price }),
-    ...(patch.durationMinutes !== undefined && { duration_minutes: patch.durationMinutes }),
-    ...(patch.isActive !== undefined && { is_active: patch.isActive }),
+    ...(patch.name !== undefined && { naam: patch.name }),
+    ...(patch.description !== undefined && { beschrijving: patch.description }),
+    ...(patch.price !== undefined && { prijs: patch.price }),
+    ...(patch.durationMinutes !== undefined && { duur_minuten: patch.durationMinutes }),
+    ...(patch.isActive !== undefined && { actief: patch.isActive }),
   };
 }

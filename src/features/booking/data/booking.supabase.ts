@@ -10,6 +10,7 @@ import {
   toBookingRecord,
   toBookingUpdate,
   toBusyBooking,
+  toDbStatus,
 } from "./booking.mapper";
 
 /** Postgres: unique violation on the time slot index — someone was faster. */
@@ -20,9 +21,9 @@ export function createSupabaseBookingRepository(): BookingRepository {
     async listBusy(date) {
       const { data, error } = await getSupabaseAdminClient()
         .from("bookings")
-        .select("id, start_time, services(duration_minutes)")
-        .eq("booking_date", date)
-        .in("status", ACTIVE_STATUSES);
+        .select("id, tijd, services(duur_minuten)")
+        .eq("datum", date)
+        .in("status", ACTIVE_STATUSES.map(toDbStatus));
 
       if (error) throw new DatabaseError("bookings.listBusy", error);
       return data.map(toBusyBooking);
@@ -46,8 +47,8 @@ export function createSupabaseBookingRepository(): BookingRepository {
       const { data, error } = await supabase
         .from("bookings")
         .select(BOOKING_WITH_SERVICE)
-        .order("booking_date", { ascending: true })
-        .order("start_time", { ascending: true });
+        .order("datum", { ascending: true })
+        .order("tijd", { ascending: true });
 
       if (error) throw new DatabaseError("bookings.listAll", error);
       return data.map(toBookingRecord).map(withoutToken);
@@ -87,7 +88,7 @@ export function createSupabaseBookingRepository(): BookingRepository {
         .from("bookings")
         .select(BOOKING_WITH_SERVICE)
         .eq("id", id)
-        .eq("cancel_token", token)
+        .eq("annuleer_token", token)
         .maybeSingle();
 
       if (error) throw new DatabaseError("bookings.findByToken", error);
@@ -97,9 +98,9 @@ export function createSupabaseBookingRepository(): BookingRepository {
     async cancelByToken(id, token) {
       const { error } = await getSupabaseAdminClient()
         .from("bookings")
-        .update({ status: "cancelled" })
+        .update({ status: toDbStatus("cancelled") })
         .eq("id", id)
-        .eq("cancel_token", token);
+        .eq("annuleer_token", token);
 
       if (error) throw new DatabaseError("bookings.cancelByToken", error);
     },

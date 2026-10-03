@@ -1,6 +1,7 @@
 -- Seed data for local development: runs after the migrations on `supabase db reset`.
 -- Idempotent, so running it twice never creates duplicates.
--- The column names are the English ones from 20261003000001_english_naming.sql.
+-- The column names are the (Dutch) ones of the live schema; the mappers in
+-- src/features/*/data translate them to the English entities.
 -- The service names and descriptions are Dutch on purpose: they are customer-facing content.
 -- Prices start at 0 ("not set yet"); the owner fills them in under /admin/diensten.
 
@@ -8,7 +9,7 @@ insert into public.admin_settings (singleton)
 values (true)
 on conflict (singleton) do nothing;
 
-insert into public.services (name, description, price, duration_minutes, sort_order)
+insert into public.services (naam, beschrijving, prijs, duur_minuten, sorteer_volgorde)
 select * from (values
   (
     'Knippen',
@@ -31,5 +32,5 @@ select * from (values
     20,
     3
   )
-) as new_services(name, description, price, duration_minutes, sort_order)
+) as nieuw(naam, beschrijving, prijs, duur_minuten, sorteer_volgorde)
 where not exists (select 1 from public.services);

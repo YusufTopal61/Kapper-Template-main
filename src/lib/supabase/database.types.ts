@@ -1,9 +1,10 @@
 /**
  * Database schema types, in the shape `supabase gen types typescript` produces.
  *
- * This file mirrors supabase/migrations up to and including
- * 20261003000001_english_naming.sql. Regenerate it from the real database with
- * `pnpm db:types` (see README) so it can never drift from the schema.
+ * This file mirrors supabase/migrations. The live schema uses Dutch column names
+ * and enum values; the mappers in each feature's data/ folder translate them to
+ * the English entities of the domain. Regenerate this file with `pnpm db:types`
+ * so it can never drift from the schema.
  */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -12,33 +13,33 @@ export type Database = {
     Tables: {
       admin_settings: {
         Row: {
-          address: string | null;
+          adres: string | null;
           admin_email: string | null;
-          business_name: string;
+          bedrijfsnaam: string;
           id: string;
-          opening_hours: Json;
-          phone_number: string | null;
+          openingstijden: Json;
           singleton: boolean;
+          telefoonnummer: string | null;
           updated_at: string;
         };
         Insert: {
-          address?: string | null;
+          adres?: string | null;
           admin_email?: string | null;
-          business_name?: string;
+          bedrijfsnaam?: string;
           id?: string;
-          opening_hours?: Json;
-          phone_number?: string | null;
+          openingstijden?: Json;
           singleton?: boolean;
+          telefoonnummer?: string | null;
           updated_at?: string;
         };
         Update: {
-          address?: string | null;
+          adres?: string | null;
           admin_email?: string | null;
-          business_name?: string;
+          bedrijfsnaam?: string;
           id?: string;
-          opening_hours?: Json;
-          phone_number?: string | null;
+          openingstijden?: Json;
           singleton?: boolean;
+          telefoonnummer?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -51,45 +52,45 @@ export type Database = {
       };
       bookings: {
         Row: {
-          booking_date: string;
-          cancel_token: string;
+          annuleer_token: string;
           created_at: string;
-          customer_email: string;
-          customer_name: string;
-          customer_phone: string;
+          datum: string;
           id: string;
-          notes: string | null;
+          klant_email: string;
+          klant_naam: string;
+          klant_telefoon: string;
+          notities: string | null;
           service_id: string;
-          start_time: string;
           status: Database["public"]["Enums"]["booking_status"];
+          tijd: string;
           updated_at: string;
         };
         Insert: {
-          booking_date: string;
-          cancel_token?: string;
+          annuleer_token?: string;
           created_at?: string;
-          customer_email: string;
-          customer_name: string;
-          customer_phone: string;
+          datum: string;
           id?: string;
-          notes?: string | null;
+          klant_email: string;
+          klant_naam: string;
+          klant_telefoon: string;
+          notities?: string | null;
           service_id: string;
-          start_time: string;
           status?: Database["public"]["Enums"]["booking_status"];
+          tijd: string;
           updated_at?: string;
         };
         Update: {
-          booking_date?: string;
-          cancel_token?: string;
+          annuleer_token?: string;
           created_at?: string;
-          customer_email?: string;
-          customer_name?: string;
-          customer_phone?: string;
+          datum?: string;
           id?: string;
-          notes?: string | null;
+          klant_email?: string;
+          klant_naam?: string;
+          klant_telefoon?: string;
+          notities?: string | null;
           service_id?: string;
-          start_time?: string;
           status?: Database["public"]["Enums"]["booking_status"];
+          tijd?: string;
           updated_at?: string;
         };
         Relationships: [
@@ -104,36 +105,36 @@ export type Database = {
       };
       services: {
         Row: {
+          actief: boolean;
+          beschrijving: string;
           created_at: string;
-          description: string;
-          duration_minutes: number;
+          duur_minuten: number;
           id: string;
-          is_active: boolean;
-          name: string;
-          price: number;
-          sort_order: number;
+          naam: string;
+          prijs: number;
+          sorteer_volgorde: number;
           updated_at: string;
         };
         Insert: {
+          actief?: boolean;
+          beschrijving?: string;
           created_at?: string;
-          description?: string;
-          duration_minutes?: number;
+          duur_minuten?: number;
           id?: string;
-          is_active?: boolean;
-          name: string;
-          price?: number;
-          sort_order?: number;
+          naam: string;
+          prijs?: number;
+          sorteer_volgorde?: number;
           updated_at?: string;
         };
         Update: {
+          actief?: boolean;
+          beschrijving?: string;
           created_at?: string;
-          description?: string;
-          duration_minutes?: number;
+          duur_minuten?: number;
           id?: string;
-          is_active?: boolean;
-          name?: string;
-          price?: number;
-          sort_order?: number;
+          naam?: string;
+          prijs?: number;
+          sorteer_volgorde?: number;
           updated_at?: string;
         };
         Relationships: [];
@@ -144,7 +145,7 @@ export type Database = {
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
-      booking_status: "confirmed" | "cancelled" | "completed" | "no_show";
+      booking_status: "bevestigd" | "geannuleerd" | "voltooid" | "no_show";
     };
     CompositeTypes: { [_ in never]: never };
   };
@@ -153,6 +154,8 @@ export type Database = {
 type PublicSchema = Database["public"];
 
 export type Tables<T extends keyof PublicSchema["Tables"]> = PublicSchema["Tables"][T]["Row"];
-export type TablesInsert<T extends keyof PublicSchema["Tables"]> = PublicSchema["Tables"][T]["Insert"];
-export type TablesUpdate<T extends keyof PublicSchema["Tables"]> = PublicSchema["Tables"][T]["Update"];
+export type TablesInsert<T extends keyof PublicSchema["Tables"]> =
+  PublicSchema["Tables"][T]["Insert"];
+export type TablesUpdate<T extends keyof PublicSchema["Tables"]> =
+  PublicSchema["Tables"][T]["Update"];
 export type Enums<T extends keyof PublicSchema["Enums"]> = PublicSchema["Enums"][T];

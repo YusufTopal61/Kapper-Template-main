@@ -15,8 +15,8 @@ export function createSupabaseServiceRepository(): ServiceRepository {
       const { data, error } = await supabase
         .from("services")
         .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
+        .eq("actief", true)
+        .order("sorteer_volgorde", { ascending: true })
         .order("created_at", { ascending: true });
 
       if (error) throw new DatabaseError("services.listActive", error);
@@ -28,7 +28,7 @@ export function createSupabaseServiceRepository(): ServiceRepository {
       const { data, error } = await supabase
         .from("services")
         .select("*")
-        .order("sort_order", { ascending: true })
+        .order("sorteer_volgorde", { ascending: true })
         .order("created_at", { ascending: true });
 
       if (error) throw new DatabaseError("services.listAll", error);
@@ -50,13 +50,13 @@ export function createSupabaseServiceRepository(): ServiceRepository {
       const supabase = await getSupabaseServerClient();
       const { data, error } = await supabase
         .from("services")
-        .select("sort_order")
-        .order("sort_order", { ascending: false })
+        .select("sorteer_volgorde")
+        .order("sorteer_volgorde", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (error) throw new DatabaseError("services.highestSortOrder", error);
-      return data?.sort_order ?? 0;
+      return data?.sorteer_volgorde ?? 0;
     },
 
     async create(input) {
