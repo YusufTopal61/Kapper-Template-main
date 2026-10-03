@@ -90,17 +90,16 @@ pnpm db:types            # regenerate src/lib/supabase/database.types.ts from th
 Local development with Docker: `pnpm exec supabase start`, then `pnpm exec supabase db reset`
 applies the migrations and `supabase/seed.sql`.
 
-**Existing project whose first migrations were run by hand in the SQL editor:** mark them as applied
-once, then push the rest:
+**Existing project whose migrations were run by hand in the SQL editor:** mark them as applied once,
+then future migrations can be pushed normally:
 
 ```bash
 pnpm exec supabase migration repair --status applied 20260918000001 20260918000002 20260918000003
-pnpm db:migrate         # applies 20261003000001_english_naming.sql
 ```
 
-`20261003000001_english_naming.sql` renames Dutch columns, enum values and policies to English
-(no data is dropped; `supabase/rollback/` has the reverse). Run it, then `pnpm db:types`, **before**
-deploying code from this version: the app reads the English column names.
+The schema uses Dutch column names and enum values. The mappers in `src/features/*/data/*.mapper.ts`
+translate them to the English entities (and have unit tests), so a schema change touches only a
+mapper and a migration. After any migration, run `pnpm db:types`.
 
 Create the first admin: add a user in Supabase Auth, then
 `insert into public.admin_users (user_id, email) values ('<auth user id>', '<email>');`.

@@ -81,7 +81,9 @@ Imports point inward; a layer may never be skipped. ESLint enforces this
 | `domain/`       | entities, Zod schemas, rules (`*.rules.ts`), use cases (`usecases/`), repository interfaces              | zod, itself, other features' `domain/`, `lib/validations`, `lib/errors`, `lib/logger` | anything else            |
 | `data/`         | repository implementations (`*.supabase.ts`), external services (`*.resend.ts`), mappers (`*.mapper.ts`) | domain, `lib/`                                                                        | React or `presentation/` |
 
-- Only mappers know database column names. Entities are camelCase; rows are snake_case.
+- Only mappers know database column names. Entities are English camelCase; rows are snake_case.
+  The live schema is Dutch (`naam`, `klant_naam`, status `bevestigd`, JSON keys `maandag`/`van`/`tot`);
+  the mappers translate both ways and are unit tested. Do not rename the schema without asking.
 - A server action validates with Zod, rate limits, and calls **one** use case through
   `lib/di/container.ts`. No business logic in components or actions.
 - Read data in Server Components (the page calls a use case via the container);
@@ -102,7 +104,7 @@ RLS on every table with a policy per role · authorization enforced server-side
 key only in `lib/supabase/admin.ts` · server-side validation with the same Zod schema
 as the form · rate limiting on public forms · secrets never in the client bundle ·
 no `dangerouslySetInnerHTML` without escaping · `SITE_URL`, not the Host header, for
-links in emails. Database changes only through migrations in `supabase/migrations/`.
+links in emails. Database changes only through migrations in `supabase/migrations/`; never apply one to a live project without asking.
 
 ## SEO and performance
 

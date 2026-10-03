@@ -8,15 +8,20 @@ const customerEmail = `e2e+${Date.now()}@example.com`;
 async function chooseServiceAndSlot(page: Page) {
   await page.goto("/boeken");
 
-  await page.getByRole("button", { pressed: false }).first().click(); // first service
+  // Choice buttons carry aria-pressed. Matching the attribute (not the role) keeps the
+  // mobile menu toggle, which has no such attribute, out of the selection.
+  await page.locator('[aria-pressed="false"]').first().click(); // first service
   await page.getByRole("button", { name: "Volgende" }).click();
 
   // The next open day, then the last time slot that is still free.
-  await page.getByRole("button", { pressed: false }).first().click();
+  await page.locator('[aria-pressed="false"]').first().click();
   const freeSlots = page.locator("button:not([disabled])").filter({ hasText: /^\d{2}:\d{2}$/ });
   await expect(freeSlots.first()).toBeVisible();
   await freeSlots.last().click();
   await page.getByRole("button", { name: "Volgende" }).click();
+
+  // Wait for the details step to be on screen: the step content animates in.
+  await expect(page.getByPlaceholder("Voor- en achternaam")).toBeVisible();
 }
 
 async function fillDetails(page: Page, email: string) {
