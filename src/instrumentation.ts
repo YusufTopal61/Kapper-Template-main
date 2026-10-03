@@ -1,11 +1,11 @@
 /**
- * Draait één keer bij het opstarten van de server. In productie start de app
- * niet met een ontbrekende of ongeldige omgevingsvariabele; in development
- * waarschuwen we alleen, zodat de setup-melding in de browser zichtbaar blijft.
+ * Runs once when the server starts. In production the app does not start with
+ * a missing or invalid environment variable; in development we only warn, so the
+ * setup notice stays visible in the browser.
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
-  const { controleerEnv } = await import("@/shared/lib/env.server");
-  controleerEnv();
+  const { validateEnv } = await import("@/lib/env.server");
+  validateEnv();
 }

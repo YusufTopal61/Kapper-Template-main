@@ -1,38 +1,35 @@
-# Logs
+# dependencies
+node_modules
+
+# build output
+.next
+out
+dist
+*.tsbuildinfo
+next-env.d.ts
+
+# environment (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# logs
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
-*.local
+# tests
+playwright-report
+test-results
 
-# Wrangler / Cloudflare
-.wrangler/
-.dev.vars
+# deployment
+.vercel
 
-# Editor directories and files
+# editors / OS
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
-
-# Tijdelijke map met oude bestanden, kan weg
-_te-verwijderen/
-.next
-next-env.d.ts
-*.tsbuildinfo

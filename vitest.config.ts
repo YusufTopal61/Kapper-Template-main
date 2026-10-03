@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
-// Los van next.config.ts: domein- en use-case-logica draait zonder framework,
-// zonder database en zonder browser — dat is precies wat we hiermee afdwingen.
+// Separate from next.config.ts: domain and use-case logic runs without a
+// framework, a database or a browser — which is exactly what this enforces.
 export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   test: { include: ["src/**/*.test.ts"], environment: "node" },

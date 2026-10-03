@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-// Het beheerpaneel hoort nergens in zoekmachines (ook niet via de sitemap).
+// The admin panel never belongs in search engines (not via the sitemap either).
 export const metadata: Metadata = {
   title: "Beheer",
   robots: { index: false, follow: false },

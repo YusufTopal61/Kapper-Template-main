@@ -1,6 +1,6 @@
 "use client";
 
-/** Laatste vangnet: een fout in de root-layout zelf. Moet zijn eigen <html> renderen en kan geen globals.css aannemen. */
+/** Last safety net: an error in the root layout itself. Must render its own <html> and cannot assume globals.css. */
 export default function GlobalError({ reset }: { error: Error; reset: () => void }) {
   return (
     <html lang="nl">

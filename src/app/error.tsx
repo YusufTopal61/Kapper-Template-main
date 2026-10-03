@@ -2,11 +2,12 @@
 
 import { useEffect } from "react";
 import { RotateCw } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 /**
- * Vangnet voor onverwachte fouten in een pagina. De bezoeker krijgt een nette
- * melding; de details gaan naar de console (en later naar Sentry), nooit naar
- * het scherm. `error.digest` is de verwijzing naar de serverlog.
+ * Safety net for unexpected errors in a page. The visitor gets a friendly
+ * message; the details go to the console (and later to Sentry), never to the
+ * screen. `error.digest` is the reference to the server log.
  */
 export default function Error({
   error,
@@ -16,7 +17,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    logger.error("ui", "unhandled error in a page", error, { digest: error.digest });
   }, [error]);
 
   return (
@@ -39,7 +40,7 @@ export default function Error({
           <RotateCw className="size-4" />
           Probeer opnieuw
         </button>
-        {/* Gewone link: na een fout willen we een schone pagina, geen client-navigatie. */}
+        {/* Plain link: after an error we want a clean page, not client-side navigation. */}
         <a
           href="/"
           className="inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"

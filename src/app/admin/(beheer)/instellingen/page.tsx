@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { getSettingsDeps } from "@/app/di/container";
-import { getAdminSettings } from "@/modules/settings/domain/usecases/getAdminSettings";
-import { getEmailStatus } from "@/modules/settings/domain/usecases/getEmailStatus";
-import { SettingsForm } from "@/modules/settings/presentation/SettingsForm";
+import { getSettingsDeps } from "@/lib/di/container";
+import { getAdminSettings } from "@/features/settings/domain/usecases/get-admin-settings";
+import { getEmailStatus } from "@/features/settings/domain/usecases/get-email-status";
+import { SettingsForm } from "@/features/settings/presentation/SettingsForm";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Instellingen" };
 
-export default async function InstellingenPagina() {
+export default async function SettingsPage() {
   const deps = getSettingsDeps();
-  const [instellingen, emailStatus] = await Promise.all([
-    getAdminSettings(deps),
-    getEmailStatus(deps),
-  ]);
+  const [settings, emailStatus] = await Promise.all([getAdminSettings(deps), getEmailStatus(deps)]);
 
-  return <SettingsForm instellingen={instellingen} emailStatus={emailStatus} />;
+  return <SettingsForm settings={settings} emailStatus={emailStatus} />;
 }

@@ -1,28 +1,28 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { supabaseAnonKey, supabaseUrl } from "@/shared/lib/env";
+import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 
 const LOGIN_PAD = "/admin/login";
 
 /**
- * Eerste slot voor het beheerpaneel (in Next.js 16 heet middleware "proxy").
- * Stuurt iedereen zonder sessie naar de loginpagina en ververst de sessie-
- * cookies bij elk request.
+ * First lock for the admin panel (in Next.js 16 middleware is called "proxy").
+ * Sends everyone without a session to the login page and refreshes the session
+ * cookies on every request.
  *
- * Dit is een optimistische check: alleen of er een ingelogde gebruiker is. Of
- * die ook beheerder is, controleert de beheer-layout, en elke beheeractie
- * controleert het opnieuw in de use case (assertAdmin) en in Row Level Security.
+ * This is an optimistic check: only whether a signed-in user exists. Whether
+ * they are also an admin is checked by the admin layout, and every admin
+ * action checks again in the use case (assertAdmin) and in Row Level Security.
  */
 export async function proxy(request: NextRequest) {
-  const opLoginPagina = request.nextUrl.pathname === LOGIN_PAD;
+  const onLoginPage = request.nextUrl.pathname === LOGIN_PAD;
   let response = NextResponse.next({ request });
 
-  // Zonder Supabase-configuratie legt de loginpagina uit wat er nog mist.
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return opLoginPagina ? response : NextResponse.redirect(new URL(LOGIN_PAD, request.url));
+  // Without Supabase configuration the login page explains what is still missing.
+  if (!supabaseUrl || !supabasePublishableKey) {
+    return onLoginPage ? response : NextResponse.redirect(new URL(LOGIN_PAD, request.url));
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(cookiesToSet, headers) {
@@ -31,9 +31,8 @@ export async function proxy(request: NextRequest) {
         for (const { name, value, options } of cookiesToSet) {
           response.cookies.set(name, value, options);
         }
-        // Voorkomt dat een CDN een response mét auth-cookies cachet en aan een andere bezoeker serveert.
-        for (const [sleutel, waarde] of Object.entries(headers))
-          response.headers.set(sleutel, waarde);
+        // Prevents a CDN from caching a response with auth cookies and serving it to another visitor.
+        for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
       },
     },
   });
@@ -42,7 +41,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !opLoginPagina) {
+  if (!user && !onLoginPage) {
     return NextResponse.redirect(new URL(LOGIN_PAD, request.url));
   }
 

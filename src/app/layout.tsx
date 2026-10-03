@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, Manrope } from "next/font/google";
-import { siteConfig } from "@/shared/config/site";
-import { getSiteUrl } from "@/shared/lib/env.server";
+import { siteConfig } from "@/config/site";
+import { getSiteUrl } from "@/lib/env.server";
 import "./globals.css";
-import { Providers } from "./providers";
+import { Providers } from "../components/layout/providers";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -19,15 +19,15 @@ const manrope = Manrope({
   display: "swap",
 });
 
-/** In development zonder SITE_URL valt Next.js terug op de lokale server. */
-const LOKALE_URL = `http://localhost:${process.env.PORT ?? 3000}`;
+/** In development without SITE_URL, Next.js falls back to the local server. */
+const LOCAL_URL = `http://localhost:${process.env.PORT ?? 3000}`;
 
 export function generateMetadata(): Metadata {
   return {
-    metadataBase: new URL(getSiteUrl() || LOKALE_URL),
-    title: { default: siteConfig.titel, template: `%s — ${siteConfig.merknaam}` },
-    description: siteConfig.beschrijving,
-    applicationName: siteConfig.merknaam,
+    metadataBase: new URL(getSiteUrl() || LOCAL_URL),
+    title: { default: siteConfig.title, template: `%s — ${siteConfig.brandName}` },
+    description: siteConfig.description,
+    applicationName: siteConfig.brandName,
     manifest: "/site.webmanifest",
     robots: { index: true, follow: true },
     icons: {
@@ -49,7 +49,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang={siteConfig.taal}
+      lang={siteConfig.language}
       data-scroll-behavior="smooth"
       className={`${archivo.variable} ${manrope.variable}`}
     >

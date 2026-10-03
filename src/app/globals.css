@@ -172,8 +172,8 @@
   background-size: 56px 56px;
 }
 
-/* Lichtgewicht artikel-typografie voor lange tekstpagina's (privacy, voorwaarden). */
-@utility prose-kapper {
+/* Lightweight article typography for long text pages (privacy, terms). */
+@utility prose-legal {
   & h2 {
     margin-top: 2.5rem;
     margin-bottom: 0.75rem;
@@ -206,4 +206,3 @@
     color: var(--color-foreground);
   }
 }
-

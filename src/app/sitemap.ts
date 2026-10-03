@@ -1,18 +1,18 @@
 import type { MetadataRoute } from "next";
-import { sitemapPaginas } from "@/shared/config/navigation";
-import { getSiteUrl } from "@/shared/lib/env.server";
+import { sitemapPages } from "@/config/navigation";
+import { getSiteUrl } from "@/lib/env.server";
 
 /**
- * De sitemap wordt gegenereerd uit dezelfde paginalijst als de navigatie en
- * wordt dus nooit handmatig bijgehouden. Er zijn nog geen pagina's per dienst;
- * komen die er, dan voegen we ze hier toe vanuit de database.
+ * The sitemap is generated from the same page list as the navigation, so it is
+ * never maintained by hand. There are no per-service pages yet; once there are,
+ * we add them here from the database.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const basis = getSiteUrl();
+  const base = getSiteUrl();
 
-  return sitemapPaginas.map((pagina) => ({
-    url: `${basis}${pagina.href === "/" ? "" : pagina.href}` || "/",
-    changeFrequency: pagina.frequentie,
-    priority: pagina.prioriteit,
+  return sitemapPages.map((page) => ({
+    url: `${base}${page.href === "/" ? "" : page.href}` || "/",
+    changeFrequency: page.frequency,
+    priority: page.priority,
   }));
 }
