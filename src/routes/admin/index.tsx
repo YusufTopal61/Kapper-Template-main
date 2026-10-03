@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Overview } from "@/components/admin/Overview";
+import { Overview } from "@/modules/admin/presentation/Overview";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({

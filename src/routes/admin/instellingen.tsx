@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SettingsForm } from "@/components/admin/SettingsForm";
+import { SettingsForm } from "@/modules/settings/presentation/SettingsForm";
 
 export const Route = createFileRoute("/admin/instellingen")({
   head: () => ({

@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/site/Navbar";
-import { PageHeader } from "@/components/site/PageHeader";
-import { Gallery } from "@/components/site/Gallery";
-import { CtaBanner } from "@/components/site/CtaBanner";
-import { Footer } from "@/components/site/Footer";
+import { Navbar } from "@/modules/site/presentation/Navbar";
+import { PageHeader } from "@/modules/site/presentation/PageHeader";
+import { Gallery } from "@/modules/site/presentation/Gallery";
+import { CtaBanner } from "@/modules/site/presentation/CtaBanner";
+import { Footer } from "@/modules/site/presentation/Footer";
 
 const title = "Galerij — BARBER";
 const description = "Een indruk van het werk, de sfeer en de zaak.";

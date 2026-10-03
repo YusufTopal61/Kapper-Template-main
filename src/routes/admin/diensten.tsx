@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ServicesManager } from "@/components/admin/ServicesManager";
+import { ServicesManager } from "@/modules/services/presentation/ServicesManager";
 
 export const Route = createFileRoute("/admin/diensten")({
   head: () => ({

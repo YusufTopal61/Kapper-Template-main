@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { AdminShell } from "@/components/admin/AdminShell";
-import { fetchSession } from "@/api/auth";
+import { AdminShell } from "@/modules/admin/presentation/AdminShell";
+import { fetchSession } from "@/modules/auth/business/auth.actions";
 
 const LOGIN_PAD = "/admin/login";
 

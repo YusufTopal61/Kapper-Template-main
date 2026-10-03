@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/site/Navbar";
-import { PageHeader } from "@/components/site/PageHeader";
-import { About } from "@/components/site/About";
-import { CtaBanner } from "@/components/site/CtaBanner";
-import { Footer } from "@/components/site/Footer";
+import { Navbar } from "@/modules/site/presentation/Navbar";
+import { PageHeader } from "@/modules/site/presentation/PageHeader";
+import { About } from "@/modules/site/presentation/About";
+import { CtaBanner } from "@/modules/site/presentation/CtaBanner";
+import { Footer } from "@/modules/site/presentation/Footer";
 
 const title = "Over ons — BARBER";
 const description =

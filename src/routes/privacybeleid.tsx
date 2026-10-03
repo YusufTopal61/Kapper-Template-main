@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/site/Navbar";
-import { PageHeader } from "@/components/site/PageHeader";
-import { Footer } from "@/components/site/Footer";
+import { Navbar } from "@/modules/site/presentation/Navbar";
+import { PageHeader } from "@/modules/site/presentation/PageHeader";
+import { Footer } from "@/modules/site/presentation/Footer";
 
 const title = "Privacybeleid — BARBER";
 const description = "Hoe we omgaan met de gegevens die je bij ons achterlaat.";

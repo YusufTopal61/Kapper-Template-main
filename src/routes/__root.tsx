@@ -11,10 +11,10 @@ import { ArrowLeft, RotateCw } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Analytics } from "@/components/site/Analytics";
-import { CookieConsent } from "@/components/site/CookieConsent";
-import { StickyBookCta } from "@/components/site/StickyBookCta";
+import { reportLovableError } from "@/shared/lib/lovable-error-reporting";
+import { Analytics } from "@/modules/site/presentation/Analytics";
+import { CookieConsent } from "@/modules/site/presentation/CookieConsent";
+import { StickyBookCta } from "@/modules/site/presentation/StickyBookCta";
 
 const SITE_TITLE = "BARBER — Premium barbershop";
 const SITE_DESCRIPTION =

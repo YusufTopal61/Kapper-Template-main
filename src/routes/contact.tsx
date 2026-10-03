@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/site/Navbar";
-import { Contact } from "@/components/site/Contact";
-import { Footer } from "@/components/site/Footer";
-import { fetchPublicSettings } from "@/api/settings";
+import { Navbar } from "@/modules/site/presentation/Navbar";
+import { ContactSection } from "@/modules/settings/presentation/ContactSection";
+import { Footer } from "@/modules/site/presentation/Footer";
+import { fetchPublicSettings } from "@/modules/settings/business/settings.actions";
 
 const title = "Contact — BARBER";
 const description = "Adres, openingstijden en contactgegevens. Loop gerust binnen.";
@@ -27,7 +27,7 @@ function ContactPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-24 sm:pt-28">
-        <Contact instellingen={instellingen} />
+        <ContactSection instellingen={instellingen} />
       </main>
       <Footer />
     </div>
