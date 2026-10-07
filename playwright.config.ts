@@ -8,7 +8,8 @@ try {
   // No .env.local (for example in CI): the environment is expected to be set already.
 }
 
-const PORT = 3000;
+// 3000 is the project standard; set E2E_PORT when another server already uses it.
+const PORT = Number(process.env.E2E_PORT ?? 3000);
 const isCI = Boolean(process.env.CI);
 
 /**
@@ -18,8 +19,14 @@ const isCI = Boolean(process.env.CI);
  */
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: false, // the booking tests share a database, so they run one after another
+  fullyParallel: false,
+  // The booking tests share one database (and the same free time slots), so desktop and
+  // mobile must not run at the same time.
+  workers: 1,
   forbidOnly: isCI,
+  // The flows call a real Supabase project and a mail API, so a single step can take a few seconds.
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   retries: isCI ? 2 : 0,
   reporter: isCI ? "github" : "list",
   use: {
@@ -36,7 +43,7 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"], ...(isCI ? {} : { channel: "chrome" }) } },
   ],
   webServer: {
-    command: "pnpm dev",
+    command: `pnpm dev --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !isCI,
     timeout: 120_000,

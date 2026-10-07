@@ -193,6 +193,13 @@ export function DetailsStep({
         error={errors.customerEmail?.message}
         {...register("customerEmail")}
       />
+      {/* Honeypot: hidden from people and assistive tech, bots fill it in. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Website
+          <input type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
+        </label>
+      </div>
       <div className="rounded-2xl bg-muted px-5 py-4 text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">{summary.service}</span> ·{" "}
         {summary.date ? format(parseDate(summary.date), "d MMMM", { locale: nl }) : "–"} ·{" "}

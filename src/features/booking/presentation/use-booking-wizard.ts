@@ -46,7 +46,7 @@ export function useBookingWizard(props: {
 
   const customerForm = useForm<BookingCustomerInput>({
     resolver: zodResolver(bookingCustomerSchema),
-    defaultValues: { customerName: "", customerEmail: "", customerPhone: "" },
+    defaultValues: { customerName: "", customerEmail: "", customerPhone: "", website: "" },
     mode: "onTouched",
   });
 

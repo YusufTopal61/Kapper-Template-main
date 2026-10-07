@@ -4,7 +4,7 @@ import { findCancelLink, hasDatabaseAccess } from "./support/supabase-admin";
 /** A unique customer per run, so tests never touch each other's bookings. */
 const customerEmail = `e2e+${Date.now()}@example.com`;
 
-/** Walks the wizard to the details step: first service, the next open day, the last free slot. */
+/** Walks the wizard to the details step: first service, the second open day, the last free slot. */
 async function chooseServiceAndSlot(page: Page) {
   await page.goto("/boeken");
 
@@ -13,8 +13,9 @@ async function chooseServiceAndSlot(page: Page) {
   await page.locator('[aria-pressed="false"]').first().click(); // first service
   await page.getByRole("button", { name: "Volgende" }).click();
 
-  // The next open day, then the last time slot that is still free.
-  await page.locator('[aria-pressed="false"]').first().click();
+  // The second open day, not the first: the first can be today, and after closing time
+  // every slot of today is disabled. Then the last time slot that is still free.
+  await page.locator('[aria-pressed="false"]').nth(1).click();
   const freeSlots = page.locator("button:not([disabled])").filter({ hasText: /^\d{2}:\d{2}$/ });
   await expect(freeSlots.first()).toBeVisible();
   await freeSlots.last().click();
@@ -59,7 +60,10 @@ test.describe("booking flow", () => {
     await page.goto(cancelLink);
     await expect(page.getByRole("heading", { name: "Afspraak annuleren" })).toBeVisible();
     await page.getByRole("button", { name: "Annuleer afspraak" }).click();
-    await expect(page.getByRole("heading", { name: "Afspraak geannuleerd" })).toBeVisible();
+    // Cancelling writes to the database and sends mail, which can be slow on a cold dev server.
+    await expect(page.getByRole("heading", { name: "Afspraak geannuleerd" })).toBeVisible({
+      timeout: 20_000,
+    });
 
     // Cancelling again shows that it is already done instead of failing.
     await page.goto(cancelLink);

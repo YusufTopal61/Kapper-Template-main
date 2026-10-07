@@ -26,12 +26,18 @@ export const bookingInputSchema = z.object({
   time: timeSchema,
 });
 
-/** Only the customer details, for the last step of the booking form. */
-export const bookingCustomerSchema = bookingInputSchema.pick({
-  customerName: true,
-  customerEmail: true,
-  customerPhone: true,
-});
+/**
+ * Only the customer details, for the last step of the booking form. `website`
+ * is the hidden honeypot field: real visitors leave it empty, the server action
+ * rejects a booking where it is filled in (see `lib/utils/honeypot.ts`).
+ */
+export const bookingCustomerSchema = bookingInputSchema
+  .pick({
+    customerName: true,
+    customerEmail: true,
+    customerPhone: true,
+  })
+  .extend({ website: z.string().optional() });
 
 export const cancelByTokenSchema = z.object({
   bookingId: z.string().uuid(),

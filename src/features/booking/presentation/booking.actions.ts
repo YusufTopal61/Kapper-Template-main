@@ -1,7 +1,9 @@
 "use server";
 
 import { getBookingDeps } from "@/lib/di/container";
-import { invalidInput, runAction } from "@/lib/utils/action-result";
+import { logger } from "@/lib/logger";
+import { GENERIC_ERROR, invalidInput, runAction } from "@/lib/utils/action-result";
+import { isHoneypotTripped } from "@/lib/utils/honeypot";
 import { limitRequests } from "@/lib/utils/request-limit.server";
 import type { BookingResult } from "../domain/booking.entity";
 import {
@@ -36,6 +38,12 @@ export async function fetchAvailableSlots(input: unknown) {
 }
 
 export async function createBookingAction(input: unknown): Promise<BookingResult> {
+  // A filled-in honeypot means a bot. Nothing is stored; the answer gives nothing away.
+  if (isHoneypotTripped(input)) {
+    logger.warn("booking", "honeypot field was filled in, booking rejected");
+    return { ok: false, error: GENERIC_ERROR };
+  }
+
   const valid = bookingInputSchema.safeParse(input);
   if (!valid.success) return invalidInput(valid.error);
 

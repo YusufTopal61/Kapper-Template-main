@@ -1,8 +1,9 @@
 import { Reveal } from "@/components/ui/reveal";
+import { siteConfig } from "@/config/site";
 
 const pillars = [
   { title: "Vakmanschap", body: "Klassieke techniek, hedendaagse uitvoering." },
-  { title: "Rust", body: "Eén klant per stoel, alle tijd en aandacht." },
+  { title: "Rust", body: "Geen haast, alle tijd en aandacht voor jouw knipbeurt." },
   { title: "Consistentie", body: "Dezelfde scherpe finish, elk bezoek opnieuw." },
 ];
 
@@ -17,25 +18,23 @@ export function About({ extended = false }: { extended?: boolean }) {
         </Reveal>
         <Reveal delay={0.08}>
           <p className="mt-6 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-            Wat begon als een kleine zaak met twee stoelen, groeide uit tot een plek waar mannen
-            terugkomen voor meer dan een knipbeurt. Wij geloven in eerlijk vakmanschap: luisteren,
-            adviseren en dan pas de schaar.
+            Een goed kapsel begint met luisteren. We nemen eerst de tijd om te horen wat je wilt,
+            adviseren eerlijk en beginnen dan pas met knippen.
           </p>
           {extended ? (
             <>
               <p className="mt-4 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-                Geen haast, geen ruis. Onze barbiers nemen de tijd om te begrijpen hoe je haar valt,
-                hoe je het thuis draagt en wat er over drie weken nog steeds goed moet zitten.
+                Geen haast, geen ruis. We kijken hoe je haar valt en hoe je het thuis draagt, zodat
+                het ook na een paar weken nog goed zit.
               </p>
               <p className="mt-4 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-                Het resultaat is een vaste routine: je komt binnen, je gaat zitten, en je loopt
-                scherp weer naar buiten. Simpel, precies zoals het hoort.
+                Je komt binnen, je gaat zitten en je loopt scherp weer naar buiten. Simpel, precies
+                zoals het hoort.
               </p>
             </>
           ) : (
             <p className="mt-4 max-w-xl text-base leading-relaxed tracking-tight text-muted-foreground sm:text-lg">
-              Geen haast, geen ruis. Alleen een resultaat dat er over drie weken nog steeds goed
-              uitziet.
+              Geen haast, geen ruis. Alleen een resultaat waar je tevreden mee naar buiten loopt.
             </p>
           )}
         </Reveal>
@@ -65,7 +64,7 @@ export function About({ extended = false }: { extended?: boolean }) {
               “Een goed kapsel is stil. Het valt pas op als het ontbreekt.”
             </p>
             <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              [Brand name] — sinds 20XX
+              {siteConfig.brandName}
             </p>
           </div>
         </div>

@@ -39,6 +39,8 @@ export function CookieConsent() {
               >
                 Meer over cookies
               </Link>
+              . Je kunt je keuze altijd wijzigen via &lsquo;Cookie-instellingen&rsquo; onderaan de
+              pagina.
             </p>
             <div className="flex shrink-0 gap-2">
               <button

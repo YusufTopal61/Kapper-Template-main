@@ -10,6 +10,7 @@ import { ContactSection } from "@/features/settings/presentation/ContactSection"
 import { About } from "@/features/marketing/presentation/About";
 import { Gallery } from "@/features/marketing/presentation/Gallery";
 import { Hero } from "@/features/marketing/presentation/Hero";
+import { testimonials } from "@/config/testimonials";
 import { Testimonials } from "@/features/marketing/presentation/Testimonials";
 import { siteConfig } from "@/config/site";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -81,11 +82,13 @@ export default async function HomePage() {
           openingHours={settings.openingHours}
           configured={isSupabaseConfigured}
         />
-        <section className="py-24 sm:py-32">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Testimonials />
-          </div>
-        </section>
+        {testimonials.length > 0 ? (
+          <section className="py-24 sm:py-32">
+            <div className="mx-auto max-w-6xl px-5 sm:px-8">
+              <Testimonials />
+            </div>
+          </section>
+        ) : null}
         <ContactSection settings={settings} />
       </main>
     </>

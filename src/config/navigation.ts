@@ -16,7 +16,10 @@ export const legalLinks: readonly NavItem[] = [
   { label: "Algemene voorwaarden", href: "/algemene-voorwaarden" },
 ];
 
-/** Pages that belong in the sitemap, with the priority search engines get as a hint. */
+/**
+ * Pages that belong in the sitemap, with the priority search engines get as a hint.
+ * The legal pages are left out on purpose: they are noindex until the text is approved.
+ */
 export const sitemapPages: ReadonlyArray<{
   href: string;
   priority: number;
@@ -28,8 +31,6 @@ export const sitemapPages: ReadonlyArray<{
   { href: "/over-ons", priority: 0.6, frequency: "monthly" },
   { href: "/contact", priority: 0.6, frequency: "monthly" },
   { href: "/galerij", priority: 0.5, frequency: "monthly" },
-  { href: "/privacybeleid", priority: 0.2, frequency: "yearly" },
-  { href: "/algemene-voorwaarden", priority: 0.2, frequency: "yearly" },
 ];
 
 /** Paths search engines must not index. */

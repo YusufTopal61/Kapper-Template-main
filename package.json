@@ -2,6 +2,7 @@
   "name": "kapper",
   "version": "0.1.0",
   "private": true,
+  "author": "YM Creations <contact@ymcreations.com> (https://ymcreations.com)",
   "type": "module",
   "packageManager": "pnpm@10.34.6",
   "engines": {

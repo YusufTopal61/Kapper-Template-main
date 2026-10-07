@@ -2,31 +2,14 @@
 
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
-
-const reviews = [
-  {
-    quote:
-      "Eerste keer binnengelopen, sindsdien nooit meer ergens anders geweest. Ze luisteren écht.",
-    name: "Klantnaam",
-    meta: "Vaste klant",
-  },
-  {
-    quote:
-      "Strakke fade, verzorgde baard en een gesprek dat nergens over hoeft te gaan. Precies goed.",
-    name: "Klantnaam",
-    meta: "Knippen + Baard",
-  },
-  {
-    quote: "Rustige zaak, scherpe afwerking. Je merkt meteen dat hier mensen met vakkennis staan.",
-    name: "Klantnaam",
-    meta: "Knippen",
-  },
-];
+import { testimonials } from "@/config/testimonials";
 
 export function Testimonials() {
+  if (testimonials.length === 0) return null;
+
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {reviews.map((review, i) => (
+      {testimonials.map((review, i) => (
         <motion.blockquote
           key={i}
           initial={{ opacity: 0, y: 20 }}

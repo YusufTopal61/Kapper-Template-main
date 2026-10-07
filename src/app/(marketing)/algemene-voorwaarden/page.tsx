@@ -13,6 +13,8 @@ export const metadata: Metadata = buildMetadata({
   title: TITLE,
   description: DESCRIPTION,
   path: "/algemene-voorwaarden",
+  // Stays out of search engines until the owner or a lawyer has approved the text.
+  noIndex: true,
 });
 
 export default function TermsPage() {

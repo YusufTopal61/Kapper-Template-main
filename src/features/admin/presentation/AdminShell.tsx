@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/features/auth/presentation/auth.actions";
-import { siteConfig } from "@/config/site";
+import { builder, siteConfig } from "@/config/site";
 
 const adminNav = [
   { label: "Overzicht", href: "/admin", icon: LayoutGrid },
@@ -101,6 +101,16 @@ export function AdminShell({ children, email, emailConfigured, emailSandbox }: A
         </SidebarContent>
 
         <SidebarFooter className="gap-2 px-3 pb-4">
+          <p className="px-1 text-xs leading-relaxed text-muted-foreground group-data-[collapsible=icon]:hidden">
+            Hulp nodig? Mail{" "}
+            <a
+              href={`mailto:${builder.email}`}
+              className="font-medium text-foreground underline underline-offset-2"
+            >
+              {builder.name}
+            </a>
+            .
+          </p>
           <Button
             variant="outline"
             size="sm"

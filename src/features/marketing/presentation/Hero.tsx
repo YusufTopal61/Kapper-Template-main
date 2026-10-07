@@ -10,14 +10,11 @@ export function Hero() {
   return (
     <section className="px-3 pt-3 sm:px-4 sm:pt-4">
       <div className="relative min-h-[88vh] w-full overflow-hidden rounded-2xl bg-ink sm:min-h-[92vh] sm:rounded-[2rem]">
-        {/* Abstract monochrome backdrop — grid + soft glow, no photography. */}
+        {/* Abstract monochrome backdrop: a plain grid, no photography, no glows. */}
         <div
           className="pointer-events-none absolute inset-0 block-grid opacity-[0.15]"
           style={{ maskImage: "radial-gradient(ellipse at 30% 20%, black, transparent 70%)" }}
         />
-        <div className="pointer-events-none absolute -left-[10%] -top-[10%] size-[55vw] rounded-full bg-white/[0.07] blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 right-0 size-[40vw] rounded-full bg-white/[0.04] blur-3xl" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}

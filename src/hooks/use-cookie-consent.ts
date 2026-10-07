@@ -1,31 +1,44 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { parseConsent, serializeConsent, type ConsentStatus } from "@/lib/utils/consent";
 
 const STORAGE_KEY = "cookie_consent";
 
-export type CookieConsentStatus = "unknown" | "accepted" | "declined";
+export type CookieConsentStatus = ConsentStatus;
 
 const listeners = new Set<() => void>();
 
 /** Keeps the choice for this visit when localStorage is blocked. */
-let choiceInMemory: CookieConsentStatus | null = null;
+let fallbackRaw: string | null = null;
+let useFallback = false;
 
-function readStoredChoice(): CookieConsentStatus {
-  if (choiceInMemory) return choiceInMemory;
+function readRaw(): string | null {
+  if (useFallback) return fallbackRaw;
   try {
-    const value = window.localStorage.getItem(STORAGE_KEY);
-    return value === "accepted" || value === "declined" ? value : "unknown";
+    return window.localStorage.getItem(STORAGE_KEY);
   } catch {
     // localStorage can be blocked (private browsing, restricted cookies).
     // Then we simply show the banner again instead of crashing.
-    return "unknown";
+    return fallbackRaw;
   }
+}
+
+function writeRaw(raw: string | null) {
+  try {
+    if (raw === null) window.localStorage.removeItem(STORAGE_KEY);
+    else window.localStorage.setItem(STORAGE_KEY, raw);
+  } catch {
+    // Could not be stored: the choice then only applies to this visit.
+    useFallback = true;
+    fallbackRaw = raw;
+  }
+  listeners.forEach((notice) => notice());
 }
 
 function subscribe(notice: () => void) {
   listeners.add(notice);
-  // A change in another tab must also make the banner disappear.
+  // A change in another tab must also update the banner.
   window.addEventListener("storage", notice);
   return () => {
     listeners.delete(notice);
@@ -33,14 +46,8 @@ function subscribe(notice: () => void) {
   };
 }
 
-function setChoice(choice: Exclude<CookieConsentStatus, "unknown">) {
-  choiceInMemory = choice;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, choice);
-  } catch {
-    // Kon niet opgeslagen worden — de keuze geldt dan alleen voor dit bezoek.
-  }
-  listeners.forEach((notice) => notice());
+function readStatus(): CookieConsentStatus {
+  return parseConsent(readRaw(), new Date());
 }
 
 const subscribeNoop = () => () => {};
@@ -48,14 +55,12 @@ const subscribeNoop = () => () => {};
 /**
  * Consent status for non-essential cookies (analytics). The admin's sign-in
  * session runs on functional Supabase cookies that need no consent; only
- * tracking is gated by this.
+ * tracking is gated by this. The choice is versioned and expires (see
+ * `lib/utils/consent.ts`), and `reset` withdraws it so the banner asks again.
  */
 export function useCookieConsent() {
-  const status = useSyncExternalStore<CookieConsentStatus>(
-    subscribe,
-    readStoredChoice,
-    () => "unknown",
-  );
+  const status = useSyncExternalStore<CookieConsentStatus>(subscribe, readStatus, () => "unknown");
+
   /** false during server render and hydration; true once the stored choice has been read. */
   const ready = useSyncExternalStore(
     subscribeNoop,
@@ -66,7 +71,9 @@ export function useCookieConsent() {
   return {
     status,
     ready,
-    accept: () => setChoice("accepted"),
-    decline: () => setChoice("declined"),
+    accept: () => writeRaw(serializeConsent("accepted", new Date())),
+    decline: () => writeRaw(serializeConsent("declined", new Date())),
+    /** Withdraws the choice; the banner is shown again. */
+    reset: () => writeRaw(null),
   };
 }

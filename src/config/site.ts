@@ -16,3 +16,15 @@ export const siteConfig = {
   /** schema.org type for local SEO: BarberShop, HairSalon, AutoDealer, … */
   localType: "BarberShop",
 } as const;
+
+/**
+ * The agency that built and maintains the site. Used for the footer credit and
+ * the help line in the admin panel. Business facts only, no personal details.
+ */
+export const builder = {
+  name: "YM Creations",
+  url: "https://ymcreations.com",
+  email: "contact@ymcreations.com",
+  phone: "+31 6 53 40 02 20",
+  kvk: "96175354",
+} as const;

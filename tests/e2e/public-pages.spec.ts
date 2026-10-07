@@ -44,6 +44,45 @@ test.describe("public pages", () => {
     expect(robots).toContain("Disallow: /boeking/annuleren");
   });
 
+  test("legal pages are noindex and not in the sitemap", async ({ page, request }) => {
+    for (const path of ["/privacybeleid", "/algemene-voorwaarden"]) {
+      await page.goto(path);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    }
+
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect(sitemap).toContain("/diensten");
+    expect(sitemap).not.toContain("/privacybeleid");
+    expect(sitemap).not.toContain("/algemene-voorwaarden");
+  });
+
+  test("the cookie choice can be withdrawn from the footer", async ({ page }) => {
+    await page.goto("/");
+
+    const banner = page.getByRole("region", { name: "Cookiemelding" });
+    await expect(banner).toBeVisible();
+    await banner.getByRole("button", { name: "Weigeren" }).click();
+    await expect(banner).toBeHidden();
+
+    await page.getByRole("button", { name: "Cookie-instellingen" }).click();
+    await expect(banner).toBeVisible();
+  });
+
+  test("an old or unversioned cookie choice is asked again", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem("cookie_consent", "accepted"));
+    await page.goto("/");
+
+    await expect(page.getByRole("region", { name: "Cookiemelding" })).toBeVisible();
+  });
+
+  test("the footer credits the builder", async ({ page }) => {
+    await page.goto("/");
+
+    const credit = page.getByRole("link", { name: "YM Creations" });
+    await expect(credit).toHaveAttribute("href", "https://ymcreations.com");
+    await expect(credit).toHaveAttribute("rel", /noopener/);
+  });
+
   test("responses carry the security headers", async ({ request }) => {
     const headers = (await request.get("/")).headers();
 

@@ -4,6 +4,13 @@ A Dutch barbershop website with online booking, cancelling through a link in the
 confirmation email, and an admin panel (calendar, services, settings). It is also
 the reference implementation of the Yusuf Web Development Standard v1.0.
 
+## Built by
+
+Built and maintained by **YM Creations** — <https://ymcreations.com> ·
+<contact@ymcreations.com> · +31 6 53 40 02 20 · KvK 96175354. The company details live in one
+place, `builder` in `src/config/site.ts`; the footer credit and the help line in the admin panel
+read from it.
+
 ## Overview
 
 - **Visitors** browse the site, pick a service, day and time, and book without an account.
@@ -143,8 +150,16 @@ supabase/          migrations, seed.sql, config.toml     tests/e2e   Playwright
 
 - Verify a domain in Resend; without it customers do not receive mail (the admin panel shows a warning).
 - Set `SITE_URL` to the real domain and submit the sitemap in Search Console.
-- Not yet in place: Sentry, bot protection on the booking form (honeypot/Turnstile), Vercel link and redirects,
-  a nonce-based CSP.
+- The booking form has a honeypot field. Stronger bot protection (Turnstile), Sentry, the Vercel link and
+  redirects and a nonce-based CSP are not in place yet.
+- Cookie consent is versioned and expires after about six months (`src/lib/utils/consent.ts`). Bump
+  `CONSENT_VERSION` when the purposes or the privacy policy change.
+- The privacy policy and terms are example texts: the pages are `noindex` and out of the sitemap until the owner
+  or a lawyer has approved them. Then remove `noIndex` from both pages and add them to `sitemapPages`.
+- The testimonials section stays hidden until real reviews are added to `src/config/testimonials.ts`.
+- Mark `RESEND_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as sensitive in Vercel. Decide how long bookings are kept
+  and write it in the privacy policy.
+- `E2E_PORT` runs Playwright on another port when 3000 is taken.
 - Rate limiting is in-memory (per instance). Before going live on serverless, move it to shared storage
   (a Supabase table or Upstash).
 - The seed services have price 0 ("not set"); fill them in under `/admin/diensten`.

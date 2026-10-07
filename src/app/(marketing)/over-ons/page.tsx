@@ -9,8 +9,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 const TITLE = "Over ons";
-const DESCRIPTION =
-  "Wat begon als een kleine zaak met twee stoelen, groeide uit tot een plek waar mannen terugkomen voor meer dan een knipbeurt.";
+const DESCRIPTION = "Eerlijk vakmanschap: luisteren, adviseren en dan pas de schaar. Zo werken we.";
 
 export const metadata: Metadata = buildMetadata({
   title: TITLE,
@@ -30,7 +29,7 @@ export default function AboutPage() {
       <main>
         <PageHeader
           badgeLabel="Over ons"
-          badgeText="Vakmanschap sinds jaar en dag"
+          badgeText="Eerlijk vakmanschap"
           title="Een stoel, een spiegel, aandacht."
           description="Eerlijk vakmanschap: luisteren, adviseren en dan pas de schaar."
         />

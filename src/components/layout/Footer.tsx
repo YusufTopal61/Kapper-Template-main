@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { bookingLink, mainNavigation, legalLinks } from "@/config/navigation";
-import { siteConfig } from "@/config/site";
+import { builder, siteConfig } from "@/config/site";
+import { CookieSettingsButton } from "./CookieSettingsButton";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-background py-12">
+    <footer className="border-t border-border bg-background pb-28 pt-12 sm:pb-12">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
           <Link
@@ -37,7 +38,18 @@ export function Footer() {
         </div>
         <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {siteConfig.brandName}. Alle rechten voorbehouden.
+            © {new Date().getFullYear()} {siteConfig.brandName}. Alle rechten voorbehouden.{" "}
+            <span className="whitespace-nowrap">
+              Website door{" "}
+              <a
+                href={builder.url}
+                target="_blank"
+                rel="noopener"
+                className="font-medium text-foreground underline underline-offset-2"
+              >
+                {builder.name}
+              </a>
+            </span>
           </p>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {legalLinks.map((link) => (
@@ -49,6 +61,7 @@ export function Footer() {
                 {link.label}
               </Link>
             ))}
+            <CookieSettingsButton />
           </div>
         </div>
       </div>
